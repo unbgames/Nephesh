@@ -1,0 +1,6 @@
+JOGO
+cmake-build-debug
+.idea
+log.txt
+bin/
+dep/
