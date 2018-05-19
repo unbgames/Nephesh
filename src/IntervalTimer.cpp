@@ -21,5 +21,5 @@ void IntervalTimer::Update(float dt) {
 void IntervalTimer::Render() {}
 
 bool IntervalTimer::Is(string type) {
-    return false;
+    return type == EVENT_TIMER_TYPE;
 }

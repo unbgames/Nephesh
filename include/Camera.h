@@ -18,7 +18,7 @@ public:
     static bool IsFollowing();
 
 
-    static void SetLayerHeight(int layer, float height);
+    static void SetLayerDepth(int layer, float depth);
     static float GetLayerScale(int layer);
     static void SetCameraHeight(float height);
     static Vec2 GetRenderPosition(int layer, Vec2 absolutePosition);
@@ -30,7 +30,7 @@ public:
 private:
     static GameObject *focus;
     static float cameraHeight;
-    static unordered_map<int, float> layerHeights;
+    static unordered_map<int, float> layerDepths;
 };
 
 
