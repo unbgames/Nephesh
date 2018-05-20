@@ -26,6 +26,7 @@ public:
 
     void SetOffset(Vec2 offset);
 
+    void GetIntersections(GameObject &source);
 private:
     Vec2 scale;
     Vec2 offset;

@@ -7,6 +7,8 @@
 
 #include <GameObject.h>
 
+#define BEAM_SKILL_TYPE
+
 class BeamSkill : public Component {
 public:
     BeamSkill(GameObject &associated, Vec2 target);

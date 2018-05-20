@@ -3,6 +3,7 @@
 //
 
 #include <Sprite.h>
+#include <Collider.h>
 #include "BeamSkill.h"
 
 BeamSkill::BeamSkill(GameObject &associated, Vec2 target) : Component(associated), target(target) {
@@ -23,11 +24,13 @@ void BeamSkill::Render() {
 }
 
 bool BeamSkill::Is(string type) {
-    return false;
+    return type == BEAM_SKILL_TYPE;
 }
 
 void BeamSkill::NotifyCollision(GameObject &other) {
+    auto collider = (Collider *) other.GetComponent(COLLIDER_TYPE);
 
+    auto intersections = collider.GetIntersections(this);
 }
 
 void BeamSkill::Start() {

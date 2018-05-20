@@ -68,3 +68,13 @@ void Collider::SetOffset(Vec2 offset) {
     this->offset = offset;
 }
 
+void Collider::GetIntersections(GameObject &source) {
+    auto sourceBox = source.box;
+
+    vector<Vec2> lineEquations;
+    for (int i = 0; i < 4; ++i) {
+        sourceBox.
+    }
+    
+}
+
