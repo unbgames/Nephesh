@@ -1,10 +1,9 @@
 #include "TileSet.h"
 #include "GameObject.h"
 
-//TODO: how to pass gameobject to sprite
 TileSet::TileSet(int tileWidth, int tileHeight, string file) : tileWidth(tileWidth),
                                                                tileHeight(tileHeight),
-                                                               tileSet(*new GameObject(), file) {
+                                                               tileSet(*new GameObject(), file, 1, 1, 0, true) {
     columns = tileSet.GetWidth() / tileWidth;
     rows = tileSet.GetHeight() / tileHeight;
 }

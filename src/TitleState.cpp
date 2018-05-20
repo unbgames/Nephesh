@@ -5,6 +5,7 @@
 #include <Camera.h>
 #include <IntervalTimer.h>
 #include <tiff.h>
+#include <TileSet.h>
 #include "TitleState.h"
 #include "Text.h"
 
