@@ -16,7 +16,8 @@ using namespace std;
 class Sprite : public Component {
 public:
     Sprite(GameObject &associated);
-    explicit Sprite(GameObject &associated, string file, int frameCount = 1, float frameTime = 1, float secondsToSelfDestruct = 0, bool scaleSprite = false);
+    explicit Sprite(GameObject &associated, string file, int frameCount = 1, float frameTime = 1, float 
+    secondsToSelfDestruct = 0, bool scaleSprite = false, bool flip = false);
     ~Sprite() override;
 
     void Update(float dt);
@@ -35,7 +36,8 @@ public:
     bool IsOpen();
     void SetFrame(int frame);
     void SetFrameCount(int frameCount);
-    void SetFrameTime(int frameTime);
+    void SetFrameTime(float frameTime);
+    void SetFlip(bool f);
 private:
     shared_ptr<SDL_Texture> texture;
     SDL_Rect clipRect;
@@ -49,6 +51,7 @@ private:
     Timer selfDestructCount;
     float secondsToSelfDestruct;
     bool scaleSpriteForLayer;
+    bool flip;
 
 
     int getFrameWidth();

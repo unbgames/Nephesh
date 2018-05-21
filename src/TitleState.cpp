@@ -6,6 +6,7 @@
 #include <IntervalTimer.h>
 #include <tiff.h>
 #include <TileSet.h>
+#include <Player.h>
 #include "TitleState.h"
 #include "Text.h"
 
@@ -35,6 +36,12 @@ TitleState::TitleState() : State() {
     intrObj->box.x = WIDTH/2 - intrObj->box.w/2;
     intrObj->box.y = HEIGHT/2 + 200;
     AddObject(intrObj);
+
+    auto playerObj = new GameObject();
+    playerObj->box.x = WIDTH/2;
+    playerObj->box.y = HEIGHT/2;
+    playerObj->AddComponent(new Player(*playerObj));
+    AddObject(playerObj);
 }
 
 TitleState::~TitleState() = default;
