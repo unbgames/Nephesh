@@ -8,8 +8,10 @@
 #include "BeamSkill.h"
 
 BeamSkill::BeamSkill(GameObject &associated, Vec2 target) : Component(associated), target(target) {
-//    auto raySprite = new Sprite(associated, "Ray.png");
-//    associated.AddComponent(raySprite);
+    auto raySprite = new Sprite(associated, "Ray.png");
+    associated.AddComponent(raySprite);
+    auto collider = new Collider(associated);
+    associated.AddComponent(collider);
 }
 
 BeamSkill::~BeamSkill() {
@@ -52,7 +54,7 @@ void BeamSkill::NotifyCollision(GameObject &other) {
         }
     }
 
-    auto sprite = (Sprite *)associated.GetComponent(SPRITE_TYPE);
+    thisCollider->box.w = cutoffPoint;
 }
 
 void BeamSkill::Start() {

@@ -75,8 +75,8 @@ vector<pair<LineSegment, Vec2>> Collider::GetIntersections(Collider &collider) {
     vector<LineSegment> colliderLines;
     vector<LineSegment> collidableLines;
 
-    auto colliderCorners = collider.box.GetCorners();
-    auto collidableCorners = associated.box.GetCorners();
+    auto colliderCorners = collider.box.GetCorners(associated.angleDeg);
+    auto collidableCorners = associated.box.GetCorners(associated.angleDeg);
     for (int i = 0; i < 4; ++i) {
         auto next = (i+1)%4;
         colliderLines.emplace_back(colliderCorners[i], colliderCorners[next]);

@@ -21,12 +21,13 @@ public:
 
     bool Is(string type) override;
 
+    void Start() override;
+
     void NotifyCollision(GameObject &other) override;
 
 private:
     Vec2 target;
-public:
-    void Start() override;
+    float cutoffPosition;
 };
 
 

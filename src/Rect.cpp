@@ -26,12 +26,12 @@ float Rect::DistanceFrom(Rect target) {
 }
 
 
-vector<Vec2> Rect::GetCorners() {
+vector<Vec2> Rect::GetCorners(float angle) {
     vector<Vec2> corners;
-    corners.emplace_back(x, y);
-    corners.emplace_back(x + w, y);
-    corners.emplace_back(x + w, y + h);
-    corners.emplace_back(x, y + h);
+    corners.emplace_back(Vec2(x, y).RotateDeg(angle));
+    corners.emplace_back(Vec2(x + w, y).RotateDeg(angle));
+    corners.emplace_back(Vec2(x, y + h).RotateDeg(angle));
+    corners.emplace_back(Vec2(x + w, y + h).RotateDeg(angle));
 
     return corners;
 }
