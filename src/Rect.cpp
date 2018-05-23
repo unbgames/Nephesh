@@ -25,3 +25,8 @@ float Rect::DistanceFrom(Rect target) {
     return Center().Distance(target.Center());
 }
 
+void Rect::PlaceCenterAt(Vec2 pos) {
+    x = pos.x - w/2;
+    y = pos.y - h/2;
+}
+

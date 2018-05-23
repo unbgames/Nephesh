@@ -17,14 +17,17 @@
 Collider::Collider(GameObject &associated, Vec2 scale, Vec2 offset) : Component(associated),
                                                                       scale(scale),
                                                                       offset(offset) {
+    // default: return true
+    canCollide = [] (GameObject& collidable) -> bool {
+        return true;
+    };
 }
 
 void Collider::Update(float dt) {
     auto newBox = Rect();
     newBox.w = associated.box.w*scale.x;
     newBox.h = associated.box.h*scale.y;
-    newBox.x = associated.box.Center().x - newBox.w/2;
-    newBox.y = associated.box.Center().y - newBox.h/2;
+    newBox.PlaceCenterAt(associated.box.Center());
 
     box = newBox + offset.RotateDeg(associated.angleDeg);
 }
@@ -67,4 +70,14 @@ void Collider::SetScale(Vec2 scale) {
 void Collider::SetOffset(Vec2 offset) {
     this->offset = offset;
 }
+
+void Collider::SetCanCollide(function<bool(GameObject &collidable)> canCollide) {
+    this->canCollide = canCollide;
+}
+
+bool Collider::CanCollide(GameObject &collidable) {
+    return canCollide(collidable);
+}
+
+
 

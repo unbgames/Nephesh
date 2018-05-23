@@ -48,7 +48,7 @@ void Sprite::Render(float x, float y, int layer) {
     auto layerScale = Camera::GetLayerScale(layer);
     auto renderPos = Camera::GetRenderPosition(Vec2(x, y), layerScale);
     layerScale = scaleSpriteForLayer ? layerScale : 1;
-    SDL_Rect dstRect = { renderPos.x, renderPos.y, (int)(clipRect.w*scale.x*layerScale)+1, (int)(clipRect.h*scale.y*layerScale)+1 };
+    SDL_Rect dstRect = { (int)renderPos.x, (int)renderPos.y, (int)(clipRect.w*scale.x*layerScale)+1, (int)(clipRect.h*scale.y*layerScale)+1 };
     SDL_RenderCopyEx(game.GetRenderer(),
                      texture.get(),
                      &clipRect,

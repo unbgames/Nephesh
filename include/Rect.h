@@ -12,6 +12,7 @@ public:
     Rect(float x, float y, float h, float w);
 
     Vec2 Center();
+    void PlaceCenterAt(Vec2 pos);
     float DistanceFrom(Rect target);
     bool Contains(Vec2 dot);
 

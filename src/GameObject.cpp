@@ -107,6 +107,5 @@ bool GameObject::HasComponent(string type) {
 }
 
 void GameObject::SetCenter(Vec2 centerPos) {
-    box.x = centerPos.x - box.w/2;
-    box.y = centerPos.y - box.h/2;
+    box.PlaceCenterAt(centerPos);
 }
