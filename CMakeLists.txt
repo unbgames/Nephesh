@@ -13,11 +13,11 @@ include_directories(BEFORE include)
 
 include_directories(BEFORE tests)
 
-add_executable(Nephesh src/Game.cpp
+add_executable(Nephesh src/Main.cpp
+        src/Game.cpp
         include/Game.h
         src/Log.cpp
         include/Log.h
-        src/Main.cpp
         src/Music.cpp
         include/Music.h
         src/Sprite.cpp
@@ -32,7 +32,6 @@ add_executable(Nephesh src/Game.cpp
         include/GameObject.h
         src/Sound.cpp
         include/Sound.h
-        include/Component.h
         src/TileSet.cpp
         include/TileSet.h
         src/TileMap.cpp
@@ -61,6 +60,8 @@ add_executable(Nephesh src/Game.cpp
         include/CollisionMap.h
         src/Collidable.cpp
         include/Collidable.h
+        src/GameData.cpp
+        include/GameData.h
         tests/StageState.cpp
         tests/StageState.h
         tests/PenguinBody.cpp

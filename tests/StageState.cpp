@@ -13,7 +13,7 @@
 //#include <Alien.h>
 
 
-StageState::StageState() : backgroundMusic("audio/stageState.ogg"),
+StageState::StageState() : backgroundMusic("tests/audio/stageState.ogg"),
                  tileMap(nullptr),
                  bg(nullptr) {
 
@@ -21,15 +21,15 @@ StageState::StageState() : backgroundMusic("audio/stageState.ogg"),
     Camera::SetLayerDepth(1, 4.5);
 
     bg = new GameObject();
-    bg->AddComponent(new Sprite(*bg, "img/ocean.jpg"));
+    bg->AddComponent(new Sprite(*bg, "tests/img/ocean.jpg"));
     bg->AddComponent(new CameraFollower(*bg));
 
     auto mapObject = new GameObject();
     mapObject->box.h = HEIGHT;
     mapObject->box.w = WIDTH;
 
-    auto set = new TileSet(64, 64, "img/tileset.png");
-    tileMap = new TileMap(*mapObject, "map/tileMap.txt", set);
+    auto set = new TileSet(64, 64, "tests/img/tileset.png");
+    tileMap = new TileMap(*mapObject, "tests/map/tileMap.txt", set);
     mapObject->AddComponent(tileMap);
 
 //    Alien::alienCount = 0;

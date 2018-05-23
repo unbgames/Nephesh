@@ -14,7 +14,7 @@
 PenguinBody *PenguinBody::player = nullptr;
 
 PenguinBody::PenguinBody(GameObject &associated) : Component(associated), speed(Vec2()), linearSpeed(0), angle(0), hp(50)  {
-    associated.AddComponent(new Sprite(associated, "img/penguin.png"));
+    associated.AddComponent(new Sprite(associated, "tests/img/penguin.png"));
     associated.AddComponent(new Collider(associated));
 
     player = this;
@@ -32,8 +32,8 @@ void PenguinBody::Update(float dt) {
         }
 
         auto explosionObj = new GameObject(associated.GetLayer());
-        auto explosionSprite = new Sprite(*explosionObj, "img/penguindeath.png", 5, 0.1, 0.5);
-        auto explosionSound = new Sound(*explosionObj, "audio/boom.wav");
+        auto explosionSprite = new Sprite(*explosionObj, "tests/img/penguindeath.png", 5, 0.1, 0.5);
+        auto explosionSound = new Sound(*explosionObj, "tests/audio/boom.wav");
         explosionObj->AddComponent(explosionSprite);
         explosionObj->AddComponent(explosionSound);
         explosionSound->Play();

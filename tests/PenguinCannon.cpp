@@ -12,7 +12,7 @@
 //#include <Bullet.h>
 
 PenguinCannon::PenguinCannon(GameObject &associated, weak_ptr<GameObject> penguinBody) : Component(associated), pBody(penguinBody), angle(0) {
-    associated.AddComponent(new Sprite(associated, "img/cubngun.png"));
+    associated.AddComponent(new Sprite(associated, "tests/img/cubngun.png"));
     associated.AddComponent(new Collider(associated));
 }
 

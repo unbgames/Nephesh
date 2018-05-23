@@ -6,6 +6,7 @@
 #include <IntervalTimer.h>
 #include <tiff.h>
 #include <TileSet.h>
+#include <StageState.h>
 #include "TitleState.h"
 #include "Text.h"
 
@@ -40,11 +41,15 @@ TitleState::TitleState() : State() {
 TitleState::~TitleState() = default;
 
 void TitleState::Update(float dt) {
-    auto inputManager = InputManager::GetInstance();
+    auto& inputManager = InputManager::GetInstance();
 
     UpdateArray(dt);
 
     quitRequested = inputManager.QuitRequested() || inputManager.KeyPress(ESCAPE_KEY);
+
+    if(inputManager.KeyPress(SPACE_KEY)){
+        Game::GetInstance().Push(new StageState);
+    }
 }
 
 void TitleState::Render() {
