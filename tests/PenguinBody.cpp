@@ -7,7 +7,6 @@
 #include <Game.h>
 #include <InputManager.h>
 #include <Collider.h>
-#include <Bullet.h>
 #include <Camera.h>
 #include <Sound.h>
 #include "PenguinBody.h"
@@ -105,12 +104,12 @@ void PenguinBody::Start() {
 }
 
 void PenguinBody::NotifyCollision(GameObject &other) {
-    auto bullet = (Bullet *) other.GetComponent(BULLET_TYPE);
-    
-    if (bullet != nullptr && bullet->TargetsPlayer()) {
-        Damage(bullet->GetDamage());
-        cout << "hp" << hp << endl;
-    }
+//    auto bullet = (Bullet *) other.GetComponent(BULLET_TYPE);
+//
+//    if (bullet != nullptr && bullet->TargetsPlayer()) {
+//        Damage(bullet->GetDamage());
+//        cout << "hp" << hp << endl;
+//    }
 }
 
 void PenguinBody::Damage(int damage) {
