@@ -6,14 +6,15 @@
 #include <Camera.h>
 #include <Sprite.h>
 
-Sprite::Sprite(GameObject &associated) : Component(associated), scale(Vec2(1, 1)), frameCount(0), frameTime(0), timeElapsed(0), currentFrame(0) {
+Sprite::Sprite(GameObject &associated) : Component(associated), scale(Vec2(1, 1)), frameCount(0), frameTime(0), timeElapsed(0), currentFrame(0), scaleSpriteForLayer(false) {
     texture = nullptr;
 }
 
-Sprite::Sprite(GameObject &associated, string file, int frameCount, float frameTime, float secondsToSelfDestruct) : Sprite(associated) {
+Sprite::Sprite(GameObject &associated, string file, int frameCount, float frameTime, float secondsToSelfDestruct, bool scaleSpriteForLayer) : Sprite(associated) {
     this->frameCount = frameCount;
     this->frameTime = frameTime;
     this->secondsToSelfDestruct = secondsToSelfDestruct;
+    this->scaleSpriteForLayer = scaleSpriteForLayer;
     Open(file);
 }
 
@@ -46,6 +47,7 @@ void Sprite::Render(float x, float y, int layer) {
     Game &game = Game::GetInstance();
     auto layerScale = Camera::GetLayerScale(layer);
     auto renderPos = Camera::GetRenderPosition(Vec2(x, y), layerScale);
+    layerScale = scaleSpriteForLayer ? layerScale : 1;
     SDL_Rect dstRect = { renderPos.x, renderPos.y, (int)(clipRect.w*scale.x*layerScale)+1, (int)(clipRect.h*scale.y*layerScale)+1 };
     SDL_RenderCopyEx(game.GetRenderer(),
                      texture.get(),

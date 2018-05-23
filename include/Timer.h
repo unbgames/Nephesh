@@ -12,7 +12,7 @@ public:
 
     void Update(float dt);
 
-    void Restart();
+    void Restart(float offset = 0);
 
     float Get();
 private:

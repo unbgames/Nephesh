@@ -10,8 +10,8 @@ void Timer::Update(float dt) {
     time += dt;
 }
 
-void Timer::Restart() {
-    time = 0;
+void Timer::Restart(float offset) {
+    time = offset;
 }
 
 float Timer::Get() {

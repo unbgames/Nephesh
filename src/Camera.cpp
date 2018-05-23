@@ -9,7 +9,7 @@
 Vec2 Camera::pos = Vec2();
 Vec2 Camera::speed = Vec2();
 GameObject *Camera::focus = nullptr;
-unordered_map<int, float> Camera::layerHeights;
+unordered_map<int, float> Camera::layerDepths;
 float Camera::cameraHeight = 0;
 
 
@@ -42,14 +42,15 @@ void Camera::Update(float dt) {
     }
 }
 
-void Camera::SetLayerHeight(int layer, float height) {
-    layerHeights[layer] = height;
+// Depth: vertical distance between camera and layer
+void Camera::SetLayerDepth(int layer, float depth) {
+    layerDepths[layer] = depth;
 }
 
 float Camera::GetLayerScale(int layer) {
-    auto height = layerHeights.find(layer);
+    auto height = layerDepths.find(layer);
 
-    if (height != layerHeights.end()) {
+    if (height != layerDepths.end()) {
         return cameraHeight/((*height).second);
     }
 
@@ -71,10 +72,10 @@ Vec2 Camera::GetRenderPosition(Vec2 absPosition, float layerScale) {
 
 Vec2 Camera::GetClickPosition(int layer, Vec2 mouseClick, bool correctCamera) {
     auto center = Vec2(WIDTH/2, HEIGHT/2);
-    auto height = layerHeights.find(layer);
+    auto height = layerDepths.find(layer);
     auto inverseScale = 1.0;
 
-    if (height != layerHeights.end()) {
+    if (height != layerDepths.end()) {
         inverseScale = ((*height).second)/cameraHeight;
     }
 

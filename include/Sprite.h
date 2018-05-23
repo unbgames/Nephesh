@@ -16,7 +16,7 @@ using namespace std;
 class Sprite : public Component {
 public:
     Sprite(GameObject &associated);
-    explicit Sprite(GameObject &associated, string file, int frameCount = 1, float frameTime = 1, float secondsToSelfDestruct = 0);
+    explicit Sprite(GameObject &associated, string file, int frameCount = 1, float frameTime = 1, float secondsToSelfDestruct = 0, bool scaleSprite = false);
     ~Sprite() override;
 
     void Update(float dt);
@@ -48,6 +48,8 @@ private:
     float frameTime;
     Timer selfDestructCount;
     float secondsToSelfDestruct;
+    bool scaleSpriteForLayer;
+
 
     int getFrameWidth();
 };

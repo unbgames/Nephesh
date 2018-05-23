@@ -12,14 +12,15 @@ IntervalTimer::IntervalTimer(GameObject &associated, float timeLimit, function<v
 void IntervalTimer::Update(float dt) {
     timer.Update(dt);
 
-    if (timer.Get() > timeLimit) {
+    auto currentTime = timer.Get();
+    if (currentTime > timeLimit) {
         callback();
-        timer.Restart();
+        timer.Restart(currentTime - timeLimit);
     }
 }
 
 void IntervalTimer::Render() {}
 
 bool IntervalTimer::Is(string type) {
-    return false;
+    return type == EVENT_TIMER_TYPE;
 }
