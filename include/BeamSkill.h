@@ -7,7 +7,7 @@
 
 #include <GameObject.h>
 
-#define BEAM_SKILL_TYPE
+#define BEAM_SKILL_TYPE "BeamSkill"
 
 class BeamSkill : public Component {
 public:

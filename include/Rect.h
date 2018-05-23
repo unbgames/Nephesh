@@ -3,6 +3,9 @@
 
 
 #include "Vec2.h"
+#include <vector>
+
+using namespace std;
 
 class Rect {
 public:
@@ -14,6 +17,7 @@ public:
     Vec2 Center();
     float DistanceFrom(Rect target);
     bool Contains(Vec2 dot);
+    vector<Vec2> GetCorners();
 
     //Overloaded operators
     Rect operator+(Vec2 v2);

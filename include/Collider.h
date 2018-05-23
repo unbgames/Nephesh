@@ -6,6 +6,7 @@
 #define T1_COLLIDER_H
 
 #include "GameObject.h"
+#include "LineSegment.h"
 
 #define COLLIDER_TYPE "Collider"
 #define DEBUG
@@ -26,7 +27,7 @@ public:
 
     void SetOffset(Vec2 offset);
 
-    void GetIntersections(GameObject &source);
+    vector<pair<LineSegment, Vec2>> GetIntersections(Collider &collider);
 private:
     Vec2 scale;
     Vec2 offset;

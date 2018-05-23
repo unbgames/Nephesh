@@ -25,6 +25,7 @@ public:
     void operator+=(Vec2 v);
     void operator-=(Vec2 v);
     void operator*=(float scalar);
+    bool operator==(Vec2 v2);
 };
 
 

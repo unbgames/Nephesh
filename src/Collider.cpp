@@ -6,11 +6,14 @@
 #include <Camera.h>
 #include <Game.h>
 #include "Collider.h"
+#include <utility>
 #ifdef DEBUG
 #include "Camera.h"
 #include "Game.h"
 
 #include <SDL2/SDL.h>
+#include <LineSegment.h>
+
 #endif // DEBUG
 
 
@@ -68,13 +71,32 @@ void Collider::SetOffset(Vec2 offset) {
     this->offset = offset;
 }
 
-void Collider::GetIntersections(GameObject &source) {
-    auto sourceBox = source.box;
+vector<pair<LineSegment, Vec2>> Collider::GetIntersections(Collider &collider) {
+    vector<LineSegment> colliderLines;
+    vector<LineSegment> collidableLines;
 
-    vector<Vec2> lineEquations;
+    auto colliderCorners = collider.box.GetCorners();
+    auto collidableCorners = associated.box.GetCorners();
     for (int i = 0; i < 4; ++i) {
-        sourceBox.
+        auto next = (i+1)%4;
+        colliderLines.emplace_back(colliderCorners[i], colliderCorners[next]);
+        collidableLines.emplace_back(collidableCorners[i], collidableCorners[next]);
     }
-    
+
+    vector<pair<LineSegment, Vec2>> intersections;
+    for (auto &colliderLine : colliderLines) {
+        for (auto &collidableLine : collidableLines) {
+            if (colliderLine == collidableLine) {
+                intersections.push_back(make_pair(colliderLine, (colliderLine.A - colliderLine.B)*0.5));
+            } else {
+                auto intersection = colliderLine.GetIntersection(collidableLine);
+                if (collidableLine.Contains(intersection) && colliderLine.Contains(intersection)) {
+                    intersections.push_back(make_pair(colliderLine, intersection));
+                }
+            }
+        }
+    }
+
+    return intersections;
 }
 

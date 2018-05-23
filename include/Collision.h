@@ -30,7 +30,7 @@ public:
         };
 
         for (auto& v : A) {
-            v = (v - a.Center()).Rotate(angleOfA) + a.Center();
+            v = (v - a.Center()).(angleOfA) + a.Center();
         }
 
         for (auto& v : B) {

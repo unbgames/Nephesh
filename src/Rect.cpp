@@ -25,3 +25,14 @@ float Rect::DistanceFrom(Rect target) {
     return Center().Distance(target.Center());
 }
 
+
+vector<Vec2> Rect::GetCorners() {
+    vector<Vec2> corners;
+    corners.emplace_back(x, y);
+    corners.emplace_back(x + w, y);
+    corners.emplace_back(x + w, y + h);
+    corners.emplace_back(x, y + h);
+
+    return corners;
+}
+
