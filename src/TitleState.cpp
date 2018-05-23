@@ -6,6 +6,7 @@
 #include <IntervalTimer.h>
 #include <tiff.h>
 #include <TileSet.h>
+#include <BeamSkill.h>
 #include "TitleState.h"
 #include "Text.h"
 
@@ -40,8 +41,18 @@ TitleState::TitleState() : State() {
 TitleState::~TitleState() = default;
 
 void TitleState::Update(float dt) {
-    auto inputManager = InputManager::GetInstance();
-
+    auto &inputManager = InputManager::GetInstance();
+    
+    if (inputManager.MousePress(LEFT_MOUSE_BUTTON)) {
+        auto target = Vec2(inputManager.GetMouseX(), inputManager.GetMouseY());
+        auto beamObj = new GameObject();
+        beamObj->box.x = WIDTH/2;
+        beamObj->box.y = HEIGHT/2;
+        auto beamCpt = new BeamSkill(*beamObj, target);
+        beamObj->AddComponent(beamCpt);
+        this->AddObject(beamObj);
+    }
+    
     UpdateArray(dt);
 
     quitRequested = inputManager.QuitRequested() || inputManager.KeyPress(ESCAPE_KEY);

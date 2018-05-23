@@ -8,7 +8,7 @@
 #include "BeamSkill.h"
 
 BeamSkill::BeamSkill(GameObject &associated, Vec2 target) : Component(associated), target(target) {
-    auto raySprite = new Sprite(associated, "Ray.png");
+    auto raySprite = new Sprite(associated, "img/ray.png");
     associated.AddComponent(raySprite);
     auto collider = new Collider(associated);
     associated.AddComponent(collider);
@@ -36,7 +36,6 @@ void BeamSkill::NotifyCollision(GameObject &other) {
     auto colliderBox = thisCollider->box;
 
     auto intersections = thisCollider->GetIntersections(*otherCollider);
-    auto cutoffPoint = INFINITY;
     vector<LineSegment> laterals;
     laterals.emplace_back(Vec2(colliderBox.x, colliderBox.y), Vec2(colliderBox.x+colliderBox.w, colliderBox.y));
     laterals.emplace_back(Vec2(colliderBox.x, colliderBox.y+colliderBox.h), Vec2(colliderBox.x+colliderBox.w, colliderBox.y+colliderBox.h));
@@ -58,5 +57,10 @@ void BeamSkill::NotifyCollision(GameObject &other) {
 }
 
 void BeamSkill::Start() {
-    associated.angleDeg = (target - Vec2(associated.box.x, associated.box.y)).XAngleDeg();
+    auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
+    auto d = target - Vec2(associated.box.x, associated.box.y);
+    cout << d.XAngleDeg() << endl;
+    associated.angleDeg = d.XAngleDeg();
+//    cutoffPoint = d.Module();
+//    collider->box.w = cutoffPoint;
 }

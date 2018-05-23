@@ -27,7 +27,7 @@ public:
 
 private:
     Vec2 target;
-    float cutoffPosition;
+    float cutoffPoint;
 };
 
 
