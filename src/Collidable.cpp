@@ -61,7 +61,7 @@ bool Collidable::Is(string type) {
     return type == COLLIDABLE_TYPE;
 }
 
-bool Collidable::IsColliding(Collider collider) {
+bool Collidable::IsColliding(Collider& collider) {
     auto angleOfCollidable = (float)(associated.angleDeg * M_PI/180);
     auto angleOfCollider = (float)(collider.GetGameObject().angleDeg * M_PI/180);
 

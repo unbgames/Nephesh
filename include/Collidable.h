@@ -24,7 +24,7 @@ public:
     void Render() override;
     bool Is(string type) override;
 
-    virtual bool IsColliding(Collider collider);
+    virtual bool IsColliding(Collider& collider);
 
     void SetScale(Vec2 scale);
     void SetOffset(Vec2 offset);

@@ -13,6 +13,15 @@ void Rect::operator+=(Vec2 v2) {
     this->y += v2.y;
 }
 
+Rect Rect::operator-(Vec2 v2) {
+    return { x - v2.x, y - v2.y, h, w };
+}
+
+void Rect::operator-=(Vec2 v2) {
+    this->x -= v2.x;
+    this->y -= v2.y;
+}
+
 Vec2 Rect::Center() {
     return { x + (w/2), y + (h/2) };
 }

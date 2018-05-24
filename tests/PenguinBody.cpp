@@ -9,11 +9,12 @@
 #include <Collider.h>
 #include <Camera.h>
 #include <Sound.h>
+#include <CollisionMap.h>
 #include "PenguinBody.h"
 
 PenguinBody *PenguinBody::player = nullptr;
 
-PenguinBody::PenguinBody(GameObject &associated) : Component(associated), speed(Vec2()), linearSpeed(0), angle(0), hp(50)  {
+PenguinBody::PenguinBody(GameObject &associated) : Component(associated), movement(Vec2()), linearSpeed(0), angle(0), hp(50)  {
     associated.AddComponent(new Sprite(associated, "tests/img/penguin.png"));
     associated.AddComponent(new Collider(associated));
 
@@ -78,13 +79,13 @@ void PenguinBody::Update(float dt) {
         deltaPos = linearSpeed*dt + deltaSpeed*(dt/2);
 
         linearSpeed += deltaSpeed;
-        
-        speed = Vec2(linearSpeed, 0).RotateDeg(angle);
-        associated.box += Vec2(deltaPos, 0).RotateDeg(angle);
-        associated.box.x = associated.box.x < 0 ? 0 : associated.box.x;
-        associated.box.x = associated.box.x > MAP_WIDTH ? MAP_WIDTH : associated.box.x;
-        associated.box.y = associated.box.y < 0 ? 0 : associated.box.y;
-        associated.box.y = associated.box.y > MAP_HEIGHT ? MAP_HEIGHT : associated.box.y;
+
+        movement = Vec2(deltaPos, 0).RotateDeg(angle);
+        associated.box += movement;
+//        associated.box.x = associated.box.x < 0 ? 0 : associated.box.x;
+//        associated.box.x = associated.box.x > MAP_WIDTH ? MAP_WIDTH : associated.box.x;
+//        associated.box.y = associated.box.y < 0 ? 0 : associated.box.y;
+//        associated.box.y = associated.box.y > MAP_HEIGHT ? MAP_HEIGHT : associated.box.y;
     }
 }
 
@@ -104,12 +105,17 @@ void PenguinBody::Start() {
 }
 
 void PenguinBody::NotifyCollision(GameObject &other) {
-//    auto bullet = (Bullet *) other.GetComponent(BULLET_TYPE);
-//
+    auto collisionMap = (CollisionMap *) other.GetComponent(COLLISION_MAP_TYPE);
+
+    if(collisionMap){
+        associated.box -= movement;
+    }
+
 //    if (bullet != nullptr && bullet->TargetsPlayer()) {
 //        Damage(bullet->GetDamage());
 //        cout << "hp" << hp << endl;
 //    }
+
 }
 
 void PenguinBody::Damage(int damage) {
@@ -122,6 +128,10 @@ void PenguinBody::Damage(int damage) {
 
 Vec2 PenguinBody::GetPosition() {
     return associated.box.Center();
+}
+
+Vec2 PenguinBody::GetMovementVec() {
+    return movement;
 }
 
 

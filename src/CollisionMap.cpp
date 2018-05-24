@@ -80,12 +80,14 @@ int &CollisionMap::At(int x, int y, int z) {
     return collisionTilesMatrix[index];
 }
 
-bool CollisionMap::IsColliding(Collider collider) {
+bool CollisionMap::IsColliding(Collider& collider) {
     auto& colliderObject = collider.GetGameObject();
     auto angleOfCollider = (float)(colliderObject.angleDeg * M_PI/180);
     auto colliderBox = collider.box;
 
     int layer = colliderObject.GetLayer();
+
+    auto begin = clock();
 
     // get the unrotated vertices of the collider box (the vertices from the Rect itself)
     Vec2 vertices[] = { Vec2( colliderBox.x, colliderBox.y),
@@ -109,7 +111,7 @@ bool CollisionMap::IsColliding(Collider collider) {
         while(pivot.Module() < edgeMagnitude){
             auto pointOfAnalysis = vertices[i] + pivot;
 
-            if(At((int)pointOfAnalysis.x/tileWidth, (int)pointOfAnalysis.y/tileHeight, layer) == 1){
+            if(At((int)pointOfAnalysis.x/tileWidth, (int)pointOfAnalysis.y/tileHeight, layer) != 0){
                 return true;
             }
 

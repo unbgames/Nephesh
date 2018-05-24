@@ -23,7 +23,7 @@ public:
     void Load(string file);
     int &At(int x, int y, int z = 0);
 
-    bool IsColliding(Collider collider) override;
+    bool IsColliding(Collider& collider) override;
 
     int GetTileWidth();
     int GetTileHeight();

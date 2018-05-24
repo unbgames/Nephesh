@@ -36,11 +36,13 @@ public:
 
     Vec2 GetPosition();
 
+    Vec2 GetMovementVec();
+
     static PenguinBody *player;
 
 private:
     weak_ptr<GameObject> pCannon;
-    Vec2 speed;
+    Vec2 movement;
     float linearSpeed;
     float angle;
     int hp;
