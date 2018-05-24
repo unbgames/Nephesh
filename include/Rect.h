@@ -17,7 +17,7 @@ public:
     Vec2 Center();
     float DistanceFrom(Rect target);
     bool Contains(Vec2 dot);
-    vector<Vec2> GetCorners(float angle = 0);
+    vector<Vec2> GetCorners(float angle = 0, Vec2 rotationCenter = Vec2(0, 0));
 
     //Overloaded operators
     Rect operator+(Vec2 v2);

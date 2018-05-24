@@ -48,13 +48,14 @@ void Sprite::Render(float x, float y, int layer) {
     auto layerScale = Camera::GetLayerScale(layer);
     auto renderPos = Camera::GetRenderPosition(Vec2(x, y), layerScale);
     layerScale = scaleSpriteForLayer ? layerScale : 1;
+    SDL_Point center = { (int) associated.rotationCenter.x, (int) associated.rotationCenter.y };
     SDL_Rect dstRect = { renderPos.x, renderPos.y, (int)(clipRect.w*scale.x*layerScale)+1, (int)(clipRect.h*scale.y*layerScale)+1 };
     SDL_RenderCopyEx(game.GetRenderer(),
                      texture.get(),
                      &clipRect,
                      &dstRect,
                      associated.angleDeg,
-                     nullptr,
+                     &center,
                      SDL_FLIP_NONE);
 }
 
@@ -138,6 +139,10 @@ void Sprite::SetFrameTime(int frameTime) {
 
 int Sprite::getFrameWidth() {
     return width/frameCount;
+}
+
+SDL_Rect Sprite::GetClip() {
+    return clipRect;
 }
 
 

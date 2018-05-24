@@ -30,6 +30,7 @@ public:
     void Render(float x, float y, int layer);
     int GetWidth();
     int GetHeight();
+    SDL_Rect GetClip();
     void SetScaleX(float scaleX, float scaleY);
     Vec2 GetScale();
     bool IsOpen();

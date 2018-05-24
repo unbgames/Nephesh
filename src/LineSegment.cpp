@@ -4,21 +4,29 @@
 
 #include "LineSegment.h"
 
-LineSegment::LineSegment(Vec2 a, Vec2 b) : A(a), B(b) {
-    tan = (b.x - a.x) / (b.y - a.y);
-    lin = a.y - tan*a.x;
+LineSegment::LineSegment(Vec2 dot1, Vec2 dot2) : dot1(dot1), dot2(dot2) {
+    A = dot2.y - dot1.y;
+    B = dot1.x - dot2.x;
+    C = (A*dot1.x) + (B*dot1.y);
 }
 
 bool LineSegment::Contains(Vec2 dot) {
-    return dot.x >= min(A.x, B.x) && dot.x <= max(A.x, B.x) && dot.y >= min(A.y, B.y) && dot.y <= max(A.y, B.y);
+    return dot.x >= -1 + min(dot1.x, dot2.x) && dot.x <= 1 + max(dot1.x, dot2.x) && dot.y >= -1 + min(dot1.y, dot2.y) && dot.y <= 1 + max(dot1.y, dot2.y);
 };
 
 Vec2 LineSegment::GetIntersection(LineSegment seg) {
-    auto intersectionX = (this->lin - seg.lin) / (seg.tan - this->tan);
-    return Vec2(intersectionX, intersectionX*tan + lin);
+    double det = (A*seg.B) - (seg.A*B);
+
+    if (det == 0) {
+        return Vec2(-INFINITY, -INFINITY);
+    }
+
+    auto x = ((seg.B * C) - (B * seg.C)) / det;
+    auto y = ((A * seg.C) - (seg.A * C)) / det;
+    return Vec2(x, y);
 }
 
-bool LineSegment::operator==(LineSegment v2) {
-    return this->tan == v2.tan && this->lin == v2.lin;
+bool LineSegment::operator==(LineSegment seg) {
+    return this->A == seg.A && this->B == seg.B && this->C == seg.C;
 }
 

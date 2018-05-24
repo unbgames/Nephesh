@@ -8,6 +8,7 @@
 #include <GameObject.h>
 
 #define BEAM_SKILL_TYPE "BeamSkill"
+#define BEAM_LIFETIME 0.5
 
 class BeamSkill : public Component {
 public:
@@ -26,7 +27,10 @@ public:
     void NotifyCollision(GameObject &other) override;
 
 private:
+    weak_ptr<GameObject> initObject;
+    weak_ptr<GameObject> endObject;
     Vec2 target;
+    Timer lifeTimer;
     float cutoffPoint;
 };
 

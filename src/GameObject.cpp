@@ -9,7 +9,8 @@ GameObject::GameObject(int layer) : isDead(false),
                                     started(false),
                                     updated(false),
                                     angleDeg(0),
-                                    layer(layer) {}
+                                    layer(layer),
+                                    rotationCenter(Vec2(0, 0)) {}
 
 GameObject::~GameObject() {
     for(auto it = components.rbegin(); it != components.rend(); ++it) {

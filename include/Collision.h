@@ -18,24 +18,18 @@ public:
     // Para usar graus, forneça a sua própria implementação de Rotate,
     // ou transforme os ângulos no corpo de IsColliding.
     static inline bool IsColliding(Rect& a, Rect& b, float angleOfA, float angleOfB) {
-        Vec2 A[] = { Vec2( a.x, a.y + a.h ),
-                     Vec2( a.x + a.w, a.y + a.h ),
-                     Vec2( a.x + a.w, a.y ),
-                     Vec2( a.x, a.y )
+        auto aCorners = a.GetCorners(angleOfA);
+        auto bCorners = b.GetCorners(angleOfB);
+        vector<Vec2> A = { aCorners[3],
+                     aCorners[2],
+                     aCorners[1],
+                     aCorners[0]
         };
-        Vec2 B[] = { Vec2( b.x, b.y + b.h ),
-                     Vec2( b.x + b.w, b.y + b.h ),
-                     Vec2( b.x + b.w, b.y ),
-                     Vec2( b.x, b.y )
+        vector<Vec2> B = { aCorners[3],
+                           aCorners[2],
+                           aCorners[1],
+                           aCorners[0]
         };
-
-        for (auto& v : A) {
-            v = (v - a.Center()).(angleOfA) + a.Center();
-        }
-
-        for (auto& v : B) {
-            v = (v - b.Center()).Rotate(angleOfB) + b.Center();
-        }
 
         Vec2 axes[] = { (A[0] - A[1]).Normalize(), (A[1] - A[2]).Normalize(), (B[0] - B[1]).Normalize(), (B[1] - B[2]).Normalize() };
 

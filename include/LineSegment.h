@@ -13,18 +13,19 @@ using namespace std;
 
 class LineSegment {
 public:
-    Vec2 A;
-    Vec2 B;
-    float tan;
-    float lin;
+    Vec2 dot1;
+    Vec2 dot2;
+    double A;
+    double B;
+    double C;
 
-    LineSegment(Vec2 a, Vec2 b);
+    LineSegment(Vec2 dot1, Vec2 dot2);
 
     bool Contains(Vec2 dot);
 
     Vec2 GetIntersection(LineSegment seg);
 
-    bool operator==(LineSegment v2);
+    bool operator==(LineSegment seg);
 };
 
 

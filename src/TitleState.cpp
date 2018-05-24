@@ -7,6 +7,8 @@
 #include <tiff.h>
 #include <TileSet.h>
 #include <BeamSkill.h>
+#include <Collider.h>
+#include <Collision.h>
 #include "TitleState.h"
 #include "Text.h"
 
@@ -42,7 +44,17 @@ TitleState::~TitleState() = default;
 
 void TitleState::Update(float dt) {
     auto &inputManager = InputManager::GetInstance();
-    
+
+    if (inputManager.MousePress(RIGHT_MOUSE_BUTTON)) {
+        auto mousePos = inputManager.GetMouse();
+
+        auto blockObj = new GameObject();
+        blockObj->box += mousePos;
+        blockObj->AddComponent(new Sprite(*blockObj, "img/block.png"));
+        blockObj->AddComponent(new Collider(*blockObj));
+        AddObject(blockObj);
+    }
+
     if (inputManager.MousePress(LEFT_MOUSE_BUTTON)) {
         auto target = Vec2(inputManager.GetMouseX(), inputManager.GetMouseY());
         auto beamObj = new GameObject();
@@ -54,6 +66,44 @@ void TitleState::Update(float dt) {
     }
     
     UpdateArray(dt);
+
+    for (auto &it: objectLayers) {
+        auto &objects = it.second;
+        auto colliderArray = new Collider*[objects.size()];
+        memset(colliderArray, 0, objects.size()*sizeof(Collider *));
+        for (int i = 0; i < objects.size(); ++i) {
+            for (int j = i; j < objects.size(); ++j) {
+                if (i == 0) {
+                    colliderArray[j] = (Collider *)(*objects[j]).GetComponent(COLLIDER_TYPE);
+                }
+                if (i != 0 && colliderArray[i] == nullptr) {
+                    break;
+                }
+
+                if (i != j && colliderArray[j] != nullptr && colliderArray[i] != nullptr) {
+                    auto angleIRad = 2*M_PI*((*objects[i]).angleDeg/360);
+                    auto angleJRad = 2*M_PI*((*objects[j]).angleDeg/360);
+                    auto boxI = colliderArray[i]->box;
+                    auto boxJ = colliderArray[j]->box;
+
+                    if (Collision::IsColliding(boxI, boxJ, angleIRad, angleJRad)) {
+                        (*objects[i]).NotifyCollision((*objects[j]));
+                        (*objects[j]).NotifyCollision((*objects[i]));
+                    }
+                }
+            }
+        }
+    }
+
+    for (auto &it: objectLayers) {
+        auto &objects = it.second;
+
+        for(int i = 0; i < objects.size(); i++) {
+            if (objects[i]->IsDead()) {
+                objects.erase(objects.begin() + i);
+            }
+        }
+    }
 
     quitRequested = inputManager.QuitRequested() || inputManager.KeyPress(ESCAPE_KEY);
 }
