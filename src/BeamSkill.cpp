@@ -63,7 +63,8 @@ void BeamSkill::NotifyCollision(GameObject &other) {
             }
         }
 
-        thisCollider->SetScale(Vec2(cutoffPoint/associated.box.w, 1));
+        this->associated.box.w = cutoffPoint;
+        thisCollider->box.w = cutoffPoint;
         auto sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
         auto clip = sprite->GetClip();
         sprite->SetClip(clip.x, clip.y, cutoffPoint, clip.h);
@@ -80,7 +81,8 @@ void BeamSkill::Start() {
     associated.rotationCenter = Vec2(0, associated.box.h/2);
     associated.angleDeg = d.XAngleDeg();
     cutoffPoint = d.Module();
-    collider->SetScale(Vec2(cutoffPoint/associated.box.w, 1));
+    collider->box.w = cutoffPoint;
+    associated.box.w = cutoffPoint;
     auto clip = sprite->GetClip();
     sprite->SetClip(clip.x, clip.y, cutoffPoint, clip.h);
 
