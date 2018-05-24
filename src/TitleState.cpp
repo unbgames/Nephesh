@@ -49,9 +49,10 @@ void TitleState::Update(float dt) {
         auto mousePos = inputManager.GetMouse();
 
         auto blockObj = new GameObject();
-        blockObj->box += mousePos;
+        blockObj->angleDeg = 20;
         blockObj->AddComponent(new Sprite(*blockObj, "img/block.png"));
         blockObj->AddComponent(new Collider(*blockObj));
+        blockObj->SetCenter(Camera::pos +  mousePos);
         AddObject(blockObj);
     }
 
