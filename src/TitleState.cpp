@@ -48,8 +48,8 @@ void TitleState::Update(float dt) {
     if (inputManager.MousePress(RIGHT_MOUSE_BUTTON)) {
         auto mousePos = inputManager.GetMouse();
 
-        auto blockObj = new GameObject();
-        blockObj->angleDeg = 20;
+        auto blockObj = new GameObject(1);
+        blockObj->angleDeg = 45;
         blockObj->AddComponent(new Sprite(*blockObj, "img/block.png"));
         blockObj->AddComponent(new Collider(*blockObj));
         blockObj->SetCenter(Camera::pos +  mousePos);
@@ -58,7 +58,7 @@ void TitleState::Update(float dt) {
 
     if (inputManager.MousePress(LEFT_MOUSE_BUTTON)) {
         auto target = Vec2(inputManager.GetMouseX(), inputManager.GetMouseY());
-        auto beamObj = new GameObject();
+        auto beamObj = new GameObject(1);
         beamObj->box.x = WIDTH/2;
         beamObj->box.y = HEIGHT/2;
         auto beamCpt = new BeamSkill(*beamObj, target);

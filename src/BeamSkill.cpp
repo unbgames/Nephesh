@@ -8,7 +8,7 @@
 #include <Game.h>
 #include "BeamSkill.h"
 
-BeamSkill::BeamSkill(GameObject &associated, Vec2 target) : Component(associated), target(target) {
+BeamSkill::BeamSkill(GameObject &associated, Vec2 target) : Component(associated), target(target), lockBeam(false) {
     auto raySprite = new Sprite(associated, "img/ray.png");
     associated.AddComponent(raySprite);
     auto collider = new Collider(associated);
@@ -29,7 +29,7 @@ void BeamSkill::Update(float dt) {
 }
 
 void BeamSkill::Render() {
-
+    lockBeam = true;
 }
 
 bool BeamSkill::Is(string type) {
@@ -37,37 +37,39 @@ bool BeamSkill::Is(string type) {
 }
 
 void BeamSkill::NotifyCollision(GameObject &other) {
-    auto otherCollider = (Collider *) other.GetComponent(COLLIDER_TYPE);
-    auto thisCollider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
-    auto colliderBox = thisCollider->box;
+    if (!lockBeam) {
+        auto otherCollider = (Collider *) other.GetComponent(COLLIDER_TYPE);
+        auto thisCollider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
+        auto colliderBox = thisCollider->box;
 
-    auto intersections = otherCollider->GetIntersections(*thisCollider);
-    auto boxCorners = colliderBox.GetCorners(associated.angleDeg, associated.rotationCenter);
-    auto l1 = LineSegment(boxCorners[0], boxCorners[1]);
-    auto l2 = LineSegment(boxCorners[2], boxCorners[3]);
-    for (auto &intersection : intersections) {
-        auto intersectionDot = intersection.second;
-        auto intersectionLine = intersection.first;
+        auto intersections = otherCollider->GetIntersections(*thisCollider);
+        auto boxCorners = colliderBox.GetCorners(associated.angleDeg, associated.rotationCenter);
+        auto l1 = LineSegment(boxCorners[0], boxCorners[1]);
+        auto l2 = LineSegment(boxCorners[2], boxCorners[3]);
+        for (auto &intersection : intersections) {
+            auto intersectionDot = intersection.second;
+            auto intersectionLine = intersection.first;
 
-        if (intersectionLine == l1) {
-            auto d = (intersectionDot - l1.dot1).Module();
-            if (d < cutoffPoint) {
-                cutoffPoint = d;
-            }
-        } else if (intersectionLine == l2) {
-            auto d = (intersectionDot - l2.dot2).Module();
-            if (d < cutoffPoint) {
-                cutoffPoint = d;
+            if (intersectionLine == l1) {
+                auto d = (intersectionDot - l1.dot1).Module();
+                if (d < cutoffPoint) {
+                    cutoffPoint = d;
+                }
+            } else if (intersectionLine == l2) {
+                auto d = (intersectionDot - l2.dot2).Module();
+                if (d < cutoffPoint) {
+                    cutoffPoint = d;
+                }
             }
         }
+
+        thisCollider->SetScale(Vec2(cutoffPoint/associated.box.w, 1));
+        auto sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
+        auto clip = sprite->GetClip();
+        sprite->SetClip(clip.x, clip.y, cutoffPoint, clip.h);
+
+        endObject.lock()->SetCenter((Vec2(associated.box.x + cutoffPoint, associated.box.y + associated.box.h/2) - Vec2(associated.box.x, associated.box.y + associated.box.h/2)).RotateDeg(associated.angleDeg) + Vec2(associated.box.x, associated.box.y + associated.box.h/2));
     }
-
-    thisCollider->SetScale(Vec2(cutoffPoint/associated.box.w, 1));
-    auto sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
-    auto clip = sprite->GetClip();
-    sprite->SetClip(clip.x, clip.y, cutoffPoint, clip.h);
-
-    endObject.lock()->SetCenter((Vec2(associated.box.x + cutoffPoint, associated.box.y + associated.box.h/2) - Vec2(associated.box.x, associated.box.y + associated.box.h/2)).RotateDeg(associated.angleDeg) + Vec2(associated.box.x, associated.box.y + associated.box.h/2));
 }
 
 void BeamSkill::Start() {

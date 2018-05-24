@@ -32,6 +32,7 @@ private:
     Vec2 target;
     Timer lifeTimer;
     float cutoffPoint;
+    bool lockBeam;
 };
 
 
