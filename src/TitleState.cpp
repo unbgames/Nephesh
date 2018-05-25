@@ -82,12 +82,7 @@ void TitleState::Update(float dt) {
                 }
 
                 if (i != j && colliderArray[j] != nullptr && colliderArray[i] != nullptr) {
-                    auto angleIRad = 2*M_PI*((*objects[i]).angleDeg/360);
-                    auto angleJRad = 2*M_PI*((*objects[j]).angleDeg/360);
-                    auto boxI = colliderArray[i]->box;
-                    auto boxJ = colliderArray[j]->box;
-
-                    if (Collision::IsColliding(boxI, boxJ, angleIRad, angleJRad)) {
+                    if (Collision::IsColliding(*colliderArray[i], *colliderArray[j])) {
                         (*objects[i]).NotifyCollision((*objects[j]));
                         (*objects[j]).NotifyCollision((*objects[i]));
                     }

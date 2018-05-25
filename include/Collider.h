@@ -9,7 +9,7 @@
 #include "LineSegment.h"
 
 #define COLLIDER_TYPE "Collider"
-#define DEBUG
+//#define DEBUG
 
 class Collider : public Component {
 public:
