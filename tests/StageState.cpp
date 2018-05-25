@@ -14,8 +14,10 @@
 //#include <Alien.h>
 
 
-StageState::StageState() : backgroundMusic("tests/audio/stageState.ogg"),
-                 bg(nullptr) {
+StageState::StageState() :
+        backgroundMusic("tests/audio/stageState.ogg"),
+        bg(nullptr),
+        maxCollisionCheckTime(){
 
     Camera::SetCameraHeight(5);
     Camera::SetLayerDepth(1, 4.5);
@@ -39,12 +41,14 @@ StageState::StageState() : backgroundMusic("tests/audio/stageState.ogg"),
     playerObject->AddComponent(new PenguinBody(*playerObject));
     AddObject(playerObject);
 
-    for(int i = 0; i < 100; i++ ){
-        auto testSprite = new GameObject();
-        testSprite->AddComponent(new Sprite(*testSprite, "tests/img/alien.png"));
-        testSprite->AddComponent(new Collider(*testSprite));
-        testSprite->box.PlaceCenterAt({500 + (rand() % 200), 500 + (rand() % 200)});
-        AddObject(testSprite);
+    for(int i = 0; i < 20; i++ ){
+        auto testGO = new GameObject();
+        auto testSprite = new Sprite(*testGO, "tests/img/alien.png");
+        testSprite->SetScale(5, 5);
+        testGO->AddComponent(testSprite);
+        testGO->AddComponent(new Collider(*testGO));
+        testGO->box.PlaceCenterAt({500.0f + (rand() % 200), 500.0f + (rand() % 200)});
+        AddObject(testGO);
     }
 
     Camera::Follow(playerObject);
@@ -116,44 +120,18 @@ void StageState::Resume() {
 
 void StageState::CheckCollisions() {
 
-
-//    for (auto &it: objectLayers) {
-//        auto &objects = it.second;
-//        auto colliderArray = new Collider*[objects.size()];
-//        memset(colliderArray, 0, objects.size()*sizeof(Collider *));
-//        for (int i = 0; i < objects.size(); ++i) {
-//            for (int j = i; j < objects.size(); ++j) {
-//                if (i == 0) {
-//                    colliderArray[j] = (Collider *)(*objects[j]).GetComponent(COLLIDER_TYPE);
-//                }
-//                if (i != 0 && colliderArray[i] == nullptr) {
-//                    break;
-//                }
-//
-//                if (i != j && colliderArray[j] != nullptr && colliderArray[i] != nullptr) {
-//                    auto angleIRad = 2*M_PI*((*objects[i]).angleDeg/360);
-//                    auto angleJRad = 2*M_PI*((*objects[j]).angleDeg/360);
-//                    auto boxI = colliderArray[i]->box;
-//                    auto boxJ = colliderArray[j]->box;
-//
-//                    if (Collision::IsColliding(boxI, boxJ, angleIRad, angleJRad)) {
-//                        (*objects[i]).NotifyCollision((*objects[j]));
-//                        (*objects[j]).NotifyCollision((*objects[i]));
-//                    }
-//                }
-//            }
-//        }
-//    }
-
-    auto begin = clock();
+    auto begin = std::chrono::system_clock::now();
 
     for (int i = 0; i < colliders.size(); i++) {
         if (auto collider = colliders[i].lock()) {
             auto colliderCpt = (Collider*)collider->GetComponent(COLLIDER_TYPE);
+
             for (int j = 0; j < collidables.size(); j++) {
                 auto collidable = collidables[j].lock();
-                if(collidable && collider->GetLayer() == collidable->GetLayer()){
+
+                if( (collidable) && (collider->GetLayer() == collidable->GetLayer()) && (colliderCpt->CanCollide(*collidable)) ){
                     auto collidableCpt = (Collidable*)collidable->GetComponent(COLLIDABLE_TYPE);
+
                     if(collidableCpt->IsColliding(*colliderCpt)){
                         collider->NotifyCollision(*collidable);
                     }
@@ -170,7 +148,12 @@ void StageState::CheckCollisions() {
         }
     }
 
-    cout << double(clock() - begin)*1000/CLOCKS_PER_SEC << " ms" << endl;
+    auto collisionCheckTime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - begin);
+
+    if(collisionCheckTime.count() > maxCollisionCheckTime.count())
+        maxCollisionCheckTime = collisionCheckTime;
+
+    cout << "Max. collision check time: "<< (double)maxCollisionCheckTime.count()/1000 << " ms\n" << endl;
 }
 
 weak_ptr<GameObject> StageState::AddObject(GameObject *object) {

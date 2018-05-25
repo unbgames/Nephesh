@@ -21,7 +21,7 @@ public:
     bool Is(string type) override;
 
     void Load(string file);
-    int &At(int x, int y, int z = 0);
+    int At(int x, int y, int z = 0);
 
     bool IsColliding(Collider& collider) override;
 

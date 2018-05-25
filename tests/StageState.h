@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include <CollisionMap.h>
+#include <chrono>
 #include "Music.h"
 #include "TileMap.h"
 #include "State.h"
@@ -40,6 +41,8 @@ private:
     shared_ptr<GameObject> map;
     vector<weak_ptr<GameObject>> collidables;
     vector<weak_ptr<GameObject>> colliders;
+
+    std::chrono::microseconds maxCollisionCheckTime;
 };
 
 #endif

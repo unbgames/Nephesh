@@ -104,7 +104,7 @@ int Sprite::GetWidth() {
     return getFrameWidth()*scale.x;
 }
 
-void Sprite::SetScaleX(float scaleX, float scaleY) {
+void Sprite::SetScale(float scaleX, float scaleY) {
     scale.x = scaleX == 0 ? scale.x : scaleX;
     scale.y = scaleY == 0 ? scale.y : scaleY;
     auto &box = associated.box;

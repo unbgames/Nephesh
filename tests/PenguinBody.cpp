@@ -60,28 +60,38 @@ void PenguinBody::Update(float dt) {
         associated.angleDeg = angle;
 
         double deltaPos;
-        auto acceleration = 0.0;
         if (inputManager.IsKeyDown(W_KEY)) {
-            if (linearSpeed >= MAX_SPEED) {
-                linearSpeed = MAX_SPEED;
-            } else {
-                acceleration = ACCELERATION;
-            }
+            deltaPos = MAX_SPEED*dt;
         } else if (inputManager.IsKeyDown(S_KEY)) {
-            if (linearSpeed <= -MAX_SPEED) {
-                linearSpeed = -MAX_SPEED;
-            } else {
-                acceleration = -ACCELERATION;
-            }
+            deltaPos = -MAX_SPEED*dt;
         }
-
-        auto deltaSpeed = acceleration*dt;
-        deltaPos = linearSpeed*dt + deltaSpeed*(dt/2);
-
-        linearSpeed += deltaSpeed;
 
         movement = Vec2(deltaPos, 0).RotateDeg(angle);
         associated.box += movement;
+
+//        double deltaPos;
+//        auto acceleration = 0.0;
+//        if (inputManager.IsKeyDown(W_KEY)) {
+//            if (linearSpeed >= MAX_SPEED) {
+//                linearSpeed = MAX_SPEED;
+//            } else {
+//                acceleration = ACCELERATION;
+//            }
+//        } else if (inputManager.IsKeyDown(S_KEY)) {
+//            if (linearSpeed <= -MAX_SPEED) {
+//                linearSpeed = -MAX_SPEED;
+//            } else {
+//                acceleration = -ACCELERATION;
+//            }
+//        }
+//
+//        auto deltaSpeed = acceleration*dt;
+//        deltaPos = linearSpeed*dt + deltaSpeed*(dt/2);
+//
+//        linearSpeed += deltaSpeed;
+//
+//        movement = Vec2(deltaPos, 0).RotateDeg(angle);
+//        associated.box += movement;
 //        associated.box.x = associated.box.x < 0 ? 0 : associated.box.x;
 //        associated.box.x = associated.box.x > MAP_WIDTH ? MAP_WIDTH : associated.box.x;
 //        associated.box.y = associated.box.y < 0 ? 0 : associated.box.y;
