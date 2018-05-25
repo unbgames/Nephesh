@@ -46,10 +46,6 @@ void TitleState::Update(float dt) {
     UpdateArray(dt);
 
     quitRequested = inputManager.QuitRequested() || inputManager.KeyPress(ESCAPE_KEY);
-
-    if(inputManager.KeyPress(SPACE_KEY)){
-        Game::GetInstance().Push(new StageState);
-    }
 }
 
 void TitleState::Render() {

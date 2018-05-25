@@ -120,6 +120,7 @@ void StageState::Resume() {
 
 void StageState::CheckCollisions() {
 
+    // https://stackoverflow.com/questions/19555121/how-to-get-current-timestamp-in-milliseconds-since-1970-just-the-way-java-gets
     auto begin = std::chrono::system_clock::now();
 
     for (int i = 0; i < colliders.size(); i++) {
@@ -148,6 +149,7 @@ void StageState::CheckCollisions() {
         }
     }
 
+    // https://stackoverflow.com/questions/19555121/how-to-get-current-timestamp-in-milliseconds-since-1970-just-the-way-java-gets
     auto collisionCheckTime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now() - begin);
 
     if(collisionCheckTime.count() > maxCollisionCheckTime.count())
