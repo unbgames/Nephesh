@@ -26,9 +26,10 @@ shared_ptr<SDL_Texture> Resources::GetImage(string file) {
 
 void Resources::ClearImages() {
     for (auto it = imageTable.begin(); it != imageTable.end() ; ++it) {
-        auto ptr = (*it).second;
-        if (ptr.unique()) {
-            imageTable.erase((*it).first);
+        if (((*it).second).unique()) {
+            it = imageTable.erase(it);
+        } else {
+            ++it;
         }
     }
 }
@@ -55,7 +56,9 @@ shared_ptr<Mix_Music> Resources::GetMusic(string file) {
 void Resources::ClearMusics() {
     for (auto it = musicTable.begin(); it != musicTable.end(); ++it) {
         if (((*it).second).unique()) {
-            musicTable.erase((*it).first);
+            it = musicTable.erase(it);
+        } else {
+            ++it;
         }
     }
 }
@@ -82,7 +85,9 @@ shared_ptr<Mix_Chunk> Resources::GetSound(string file) {
 void Resources::ClearSounds() {
     for (auto it = soundTable.begin(); it != soundTable.end(); ++it) {
         if (((*it).second).unique()) {
-            soundTable.erase((*it).first);
+            it = soundTable.erase(it);
+        } else {
+            ++it;
         }
     }
 }
@@ -110,7 +115,9 @@ shared_ptr<TTF_Font> Resources::GetFont(string file, int size) {
 void Resources::ClearFonts() {
     for (auto it = fontTable.begin(); it != fontTable.end(); ++it) {
         if (((*it).second).unique()) {
-            fontTable.erase((*it).first);
+            it = fontTable.erase(it);
+        } else {
+            ++it;
         }
     }
 }
