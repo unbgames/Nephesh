@@ -97,6 +97,7 @@ void TitleState::Update(float dt) {
         for(int i = 0; i < objects.size(); i++) {
             if (objects[i]->IsDead()) {
                 objects.erase(objects.begin() + i);
+                i--;
             }
         }
     }

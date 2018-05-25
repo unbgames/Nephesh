@@ -15,21 +15,21 @@
 class Collision {
 
 public:
-    // Observação: IsColliding espera ângulos em radianos!
-    // Para usar graus, forneça a sua própria implementação de Rotate,
-    // ou transforme os ângulos no corpo de IsColliding.
     static inline bool IsColliding(Collider& a, Collider& b) {
         auto aCorners = a.box.GetCorners(a.GetGameObject().angleDeg, a.GetGameObject().rotationCenter);
         auto bCorners = b.box.GetCorners(b.GetGameObject().angleDeg, b.GetGameObject().rotationCenter);
-        vector<Vec2> A = { aCorners[3],
-                     aCorners[2],
-                     aCorners[1],
-                     aCorners[0]
+
+        vector<Vec2> A = {
+                aCorners[3],
+                aCorners[2],
+                aCorners[1],
+                aCorners[0]
         };
-        vector<Vec2> B = { bCorners[3],
-                           bCorners[2],
-                           bCorners[1],
-                           bCorners[0]
+        vector<Vec2> B = {
+                bCorners[3],
+               bCorners[2],
+               bCorners[1],
+               bCorners[0]
         };
 
         Vec2 axes[] = { (A[0] - A[1]).Normalize(), (A[1] - A[2]).Normalize(), (B[0] - B[1]).Normalize(), (B[1] - B[2]).Normalize() };

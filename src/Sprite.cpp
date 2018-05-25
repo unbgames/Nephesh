@@ -27,7 +27,7 @@ void Sprite::Open(string file) {
 
     associated.box.h = GetHeight();
     associated.box.w = GetWidth();
-    associated.rotationCenter = Vec2(GetWidth()/2, GetHeight()/2);
+    associated.rotationCenter = associated.box.Center();
 
     SetClip(0, 0, getFrameWidth(), height);
 }

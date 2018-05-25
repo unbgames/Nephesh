@@ -90,13 +90,11 @@ void BeamSkill::Start() {
     initObj->angleDeg = associated.angleDeg;
     initObj->AddComponent(new Sprite(*initObj, "img/init.png"));
     initObj->SetCenter(Vec2(associated.box.x, associated.box.y + associated.box.h/2));
-    initObj->rotationCenter = Vec2(associated.box.x, associated.box.y + associated.box.h/2) - Vec2(initObj->box.x, initObj->box.y) ;
     initObject = Game::GetInstance().GetCurrentState().AddObject(initObj);
 
     auto endObj = new GameObject(associated.GetLayer());
     endObj->angleDeg = associated.angleDeg;
     endObj->AddComponent(new Sprite(*endObj, "img/end.png"));
     endObj->SetCenter(target);
-    endObj->rotationCenter = target - Vec2(endObj->box.x, endObj->box.y);
     endObject = Game::GetInstance().GetCurrentState().AddObject(endObj);
 }
