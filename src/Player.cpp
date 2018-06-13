@@ -239,6 +239,7 @@ void Player::Attack() {
     auto playerBoxCenter = associated.box.Center();
 
     if (currentDirection == RIGHT) {
+        collider->SetOffset(Vec2(-35, 0));
         attackObject->box = Rect(ATTACK_WIDTH, ATTACK_RANGE);
         attackObject->box.PlaceCenterAt(playerBoxPosition + Vec2(associated.box.w + attackObject->box.w/2, associated.box.h/2));
     } else if (currentDirection == DOWN) {
@@ -246,7 +247,7 @@ void Player::Attack() {
         attackObject->box = Rect(ATTACK_RANGE, ATTACK_WIDTH);
         attackObject->box.PlaceCenterAt(playerBoxPosition + Vec2(associated.box.w/2, associated.box.h + attackObject->box.h/2));
     } else if (currentDirection == LEFT) {
-        collider->SetOffset(Vec2(30, 0));
+        collider->SetOffset(Vec2(50, 0));
         attackObject->box = Rect(ATTACK_WIDTH, ATTACK_RANGE);
         attackObject->box.PlaceCenterAt(playerBoxPosition + Vec2(-attackObject->box.w, associated.box.h/2));
     } else {

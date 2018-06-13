@@ -8,8 +8,8 @@
 #include <TileSet.h>
 #include <BeamSkill.h>
 #include <Collider.h>
-#include <StageState.h>
 #include <Player.h>
+#include <Collidable.h>
 #include "TitleState.h"
 #include "Text.h"
 
