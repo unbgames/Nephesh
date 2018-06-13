@@ -6,6 +6,7 @@
 #include <InputManager.h>
 #include <BeamSkill.h>
 #include <Game.h>
+#include <Collider.h>
 #include "Player.h"
 
 #define MAX_SPEED 20
@@ -15,7 +16,7 @@
 Player *Player::player = nullptr;
 
 Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), state(IDLE), hp(100) {
-    Sprite *spr = new Sprite(associated, "img/idle1.png", 10, 0.1, 0, true);
+    Sprite *spr = new Sprite(associated, "img/idle.png", IDLE_SPRITE_COUNT, 0.1, 0, true);
 
     associated.AddComponent(spr);
     associated.box.h = spr->GetHeight();
@@ -25,15 +26,20 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
 
     Player::player = this;
 
-    movementAnimations.emplace_back(make_pair(RIGHT, "img/run1.png"));
-    movementAnimations.emplace_back(make_pair(LEFT, "img/run1.png"));
-    movementAnimations.emplace_back(make_pair(UP, "img/walkTestUp.png"));
-    movementAnimations.emplace_back(make_pair(DOWN, "img/walkTestDown.png"));
+    movementAnimations.emplace_back(make_pair(RIGHT, "img/walk_side.png"));
+    movementAnimations.emplace_back(make_pair(LEFT, "img/walk_side.png"));
+    movementAnimations.emplace_back(make_pair(UP, "img/walk_up.png"));
+    movementAnimations.emplace_back(make_pair(DOWN, "img/walk_down.png"));
 
-    shootingAnimations.emplace_back(make_pair(RIGHT, "img/magicTestSide.png"));
-    shootingAnimations.emplace_back(make_pair(LEFT, "img/magicTestSide.png"));
-    shootingAnimations.emplace_back(make_pair(UP, "img/magicTestUp.png"));
-    shootingAnimations.emplace_back(make_pair(DOWN, "img/magicTestDown.png"));
+    shootingAnimations.emplace_back(make_pair(RIGHT, "img/magic_side.png"));
+    shootingAnimations.emplace_back(make_pair(LEFT, "img/magic_side.png"));
+    shootingAnimations.emplace_back(make_pair(UP, "img/magic_up.png"));
+    shootingAnimations.emplace_back(make_pair(DOWN, "img/magic_down.png"));
+
+    attackAnimations.emplace_back(make_pair(RIGHT, "img/attack_side.png"));
+    attackAnimations.emplace_back(make_pair(LEFT, "img/attack_side.png"));
+    attackAnimations.emplace_back(make_pair(UP, "img/attack_up.png"));
+    attackAnimations.emplace_back(make_pair(DOWN, "img/attack_down.png"));
 }
 
 string Player::GetMovementAnimation() {
@@ -48,6 +54,17 @@ string Player::GetMovementAnimation() {
 
 string Player::GetShootingAnimation() {
     for (auto &animation : shootingAnimations) {
+        if (animation.first == currentDirection) {
+            return animation.second;
+        }
+    }
+
+    return nullptr;
+}
+
+
+string Player::GetAttackAnimation() {
+    for (auto &animation : attackAnimations) {
         if (animation.first == currentDirection) {
             return animation.second;
         }
@@ -72,6 +89,8 @@ void Player::Update(float dt) {
 
     if (inputManager.MousePress(LEFT_MOUSE_BUTTON) || state == SHOOTING) {
         newState = SHOOTING;
+    } else if (inputManager.KeyPress(SPACE_KEY) || state == ATTACKING) {
+        newState = ATTACKING;
     } else if (inputManager.IsKeyDown('a') || inputManager.IsKeyDown('d') || inputManager.IsKeyDown('s') || inputManager.IsKeyDown('w')) {
         newState = MOVING;
     } else {
@@ -81,12 +100,24 @@ void Player::Update(float dt) {
     if (newState == SHOOTING) {
         speed = Vec2();
         if (state != SHOOTING) {
-            shootingTimer.Restart();
+            timer.Restart();
             Shoot();
         } else {
-            shootingTimer.Update(dt);
-            if (shootingTimer.Get() > BEAM_LIFETIME) {
-                SetSprite("img/idle1.png", 10, 0.1);
+            timer.Update(dt);
+            if (timer.Get() > BEAM_LIFETIME) {
+                SetSprite("img/idle.png", MAGIC_SPRITE_COUNT, 0.1);
+                newState = IDLE;
+            }
+        }
+    } else if (newState == ATTACKING) {
+        speed = Vec2();
+        if (state != ATTACKING) {
+            timer.Restart();
+            Attack();
+        } else {
+            timer.Update(dt);
+            if (timer.Get() > ATTACK_DURATION) {
+                SetSprite("img/idle.png", MAGIC_SPRITE_COUNT, 0.1);
                 newState = IDLE;
             }
         }
@@ -118,11 +149,11 @@ void Player::Update(float dt) {
         currentDirection = GetNewDirection(directionsPressed);
         
         if (state != MOVING || currentDirection != oldDirection) {
-            SetSprite(GetMovementAnimation(), 5, SPR_TIME, currentDirection == LEFT);
+            SetSprite(GetMovementAnimation(), WALK_SPRITE_COUNT, SPR_TIME, currentDirection == LEFT);
         }
     } else {
         if (state != IDLE) {
-            SetSprite("img/idle1.png", 10, 0.1);
+            SetSprite("img/idle.png", IDLE_SPRITE_COUNT, 0.1);
         }
         speed = Vec2(0,0);
     }
@@ -154,7 +185,7 @@ void Player::NotifyCollision(GameObject &other) {
 void Player::SetSprite(string file, int frameCount, float frameTime, bool flip) {
     auto sprite = (Sprite*)associated.GetComponent("Sprite");
     
-    if(!sprite){
+    if(!sprite) {
         throw("Sprite component not found on Player's GameObject.");
     }
     
@@ -171,22 +202,12 @@ void Player::Shoot() {
     auto& inputManager = InputManager::GetInstance();
     auto target = Vec2(inputManager.GetMouseX(), inputManager.GetMouseY());
 
-    auto angle = (target - associated.box.Center()).XAngleDeg();
+    currentDirection = GetDirection(target);
+
+    SetSprite(GetShootingAnimation(), MAGIC_SPRITE_COUNT, BEAM_LIFETIME/MAGIC_SPRITE_COUNT, currentDirection == LEFT);
+
     auto playerBoxPosition = Vec2(associated.box.x, associated.box.y);
-
-    if (angle > -45 && angle < 45) {
-        currentDirection = RIGHT;
-    } else if (angle > 45 && angle < 135) {
-        currentDirection = DOWN;
-    } else if (angle > 135 || angle < -135) {
-        currentDirection = LEFT;
-    } else {
-        currentDirection = UP;
-    }
-
-    SetSprite(GetShootingAnimation(), 6, BEAM_LIFETIME/6, currentDirection == RIGHT);
-
-    auto beamObj = new GameObject(1);
+    auto beamObj = new GameObject(associated.GetLayer());
 
     if (currentDirection == RIGHT) {
         beamObj->box = Rect() + playerBoxPosition + Vec2(associated.box.w, associated.box.h/2 );
@@ -201,4 +222,52 @@ void Player::Shoot() {
     auto beamCpt = new BeamSkill(*beamObj, target);
     beamObj->AddComponent(beamCpt);
     Game::GetInstance().GetCurrentState().AddObject(beamObj);
+}
+
+void Player::Attack() {
+    auto& inputManager = InputManager::GetInstance();
+    auto target = Vec2(inputManager.GetMouseX(), inputManager.GetMouseY());
+
+    currentDirection = GetDirection(target);
+
+    SetSprite(GetAttackAnimation(), ATTACK_SPRITE_COUNT, ATTACK_DURATION/ATTACK_SPRITE_COUNT, currentDirection == LEFT);
+
+    auto attackObject = new GameObject(associated.GetLayer());
+    auto collider = new Collider(*attackObject);
+    attackObject->AddComponent(collider);
+    auto playerBoxPosition = Vec2(associated.box.x, associated.box.y);
+    auto playerBoxCenter = associated.box.Center();
+
+    if (currentDirection == RIGHT) {
+        attackObject->box = Rect(ATTACK_WIDTH, ATTACK_RANGE);
+        attackObject->box.PlaceCenterAt(playerBoxPosition + Vec2(associated.box.w + attackObject->box.w/2, associated.box.h/2));
+    } else if (currentDirection == DOWN) {
+        collider->SetOffset(Vec2(0, -30));
+        attackObject->box = Rect(ATTACK_RANGE, ATTACK_WIDTH);
+        attackObject->box.PlaceCenterAt(playerBoxPosition + Vec2(associated.box.w/2, associated.box.h + attackObject->box.h/2));
+    } else if (currentDirection == LEFT) {
+        collider->SetOffset(Vec2(30, 0));
+        attackObject->box = Rect(ATTACK_WIDTH, ATTACK_RANGE);
+        attackObject->box.PlaceCenterAt(playerBoxPosition + Vec2(-attackObject->box.w, associated.box.h/2));
+    } else {
+        collider->SetOffset(Vec2(0, 40));
+        attackObject->box = Rect(ATTACK_RANGE, ATTACK_WIDTH);
+        attackObject->box.PlaceCenterAt(playerBoxPosition + Vec2(associated.box.w/2, -attackObject->box.h));
+    }
+
+    Game::GetInstance().GetCurrentState().AddObject(attackObject);
+}
+
+Player::PlayerDirection Player::GetDirection(Vec2 target) {
+    auto angle = (target - associated.box.Center()).XAngleDeg();
+
+    if (angle > -45 && angle < 45) {
+        return RIGHT;
+    } else if (angle > 45 && angle < 135) {
+        return DOWN;
+    } else if (angle > 135 || angle < -135) {
+        return LEFT;
+    } else {
+        return UP;
+    }
 }

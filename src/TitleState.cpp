@@ -34,7 +34,7 @@ void TitleState::Update(float dt) {
     if (inputManager.MousePress(RIGHT_MOUSE_BUTTON)) {
         auto mousePos = inputManager.GetMouse();
 
-        auto blockObj = new GameObject(1);
+        auto blockObj = new GameObject();
         blockObj->angleDeg = 45;
         blockObj->AddComponent(new Sprite(*blockObj, "img/block.png"));
         blockObj->AddComponent(new Collidable(*blockObj));
