@@ -57,6 +57,8 @@ public:
 
     void NotifyCollision(GameObject& other) override;
 
+    Vec2 GetCenter();
+
 };
 
 

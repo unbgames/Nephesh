@@ -8,9 +8,16 @@
 #include "Component.h"
 #include "Vec2.h"
 #include "Timer.h"
+#include <Sound.h>
+#include <Sprite.h>
+#include <Game.h>
 
 #define BOSS_TYPE "Boss"
-#define BOSS_INITIAL_HP 30
+#define BOSS_INITIAL_HP 100
+#define BOSS_IDLE_TIME 3 // in seconds
+#define BOSS_ATTACK_TIME 3 // in seconds
+#define BOSS_SPEED 300 // in pixels/s
+#define BOSS_MIN_DIST_TO_PLAYER 300 // in pixels
 
 class Boss : public Component {
 public:

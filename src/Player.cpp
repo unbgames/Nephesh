@@ -202,3 +202,7 @@ void Player::Shoot() {
     beamObj->AddComponent(beamCpt);
     Game::GetInstance().GetCurrentState().AddObject(beamObj);
 }
+
+Vec2 Player::GetCenter() {
+    return associated.box.Center();
+}
