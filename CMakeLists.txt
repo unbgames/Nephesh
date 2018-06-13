@@ -71,4 +71,6 @@ add_executable(Nephesh src/Main.cpp
         src/BeamSkill.cpp
         include/BeamSkill.h
         src/LineSegment.cpp
-        include/LineSegment.h)
+        include/LineSegment.h
+        src/Player.cpp
+        include/Player.h)

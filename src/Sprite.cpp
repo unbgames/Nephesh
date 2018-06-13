@@ -6,13 +6,16 @@
 #include <Camera.h>
 #include <Sprite.h>
 
-Sprite::Sprite(GameObject &associated) : Component(associated), scale(Vec2(1, 1)), frameCount(0), frameTime(0), timeElapsed(0), currentFrame(0), scaleSpriteForLayer(false) {
+Sprite::Sprite(GameObject &associated) : Component(associated), scale(Vec2(1, 1)), frameCount(0), frameTime
+(0), timeElapsed(0), currentFrame(0), scaleSpriteForLayer(false), flip(false) {
     texture = nullptr;
 }
 
-Sprite::Sprite(GameObject &associated, string file, int frameCount, float frameTime, float secondsToSelfDestruct, bool scaleSpriteForLayer) : Sprite(associated) {
+Sprite::Sprite(GameObject &associated, string file, int frameCount, float frameTime, float 
+secondsToSelfDestruct, bool scaleSpriteForLayer, bool flip) : Sprite(associated) {
     this->frameCount = frameCount;
     this->frameTime = frameTime;
+    this->flip = flip;
     this->secondsToSelfDestruct = secondsToSelfDestruct;
     this->scaleSpriteForLayer = scaleSpriteForLayer;
     Open(file);
@@ -58,7 +61,7 @@ void Sprite::Render(float x, float y, int layer) {
                      &dstRect,
                      associated.angleDeg,
                      &center,
-                     SDL_FLIP_NONE);
+                    (flip ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE));
 }
 
 void Sprite::Render(float x, float y) {
@@ -135,7 +138,7 @@ void Sprite::SetFrameCount(int frameCount) {
     SetClip(0, clipRect.y, getFrameWidth(), clipRect.h);
 }
 
-void Sprite::SetFrameTime(int frameTime) {
+void Sprite::SetFrameTime(float frameTime) {
     this->frameTime = frameTime;
 }
 
@@ -145,6 +148,10 @@ int Sprite::getFrameWidth() {
 
 SDL_Rect Sprite::GetClip() {
     return clipRect;
+}
+
+void Sprite::SetFlip(bool f) {
+    flip = f;
 }
 
 
