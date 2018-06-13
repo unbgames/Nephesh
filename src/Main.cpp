@@ -3,6 +3,7 @@
 #include <Vec2.h>
 #include <Rect.h>
 #include <TitleState.h>
+#include <chrono>
 #include "Game.h"
 
 int main(int argc, char **argv) {

@@ -1,6 +1,8 @@
 #include <memory>
 #include <vector>
 #include <map>
+#include <CollisionMap.h>
+#include <chrono>
 #include "Music.h"
 #include "TileMap.h"
 #include "State.h"
@@ -25,12 +27,22 @@ class StageState : public State {
 
     void Resume() override;
 
+    void CheckCollisions();
+
+    weak_ptr<GameObject> AddObject(GameObject *object) override;
+
+    weak_ptr<GameObject> AddCollidable(shared_ptr<GameObject> object);
+
+    weak_ptr<GameObject> AddCollider(shared_ptr<GameObject> object);
+
 private:
     Music backgroundMusic;
-    TileMap *tileMap;
-    GameObject *bg;
-    vector<GameObject> collidables;
-    vector<GameObject> colliders;
+    shared_ptr<GameObject> bg;
+    shared_ptr<GameObject> map;
+    vector<weak_ptr<GameObject>> collidables;
+    vector<weak_ptr<GameObject>> colliders;
+
+    std::chrono::microseconds maxCollisionCheckTime;
 };
 
 #endif

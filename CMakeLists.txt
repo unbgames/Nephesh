@@ -11,13 +11,64 @@ include_directories(${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
 
 include_directories(BEFORE include)
 
-add_executable(Nephesh src/Game.cpp
+include_directories(BEFORE tests)
+
+add_executable(Nephesh src/Main.cpp
+        src/Game.cpp
         include/Game.h
         src/Log.cpp
         include/Log.h
-        src/Main.cpp
         src/Music.cpp
         include/Music.h
         src/Sprite.cpp
         include/Sprite.h
-        src/Vec2.cpp include/Vec2.h src/Rect.cpp include/Rect.h src/Component.cpp include/Component.h src/GameObject.cpp include/GameObject.h src/Sound.cpp include/Sound.h include/Component.h src/TileSet.cpp include/TileSet.h src/TileMap.cpp include/TileMap.h src/Resources.cpp include/Resources.h src/InputManager.cpp include/InputManager.h src/Camera.cpp include/Camera.h src/CameraFollower.cpp include/CameraFollower.h src/Collider.cpp include/Collider.h include/Collision.h src/Timer.cpp include/Timer.h src/State.cpp include/State.h src/Text.cpp include/Text.h src/IntervalTimer.cpp include/IntervalTimer.h include/TitleState.h src/TitleState.cpp src/BeamSkill.cpp include/BeamSkill.h src/LineSegment.cpp include/LineSegment.h)
+        src/Vec2.cpp
+        include/Vec2.h
+        src/Rect.cpp
+        include/Rect.h
+        src/Component.cpp
+        include/Component.h
+        src/GameObject.cpp
+        include/GameObject.h
+        src/Sound.cpp
+        include/Sound.h
+        src/TileSet.cpp
+        include/TileSet.h
+        src/TileMap.cpp
+        include/TileMap.h
+        src/Resources.cpp
+        include/Resources.h
+        src/InputManager.cpp
+        include/InputManager.h
+        src/Camera.cpp
+        include/Camera.h
+        src/CameraFollower.cpp
+        include/CameraFollower.h
+        src/Collider.cpp
+        include/Collider.h
+        src/Timer.cpp
+        include/Timer.h
+        src/State.cpp
+        include/State.h
+        src/Text.cpp
+        include/Text.h
+        src/IntervalTimer.cpp
+        include/IntervalTimer.h
+        include/TitleState.h
+        src/TitleState.cpp
+        src/CollisionMap.cpp
+        include/CollisionMap.h
+        src/Collidable.cpp
+        include/Collidable.h
+        src/GameData.cpp
+        include/GameData.h
+        tests/StageState.cpp
+        tests/StageState.h
+        tests/PenguinBody.cpp
+        tests/PenguinBody.h
+        tests/PenguinCannon.cpp
+        tests/PenguinCannon.h
+        src/BeamSkill.cpp
+        include/BeamSkill.h
+        src/LineSegment.cpp
+        include/LineSegment.h)

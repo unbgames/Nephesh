@@ -20,6 +20,10 @@
 Collider::Collider(GameObject &associated, Vec2 scale, Vec2 offset) : Component(associated),
                                                                       scale(scale),
                                                                       offset(offset) {
+    // default: return true
+    canCollide = [] (GameObject& collidable) -> bool {
+        return true;
+    };
 }
 
 void Collider::Update(float dt) {
@@ -27,8 +31,9 @@ void Collider::Update(float dt) {
     auto newBox = Rect();
     newBox.w = associated.box.w*scale.x;
     newBox.h = associated.box.h*scale.y;
-    newBox.x = center.x;
-    newBox.y = center.y;
+//    newBox.x = center.x;
+//    newBox.y = center.y;
+    newBox.PlaceCenterAt(associated.box.Center());
 
     box = newBox + offset.RotateDeg(associated.angleDeg);
 }
@@ -72,33 +77,10 @@ void Collider::SetOffset(Vec2 offset) {
     this->offset = offset;
 }
 
-vector<pair<LineSegment, Vec2>> Collider::GetIntersections(Collider &collider) {
-    vector<LineSegment> colliderLines;
-    vector<LineSegment> collidableLines;
-
-    auto colliderCorners = collider.box.GetCorners(collider.GetGameObject().angleDeg, collider.GetGameObject().rotationCenter);
-    auto collidableCorners = box.GetCorners(associated.angleDeg, associated.rotationCenter);
-
-    for (int i = 0; i < 4; ++i) {
-        auto next = (i+1)%4;
-        colliderLines.emplace_back(colliderCorners[i], colliderCorners[next]);
-        collidableLines.emplace_back(collidableCorners[i], collidableCorners[next]);
-    }
-
-    vector<pair<LineSegment, Vec2>> intersections;
-    for (auto &colliderLine : colliderLines) {
-        for (auto &collidableLine : collidableLines) {
-            if (colliderLine == collidableLine) {
-                intersections.push_back(make_pair(colliderLine, (colliderLine.dot1 - colliderLine.dot2)*0.5));
-            } else {
-                auto intersection = colliderLine.GetIntersection(collidableLine);
-                if (collidableLine.Contains(intersection) && colliderLine.Contains(intersection)) {
-                    intersections.push_back(make_pair(colliderLine, intersection));
-                }
-            }
-        }
-    }
-
-    return intersections;
+void Collider::SetCanCollide(function<bool(GameObject &collidable)> canCollide) {
+    this->canCollide = canCollide;
 }
 
+bool Collider::CanCollide(GameObject &collidable) {
+    return canCollide(collidable);
+}

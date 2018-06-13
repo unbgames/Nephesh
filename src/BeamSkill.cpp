@@ -6,6 +6,7 @@
 #include <Collider.h>
 #include <LineSegment.h>
 #include <Game.h>
+#include <Collidable.h>
 #include "BeamSkill.h"
 
 BeamSkill::BeamSkill(GameObject &associated, Vec2 target) : Component(associated), target(target), lockBeam(false) {
@@ -38,11 +39,11 @@ bool BeamSkill::Is(string type) {
 
 void BeamSkill::NotifyCollision(GameObject &other) {
     if (!lockBeam) {
-        auto otherCollider = (Collider *) other.GetComponent(COLLIDER_TYPE);
+        auto collidable = (Collidable *) other.GetComponent(COLLIDABLE_TYPE);
         auto thisCollider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
         auto colliderBox = thisCollider->box;
 
-        auto intersections = otherCollider->GetIntersections(*thisCollider);
+        auto intersections = collidable->GetIntersections(*thisCollider);
         auto boxCorners = colliderBox.GetCorners(associated.angleDeg, associated.rotationCenter);
         auto l1 = LineSegment(boxCorners[0], boxCorners[1]);
         auto l2 = LineSegment(boxCorners[2], boxCorners[3]);

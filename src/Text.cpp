@@ -37,7 +37,7 @@ void Text::Render() {
     auto renderPos = Camera::GetRenderPosition(0, Vec2(box.x, box.y));
     SDL_Rect clipRect = { 0, 0, (int) box.w, (int) box.h };
     SDL_Point center = { (int) associated.rotationCenter.x, (int) associated.rotationCenter.y };
-    SDL_Rect dstRect = { renderPos.x, renderPos.y, clipRect.w, clipRect.h };
+    SDL_Rect dstRect = { (int)renderPos.x, (int)renderPos.y, clipRect.w, clipRect.h };
     SDL_RenderCopyEx(game.GetRenderer(),
                      texture,
                      &clipRect,

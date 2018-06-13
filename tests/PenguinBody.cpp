@@ -7,15 +7,15 @@
 #include <Game.h>
 #include <InputManager.h>
 #include <Collider.h>
-#include <Bullet.h>
 #include <Camera.h>
 #include <Sound.h>
+#include <CollisionMap.h>
 #include "PenguinBody.h"
 
 PenguinBody *PenguinBody::player = nullptr;
 
-PenguinBody::PenguinBody(GameObject &associated) : Component(associated), speed(Vec2()), linearSpeed(0), angle(0), hp(50)  {
-    associated.AddComponent(new Sprite(associated, "img/penguin.png"));
+PenguinBody::PenguinBody(GameObject &associated) : Component(associated), movement(Vec2()), linearSpeed(0), angle(0), hp(50)  {
+    associated.AddComponent(new Sprite(associated, "tests/img/penguin.png"));
     associated.AddComponent(new Collider(associated));
 
     player = this;
@@ -33,8 +33,8 @@ void PenguinBody::Update(float dt) {
         }
 
         auto explosionObj = new GameObject(associated.GetLayer());
-        auto explosionSprite = new Sprite(*explosionObj, "img/penguindeath.png", 5, 0.1, 0.5);
-        auto explosionSound = new Sound(*explosionObj, "audio/boom.wav");
+        auto explosionSprite = new Sprite(*explosionObj, "tests/img/penguindeath.png", 5, 0.1, 0.5);
+        auto explosionSound = new Sound(*explosionObj, "tests/audio/boom.wav");
         explosionObj->AddComponent(explosionSprite);
         explosionObj->AddComponent(explosionSound);
         explosionSound->Play();
@@ -60,32 +60,42 @@ void PenguinBody::Update(float dt) {
         associated.angleDeg = angle;
 
         double deltaPos;
-        auto acceleration = 0.0;
         if (inputManager.IsKeyDown(W_KEY)) {
-            if (linearSpeed >= MAX_SPEED) {
-                linearSpeed = MAX_SPEED;
-            } else {
-                acceleration = ACCELERATION;
-            }
+            deltaPos = MAX_SPEED*dt;
         } else if (inputManager.IsKeyDown(S_KEY)) {
-            if (linearSpeed <= -MAX_SPEED) {
-                linearSpeed = -MAX_SPEED;
-            } else {
-                acceleration = -ACCELERATION;
-            }
+            deltaPos = -MAX_SPEED*dt;
         }
 
-        auto deltaSpeed = acceleration*dt;
-        deltaPos = linearSpeed*dt + deltaSpeed*(dt/2);
+        movement = Vec2(deltaPos, 0).RotateDeg(angle);
+        associated.box += movement;
 
-        linearSpeed += deltaSpeed;
-        
-        speed = Vec2(linearSpeed, 0).RotateDeg(angle);
-        associated.box += Vec2(deltaPos, 0).RotateDeg(angle);
-        associated.box.x = associated.box.x < 0 ? 0 : associated.box.x;
-        associated.box.x = associated.box.x > MAP_WIDTH ? MAP_WIDTH : associated.box.x;
-        associated.box.y = associated.box.y < 0 ? 0 : associated.box.y;
-        associated.box.y = associated.box.y > MAP_HEIGHT ? MAP_HEIGHT : associated.box.y;
+//        double deltaPos;
+//        auto acceleration = 0.0;
+//        if (inputManager.IsKeyDown(W_KEY)) {
+//            if (linearSpeed >= MAX_SPEED) {
+//                linearSpeed = MAX_SPEED;
+//            } else {
+//                acceleration = ACCELERATION;
+//            }
+//        } else if (inputManager.IsKeyDown(S_KEY)) {
+//            if (linearSpeed <= -MAX_SPEED) {
+//                linearSpeed = -MAX_SPEED;
+//            } else {
+//                acceleration = -ACCELERATION;
+//            }
+//        }
+//
+//        auto deltaSpeed = acceleration*dt;
+//        deltaPos = linearSpeed*dt + deltaSpeed*(dt/2);
+//
+//        linearSpeed += deltaSpeed;
+//
+//        movement = Vec2(deltaPos, 0).RotateDeg(angle);
+//        associated.box += movement;
+//        associated.box.x = associated.box.x < 0 ? 0 : associated.box.x;
+//        associated.box.x = associated.box.x > MAP_WIDTH ? MAP_WIDTH : associated.box.x;
+//        associated.box.y = associated.box.y < 0 ? 0 : associated.box.y;
+//        associated.box.y = associated.box.y > MAP_HEIGHT ? MAP_HEIGHT : associated.box.y;
     }
 }
 
@@ -105,12 +115,17 @@ void PenguinBody::Start() {
 }
 
 void PenguinBody::NotifyCollision(GameObject &other) {
-    auto bullet = (Bullet *) other.GetComponent(BULLET_TYPE);
-    
-    if (bullet != nullptr && bullet->TargetsPlayer()) {
-        Damage(bullet->GetDamage());
-        cout << "hp" << hp << endl;
+    auto collisionMap = (CollisionMap *) other.GetComponent(COLLISION_MAP_TYPE);
+
+    if(collisionMap){
+        associated.box -= movement;
     }
+
+//    if (bullet != nullptr && bullet->TargetsPlayer()) {
+//        Damage(bullet->GetDamage());
+//        cout << "hp" << hp << endl;
+//    }
+
 }
 
 void PenguinBody::Damage(int damage) {
@@ -123,6 +138,10 @@ void PenguinBody::Damage(int damage) {
 
 Vec2 PenguinBody::GetPosition() {
     return associated.box.Center();
+}
+
+Vec2 PenguinBody::GetMovementVec() {
+    return movement;
 }
 
 

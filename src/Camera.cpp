@@ -70,7 +70,7 @@ Vec2 Camera::GetRenderPosition(Vec2 absPosition, float layerScale) {
     return (absPosition - center - pos)*layerScale + center;
 }
 
-Vec2 Camera::GetClickPosition(int layer, Vec2 mouseClick, bool correctCamera) {
+Vec2 Camera::GetAbsolutePosition(int layer, Vec2 mouseClick, bool correctCamera) {
     auto center = Vec2(WIDTH/2, HEIGHT/2);
     auto height = layerDepths.find(layer);
     auto inverseScale = 1.0;

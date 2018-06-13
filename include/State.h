@@ -21,10 +21,10 @@ public:
     virtual void Pause() = 0;
     virtual void Resume() = 0;
 
-    weak_ptr<GameObject> AddObject(GameObject *object);
-    weak_ptr<GameObject> AddObject(shared_ptr<GameObject> object);
-    weak_ptr<GameObject> GetObjectPtr(GameObject *object);
-    shared_ptr<GameObject> PopObjectPtr(GameObject *obj);
+    virtual weak_ptr<GameObject> AddObject(GameObject *object);
+    virtual weak_ptr<GameObject> AddObject(shared_ptr<GameObject> object);
+    virtual weak_ptr<GameObject> GetObjectPtr(GameObject *object);
+    virtual shared_ptr<GameObject> PopObjectPtr(GameObject *obj);
 
     bool PopRequested();
     bool QuitRequested();

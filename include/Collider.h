@@ -5,32 +5,35 @@
 #ifndef T1_COLLIDER_H
 #define T1_COLLIDER_H
 
+#include <functional>
 #include "GameObject.h"
 #include "LineSegment.h"
 
 #define COLLIDER_TYPE "Collider"
-//#define DEBUG
+#define DEBUG
 
 class Collider : public Component {
 public:
-    Collider(GameObject &associated, Vec2 scale = Vec2(1, 1), Vec2 offset = Vec2(0, 0));
-
-    void Update(float dt) override;
-
-    void Render() override;
-
-    bool Is(string type) override;
+    explicit Collider(GameObject &associated, Vec2 scale = Vec2(1, 1), Vec2 offset = Vec2(0, 0));
 
     Rect box;
 
-    void SetScale(Vec2 scale);
+    void Update(float dt) override;
+    void Render() override;
+    bool Is(string type) override;
 
+    void SetScale(Vec2 scale);
     void SetOffset(Vec2 offset);
 
-    vector<pair<LineSegment, Vec2>> GetIntersections(Collider &collider);
+    void SetCanCollide(function<bool(GameObject& collidable)> canCollide);
+    bool CanCollide(GameObject& collidable);
+
 private:
     Vec2 scale;
     Vec2 offset;
+
+    // default: return true
+    function<bool(GameObject& collidable)> canCollide;
 };
 
 
