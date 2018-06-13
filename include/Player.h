@@ -9,6 +9,8 @@
 #include "GameObject.h"
 #include "Vec2.h"
 
+#define PLAYER_TYPE "Player"
+
 using namespace std;
 
 class Player : public Component {

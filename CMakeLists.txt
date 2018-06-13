@@ -73,4 +73,6 @@ add_executable(Nephesh src/Main.cpp
         src/LineSegment.cpp
         include/LineSegment.h
         src/Player.cpp
-        include/Player.h)
+        include/Player.h
+        src/Boss.cpp
+        include/Boss.h)

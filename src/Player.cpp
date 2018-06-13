@@ -136,7 +136,7 @@ void Player::Render() {
 }
 
 bool Player::Is(string type) {
-    return type == "Player";
+    return type == PLAYER_TYPE;
 }
 
 void Player::Start() {
