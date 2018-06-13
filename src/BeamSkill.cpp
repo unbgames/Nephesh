@@ -14,6 +14,9 @@ BeamSkill::BeamSkill(GameObject &associated, Vec2 target) : Component(associated
     associated.AddComponent(raySprite);
     auto collider = new Collider(associated);
     associated.AddComponent(collider);
+
+
+    associated.box.y -= associated.box.h/2;
 }
 
 BeamSkill::~BeamSkill() {

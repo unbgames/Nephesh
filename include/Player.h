@@ -12,23 +12,35 @@
 using namespace std;
 
 class Player : public Component {
-    enum PlayerState{
-        MOVING_UP,
-        MOVING_DOWN,
-        MOVING_LEFT,
-        MOVING_RIGHT,
+private:
+    enum PlayerState {
+        SHOOTING,
+        MOVING,
         IDLE
     };
+
+    enum PlayerDirection {
+        LEFT,
+        RIGHT,
+        UP,
+        DOWN
+    };
+
+    PlayerDirection currentDirection;
+    vector<pair<PlayerDirection, string>> movementAnimations;
+    vector<pair<PlayerDirection, string>> shootingAnimations;
+
+    PlayerDirection GetNewDirection(vector<PlayerDirection> directions);
+    void Shoot();
     PlayerState state;
     Vec2 speed;
-    //float linearSpeed;
     int hp;
-    
-    bool lessMouseX;
-    bool lessMouseY;
-    
-    void SetSprite(string file, int frameCount, float frameTime, bool flip = false);
 
+    Timer shootingTimer;
+
+    string GetMovementAnimation();
+    string GetShootingAnimation();
+    void SetSprite(string file, int frameCount, float frameTime, bool flip = false);
 public:
     void Start() override;
 

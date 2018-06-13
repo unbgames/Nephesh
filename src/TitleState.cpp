@@ -19,27 +19,6 @@ TitleState::TitleState() : State() {
     bgObj->AddComponent(new CameraFollower(*bgObj));
     AddObject(bgObj);
 
-    auto titleObj = new GameObject(1);
-    SDL_Color white = {255, 255, 255, 255};
-    auto titleText = new Text(*titleObj, "font/leadcoat.ttf", 100, Text::TextStyle::SOLID, "NEPHESH", white);
-    titleObj->AddComponent(titleText);
-    titleObj->box += Vec2(20, 20);
-    AddObject(titleObj);
-
-    auto intrObj = new GameObject(1);
-    auto instrText = new Text(*intrObj, "font/leadcoat.ttf", 40, Text::TextStyle::SOLID, "Press space bar to start!", white);
-    intrObj->AddComponent(instrText);
-    auto callback = [instrText] {
-        auto color = instrText->GetColor();
-        color.a = (uint8) (color.a == 255 ? 0 : 255);
-        instrText->SetColor(color);
-        instrText->RemakeTexture();
-    };
-    intrObj->AddComponent(new IntervalTimer(*intrObj, 0.6, callback));
-    intrObj->box.x = WIDTH/2 - intrObj->box.w/2;
-    intrObj->box.y = HEIGHT/2 + 200;
-    AddObject(intrObj);
-
     auto playerObj = new GameObject();
     playerObj->box.x = WIDTH/2;
     playerObj->box.y = HEIGHT/2;
@@ -63,15 +42,15 @@ void TitleState::Update(float dt) {
         AddObject(blockObj);
     }
 
-    if (inputManager.MousePress(LEFT_MOUSE_BUTTON)) {
-        auto target = Vec2(inputManager.GetMouseX(), inputManager.GetMouseY());
-        auto beamObj = new GameObject(1);
-        beamObj->box.x = WIDTH/2;
-        beamObj->box.y = HEIGHT/2;
-        auto beamCpt = new BeamSkill(*beamObj, target);
-        beamObj->AddComponent(beamCpt);
-        this->AddObject(beamObj);
-    }
+//    if (inputManager.MousePress(LEFT_MOUSE_BUTTON)) {
+//        auto target = Vec2(inputManager.GetMouseX(), inputManager.GetMouseY());
+//        auto beamObj = new GameObject(1);
+//        beamObj->box.x = WIDTH/2;
+//        beamObj->box.y = HEIGHT/2;
+//        auto beamCpt = new BeamSkill(*beamObj, target);
+//        beamObj->AddComponent(beamCpt);
+//        this->AddObject(beamObj);
+//    }
     
     UpdateArray(dt);
 
