@@ -21,6 +21,18 @@ class TitleState : public State {
 
         void Resume() override;
 
+        void CheckCollisions();
+
+        weak_ptr<GameObject> AddObject(shared_ptr<GameObject> object) override;
+        weak_ptr<GameObject> AddObject(GameObject *object) override;
+
+        weak_ptr<GameObject> AddCollidable(shared_ptr<GameObject> object);
+
+        weak_ptr<GameObject> AddCollider(shared_ptr<GameObject> object);
+
+private:
+        vector<weak_ptr<GameObject>> collidables;
+        vector<weak_ptr<GameObject>> colliders;
 };
 
 

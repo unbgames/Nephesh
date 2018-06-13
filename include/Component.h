@@ -20,6 +20,8 @@ public:
     virtual bool Is(string type) = 0;
     virtual void NotifyCollision(GameObject &other);
 
+    GameObject& GetGameObject();
+
 protected:
     GameObject& associated;
 };

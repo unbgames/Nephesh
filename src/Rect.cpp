@@ -13,6 +13,15 @@ void Rect::operator+=(Vec2 v2) {
     this->y += v2.y;
 }
 
+Rect Rect::operator-(Vec2 v2) {
+    return { x - v2.x, y - v2.y, h, w };
+}
+
+void Rect::operator-=(Vec2 v2) {
+    this->x -= v2.x;
+    this->y -= v2.y;
+}
+
 Vec2 Rect::Center() {
     return { x + (w/2), y + (h/2) };
 }
@@ -23,5 +32,21 @@ bool Rect::Contains(Vec2 dot) {
 
 float Rect::DistanceFrom(Rect target) {
     return Center().Distance(target.Center());
+}
+
+vector<Vec2> Rect::GetCorners(float angle, Vec2 rotationCenter) {
+    vector < Vec2 > corners;
+    auto center = (Vec2(x, y) + rotationCenter);
+    corners.emplace_back((Vec2(x, y) - center).RotateDeg(angle) + center);
+    corners.emplace_back((Vec2(x + w, y) - center).RotateDeg(angle) + center);
+    corners.emplace_back((Vec2(x + w, y + h) - center).RotateDeg(angle) + center);
+    corners.emplace_back((Vec2(x, y + h) - center).RotateDeg(angle) + center);
+
+    return corners;
+}
+
+void Rect::PlaceCenterAt(Vec2 pos) {
+    x = pos.x - w/2;
+    y = pos.y - h/2;
 }
 

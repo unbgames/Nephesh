@@ -22,9 +22,11 @@ public:
     Vec2 operator+(Vec2 v2);
     Vec2 operator-(Vec2 v2);
     Vec2 operator*(float scalar);
+    float operator*(Vec2 v2); // Dot
     void operator+=(Vec2 v);
     void operator-=(Vec2 v);
     void operator*=(float scalar);
+    bool operator==(Vec2 v2);
 };
 
 

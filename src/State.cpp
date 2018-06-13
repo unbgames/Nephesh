@@ -17,7 +17,6 @@ weak_ptr<GameObject> State::AddObject(GameObject *obj) {
 }
 
 weak_ptr<GameObject> State::AddObject(shared_ptr<GameObject> ptr) {
-
     objectLayers[(*ptr).GetLayer()].push_back(ptr);
 
     if (started && !(*ptr).HasStarted()) {

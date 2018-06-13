@@ -6,14 +6,13 @@
 #include <InputManager.h>
 #include <Camera.h>
 #include <Game.h>
-#include <Bullet.h>
 #include <Collider.h>
 #include <PenguinBody.h>
 #include "PenguinCannon.h"
-
+//#include <Bullet.h>
 
 PenguinCannon::PenguinCannon(GameObject &associated, weak_ptr<GameObject> penguinBody) : Component(associated), pBody(penguinBody), angle(0) {
-    associated.AddComponent(new Sprite(associated, "img/cubngun.png"));
+    associated.AddComponent(new Sprite(associated, "tests/img/cubngun.png"));
     associated.AddComponent(new Collider(associated));
 }
 
@@ -44,20 +43,20 @@ bool PenguinCannon::Is(string type) {
 }
 
 void PenguinCannon::Shoot() {
-    auto bulletObj = new GameObject(associated.GetLayer());
-    auto bullet = new Bullet(*bulletObj,
-                             angle,
-                             PENGUIN_BULLET_SPEED,
-                             PENGUIN_BULLET_DAMAGE,
-                             PENGUIN_BULLET_DISTANCE,
-                             "img/penguinbullet.png", 4, 0.1);
-
-    bulletObj->AddComponent(bullet);
-
-    auto cannonHole =  Vec2(associated.box.w/2, 0).RotateDeg(angle);
-
-    bulletObj->SetCenter(associated.box.Center());
-    bulletObj->box += cannonHole;
-    Game::GetInstance().GetCurrentState().AddObject(bulletObj);
+//    auto bulletObj = new GameObject(associated.GetLayer());
+//    auto bullet = new Bullet(*bulletObj,
+//                             angle,
+//                             PENGUIN_BULLET_SPEED,
+//                             PENGUIN_BULLET_DAMAGE,
+//                             PENGUIN_BULLET_DISTANCE,
+//                             "img/penguinbullet.png", 4, 0.1);
+//
+//    bulletObj->AddComponent(bullet);
+//
+//    auto cannonHole =  Vec2(associated.box.w/2, 0).RotateDeg(angle);
+//
+//    bulletObj->SetCenter(associated.box.Center());
+//    bulletObj->box += cannonHole;
+//    Game::GetInstance().GetCurrentState().AddObject(bulletObj);
 }
 

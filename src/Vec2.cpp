@@ -68,5 +68,13 @@ void Vec2::operator*=(float scalar) {
     *this = *this * scalar;
 }
 
+bool Vec2::operator==(Vec2 v2) {
+    return this->x == v2.x && this->y == v2.y;
+}
+
+float Vec2::operator*(Vec2 v2) {
+    return x * v2.x + y * v2.y;
+}
+
 
 

@@ -31,9 +31,9 @@ public:
     void NotifyCollision(GameObject &other);
     void SetCenter(Vec2 centerPos);
 
-
     Rect box;
     double angleDeg;
+    Vec2 rotationCenter;
 private:
     vector<unique_ptr<Component>> components;
     bool isDead;

@@ -27,6 +27,7 @@ void Sprite::Open(string file) {
 
     associated.box.h = GetHeight();
     associated.box.w = GetWidth();
+    associated.rotationCenter = associated.box.Center();
 
     SetClip(0, 0, getFrameWidth(), height);
 }
@@ -48,13 +49,15 @@ void Sprite::Render(float x, float y, int layer) {
     auto layerScale = Camera::GetLayerScale(layer);
     auto renderPos = Camera::GetRenderPosition(Vec2(x, y), layerScale);
     layerScale = scaleSpriteForLayer ? layerScale : 1;
-    SDL_Rect dstRect = { renderPos.x, renderPos.y, (int)(clipRect.w*scale.x*layerScale)+1, (int)(clipRect.h*scale.y*layerScale)+1 };
+
+    SDL_Point center = { (int) associated.rotationCenter.x, (int) associated.rotationCenter.y };
+    SDL_Rect dstRect = { (int)renderPos.x, (int)renderPos.y, (int)(clipRect.w*scale.x*layerScale)+1, (int)(clipRect.h*scale.y*layerScale)+1 };
     SDL_RenderCopyEx(game.GetRenderer(),
                      texture.get(),
                      &clipRect,
                      &dstRect,
                      associated.angleDeg,
-                     nullptr,
+                     &center,
                      SDL_FLIP_NONE);
 }
 
@@ -104,7 +107,7 @@ int Sprite::GetWidth() {
     return getFrameWidth()*scale.x;
 }
 
-void Sprite::SetScaleX(float scaleX, float scaleY) {
+void Sprite::SetScale(float scaleX, float scaleY) {
     scale.x = scaleX == 0 ? scale.x : scaleX;
     scale.y = scaleY == 0 ? scale.y : scaleY;
     auto &box = associated.box;
@@ -138,6 +141,10 @@ void Sprite::SetFrameTime(int frameTime) {
 
 int Sprite::getFrameWidth() {
     return width/frameCount;
+}
+
+SDL_Rect Sprite::GetClip() {
+    return clipRect;
 }
 
 
