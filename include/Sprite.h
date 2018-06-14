@@ -39,6 +39,9 @@ public:
     void SetFrameCount(int frameCount);
     void SetFrameTime(float frameTime);
     void SetFlip(bool f);
+    
+    int getFrameCount();
+    int getCurrentFrame();
 private:
     shared_ptr<SDL_Texture> texture;
     SDL_Rect clipRect;
