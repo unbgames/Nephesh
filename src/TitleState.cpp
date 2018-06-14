@@ -35,7 +35,7 @@ TitleState::TitleState() : State() {
 
     auto npcObj2 = new GameObject();
     npcObj2->box.x = WIDTH/2 + 100;
-    npcObj2->box.y = 10;
+    npcObj2->box.y = 100;
     npcObj2->AddComponent(new Sprite(*npcObj2, "tests/img/penguin.png"));
     npcObj2->AddComponent(new Npc(*npcObj2, "npcs/npcTest2.txt"));
     AddObject(npcObj2);

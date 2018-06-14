@@ -8,6 +8,7 @@
 #include <Game.h>
 #include <InputManager.h>
 #include <fstream>
+#include <Sound.h>
 #include "Npc.h"
 
 Npc::Npc(GameObject &associated, string file) : Component(associated), isTalking(false) {
@@ -65,7 +66,6 @@ void Npc::ReadSpeeches(string file) {
 
 void Npc::Talk() {
     isTalking = true;
-    cout << openedFile << endl;
 
     RestartLines();
 
@@ -76,6 +76,11 @@ void Npc::Talk() {
 
     box->SetText(speechLines.front());
     speechQueue.pop();
+
+    auto sound = (Sound *)associated.GetComponent(SOUND_TYPE);
+    if (sound != nullptr) {
+        sound->Play();
+    }
 
     Player::player->closestNpc = weak_ptr<GameObject>();
 }
