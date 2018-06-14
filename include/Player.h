@@ -5,7 +5,6 @@
 #ifndef NEPHESH_PLAYER_H
 #define NEPHESH_PLAYER_H
 
-
 #include "GameObject.h"
 #include "Vec2.h"
 #include "Timer.h"
@@ -23,6 +22,7 @@ using namespace std;
 class Player : public Component {
 private:
     enum PlayerState {
+        TALKING,
         ATTACKING,
         SHOOTING,
         MOVING,
@@ -46,6 +46,7 @@ private:
     void Shoot();
     void Attack();
     PlayerState state;
+    float closestNpcDistance;
     Vec2 speed;
     int hp;
 
@@ -58,12 +59,17 @@ private:
 public:
     void Start() override;
 
+    weak_ptr<GameObject> closestNpc;
+
     Player(GameObject& associated);
     ~Player();       
     
     void Update(float dt) override;
     void Render() override;
     bool Is(string type) override;
+
+    void StopTalking();
+    bool IsTalking();
     
     static Player* player;
 

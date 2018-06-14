@@ -10,6 +10,7 @@
 #include <Collider.h>
 #include <Player.h>
 #include <Collidable.h>
+#include <TextBox.h>
 #include "TitleState.h"
 #include "Text.h"
 
@@ -24,6 +25,11 @@ TitleState::TitleState() : State() {
     playerObj->box.y = HEIGHT/2;
     playerObj->AddComponent(new Player(*playerObj));
     AddObject(playerObj);
+
+    auto textBox = new GameObject(1);
+    auto box = new TextBox(*textBox);
+    textBox->AddComponent(box);
+    AddObject(textBox);
 }
 
 TitleState::~TitleState() = default;
@@ -31,7 +37,7 @@ TitleState::~TitleState() = default;
 void TitleState::Update(float dt) {
     auto& inputManager = InputManager::GetInstance();
 
-    if (inputManager.MousePress(RIGHT_MOUSE_BUTTON)) {
+    if (inputManager.KeyPress(SDLK_t)) {
         auto mousePos = inputManager.GetMouse();
 
         auto blockObj = new GameObject();
