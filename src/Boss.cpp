@@ -9,7 +9,6 @@ Boss::Boss(GameObject &associated) :
         Component(associated),
         hp(BOSS_INITIAL_HP),
         speed(0,0),
-        destination(0,0),
         bossState(IDLE),
         timer() {
 
@@ -49,63 +48,55 @@ void Boss::Update(float dt) {
         return;
     }
 
+    auto oldDirection = currentDirection;
+    currentDirection = GetNewDirection();
+
+    cout << "State: " << bossState << endl;
+
     if(Player::player){
         if(bossState == IDLE && timer.Get() < BOSS_IDLE_TIME){
             timer.Update(dt);
 
-            auto oldDirection = currentDirection;
-            currentDirection = GetNewDirection();
-            cout << "Current direction: " << currentDirection << endl;
             if(oldDirection != currentDirection){
                 SetSprite(GetMovementAnimation(), 4, 100000000, currentDirection == LEFT);
             }
         }
         else if(bossState == IDLE){
-            destination = Player::player->GetCenter();
-
-            speed = {1, 0};
-            speed = speed.Rotate(destination.DiferenceAngle(associated.box.Center()));
+            speed = {BOSS_SPEED, 0};
+            speed = speed.Rotate(associated.box.Center().DiferenceAngle(Player::player->GetCenter()));
 
             bossState = MOVING;
-            currentDirection = GetNewDirection();
             SetSprite(GetMovementAnimation(), 4, BOSS_SPR_MOV_TIME, currentDirection == LEFT);
         }
-        else if(bossState == MOVING && destination.Distance(associated.box.Center()) <= BOSS_MIN_DIST_TO_PLAYER){
-        
+        else if(bossState == MOVING && Player::player->GetCenter().Distance(associated.box.Center()) <= BOSS_MIN_DIST_TO_PLAYER){
             bossState = ATTACKING;
-            currentDirection = GetNewDirection();
 
             SetSprite(GetAttackAnimation(), 4, BOSS_SPR_ATCK_TIME, currentDirection == LEFT);
+
             timer.Restart(0);
-            
-        } else if(bossState == MOVING){
-            associated.box += speed;
-            auto oldDirection = currentDirection;
-            currentDirection = GetNewDirection();
+        }
+        else if(bossState == MOVING){
+            speed = {BOSS_SPEED, 0};
+            speed = speed.Rotate(associated.box.Center().DiferenceAngle(Player::player->GetCenter()));
+
+            associated.box += speed*dt;
             
             if(oldDirection != currentDirection){
                 SetSprite(GetMovementAnimation(), 4, BOSS_SPR_MOV_TIME, currentDirection == LEFT);
             }
-            
-        } else if(bossState == ATTACKING && timer.Get() < BOSS_ATTACK_TIME){
+        }
+        else if(bossState == ATTACKING && timer.Get() < BOSS_ATTACK_TIME){
             timer.Update(dt);
-            auto oldDirection = currentDirection;
-            currentDirection = GetNewDirection();
 
             if(oldDirection != currentDirection){
-                SetSprite(GetAttackAnimation(), 4, BOSS_SPR_MOV_TIME, currentDirection == LEFT);
+                SetSprite(GetAttackAnimation(), 4, BOSS_SPR_ATCK_TIME, currentDirection == LEFT);
             }
         }
         else if(bossState == ATTACKING){
-            timer.Restart(0);
-            auto oldDirection = currentDirection;
-            currentDirection = GetNewDirection();
-
-            if(oldDirection != currentDirection){
-                SetSprite(GetMovementAnimation(), 4, 100000000, currentDirection == LEFT);
-            }
+            SetSprite(GetMovementAnimation(), 4, 100000000, currentDirection == LEFT);
             
             bossState = IDLE;
+            timer.Restart(0);
         }
     }
 
@@ -122,12 +113,11 @@ bool Boss::Is(string type) {
 string Boss::GetMovementAnimation() {
     for (auto &animation : movementAnimations) {
         if (animation.first == currentDirection) {
-            cout << "Direction: " << animation.second << endl;
             return animation.second;
         }
     }
 
-    return nullptr;
+    return nullptr; // not supposed to happen
 }
 
 string Boss::GetAttackAnimation() {
@@ -137,7 +127,7 @@ string Boss::GetAttackAnimation() {
         }
     }
 
-    return nullptr;
+    return nullptr; // not supposed to happen
 }
 
 void Boss::SetSprite(string file, int frameCount, float frameTime, bool flip) {
@@ -152,8 +142,6 @@ void Boss::SetSprite(string file, int frameCount, float frameTime, bool flip) {
     sprite->SetFrameTime(frameTime);
     sprite->Open(file);
     sprite->SetFrame(0);
-
-    associated.SetCenter(associated.box.Center());
 }
 
 Boss::BossDirection Boss::GetNewDirection() {
@@ -161,9 +149,7 @@ Boss::BossDirection Boss::GetNewDirection() {
         
         auto target = Player::player->GetCenter();
         auto angle = (target - associated.box.Center()).XAngleDeg();
-        
-        cout << "Angle: " << angle << endl;
-        
+
         if(angle > -60 && angle < 60){
             return RIGHT;
         } else if (angle > 60 && angle < 120) {
