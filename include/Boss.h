@@ -28,21 +28,12 @@ using namespace std;
 
 class Boss : public Component {
 public:
-    explicit Boss(GameObject& associated);
-
-    void Update(float dt) override;
-    void Render() override;
-    bool Is(string type) override;
-
-    void Attack();
-
-private:
     enum BossState {
         ATTACKING,
         MOVING,
         IDLE
     };
-    
+
     enum BossDirection{
         LEFT,
         RIGHT,
@@ -50,13 +41,26 @@ private:
         DOWN
     };
 
+    explicit Boss(GameObject& associated);
+
+    void Update(float dt) override;
+    void Render() override;
+    bool Is(string type) override;
+
+    void Attack();
+    void ChangeState(BossState newState);
+
+private:
+
     int hp;
     Vec2 speed;
-    BossState bossState;
+    BossState currentState;
+    BossState oldState;
     Timer timer;
     int attacksPerformed;
     
     BossDirection currentDirection;
+    BossDirection oldDirection;
     BossDirection GetNewDirection();
     vector<pair<BossDirection, string>> movementAnimations;
     vector<pair<BossDirection, string>> attackAnimations;
@@ -64,6 +68,8 @@ private:
     string GetMovementAnimation();
     string GetAttackAnimation();
     void SetSprite(string file, int frameCount, float frameTime, bool flip = false);
+    void UpdateStateAction();
+    void UpdateAnimationDirection();
 
 };
 

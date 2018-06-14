@@ -11,7 +11,8 @@ Boss::Boss(GameObject &associated) :
         Component(associated),
         hp(BOSS_INITIAL_HP),
         speed(0,0),
-        bossState(IDLE),
+        currentState(IDLE),
+        oldState(IDLE),
         timer(),
         attacksPerformed(0) {
 
@@ -51,55 +52,47 @@ void Boss::Update(float dt) {
         return;
     }
 
-    auto oldDirection = currentDirection;
+    oldDirection = currentDirection;
     currentDirection = GetNewDirection();
 
     auto center = associated.box.Center();
-    cout << "State: " << bossState << " ||| Center: (" << center.x << ", " << center.y << ")" << endl;
+    cout << "State: " << currentState << " ||| Center: (" << center.x << ", " << center.y << ")" << endl;
 
     if(Player::player){
-        if(bossState == IDLE && timer.Get() < BOSS_IDLE_TIME){
-            timer.Update(dt);
-
+        if(currentState == IDLE && timer.Get() < BOSS_IDLE_TIME){
             if(oldDirection != currentDirection){
-                SetSprite(GetMovementAnimation(), 4, 100000000, currentDirection == LEFT);
+                UpdateAnimationDirection();
             }
+
+            timer.Update(dt);
         }
-        else if(bossState == IDLE){
-            speed = {BOSS_SPEED, 0};
-            speed = speed.Rotate(associated.box.Center().DiferenceAngle(Player::player->GetCenter()));
-
-            bossState = MOVING;
-            SetSprite(GetMovementAnimation(), 4, BOSS_SPR_MOV_TIME, currentDirection == LEFT);
+        else if(currentState == IDLE){
+            ChangeState(MOVING);
         }
-        else if(bossState == MOVING && Player::player->GetCenter().Distance(associated.box.Center()) <= BOSS_MIN_DIST_TO_PLAYER){
-            bossState = ATTACKING;
-
-            Attack();
-
+        else if(currentState == MOVING && Player::player->GetCenter().Distance(associated.box.Center()) <= BOSS_MIN_DIST_TO_PLAYER){
             timer.Restart(0);
+
+            ChangeState(ATTACKING);
         }
-        else if(bossState == MOVING){
+        else if(currentState == MOVING){
+            if(oldDirection != currentDirection){
+                UpdateAnimationDirection();
+            }
+
             speed = {BOSS_SPEED, 0};
             speed = speed.Rotate(associated.box.Center().DiferenceAngle(Player::player->GetCenter()));
-
             associated.box += speed*dt;
-            
-            if(oldDirection != currentDirection){
-                SetSprite(GetMovementAnimation(), 4, BOSS_SPR_MOV_TIME, currentDirection == LEFT);
-            }
         }
-        else if(bossState == ATTACKING && timer.Get() < BOSS_ATTACK_TIME){
+        else if(currentState == ATTACKING && timer.Get() < BOSS_ATTACK_TIME){
             timer.Update(dt);
         }
-        else if(bossState == ATTACKING){
+        else if(currentState == ATTACKING){
             timer.Restart(0);
             attacksPerformed++;
 
             if(attacksPerformed == BOSS_NUM_OF_ATTACKS){
                 attacksPerformed = 0;
-                SetSprite(GetMovementAnimation(), 4, 100000000, currentDirection == LEFT);
-                bossState = IDLE;
+                ChangeState(IDLE);
             }
             else{
                 Attack();
@@ -198,4 +191,33 @@ void Boss::Attack() {
     }
 
     Game::GetInstance().GetCurrentState().AddObject(attackObject);
+}
+
+void Boss::ChangeState(Boss::BossState newState) {
+    oldState = currentState;
+    currentState = newState;
+
+    switch(currentState){
+        case IDLE:
+            SetSprite(GetMovementAnimation(), 4, 100000000, currentDirection == LEFT);
+            break;
+        case MOVING:
+            SetSprite(GetMovementAnimation(), 4, BOSS_SPR_MOV_TIME, currentDirection == LEFT);
+            break;
+        default: // ATTACKING
+            Attack();
+    }
+}
+
+void Boss::UpdateAnimationDirection() {
+    switch(currentState){
+        case IDLE:
+            SetSprite(GetMovementAnimation(), 4, 100000000, currentDirection == LEFT);
+            break;
+        case MOVING:
+            SetSprite(GetMovementAnimation(), 4, BOSS_SPR_MOV_TIME, currentDirection == LEFT);
+            break;
+        default: // ATTACKING
+            return; // (UpdateAnimationDirection will not be called for this state)
+    }
 }

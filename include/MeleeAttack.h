@@ -11,7 +11,7 @@
 
 class MeleeAttack : public Component {
 public:
-    MeleeAttack(GameObject &associated, double attackDuration = ATTACK_DURATION);
+    MeleeAttack(GameObject &associated, double attackDuration = PLAYER_ATTACK_DURATION);
 
     void Update(float dt) override;
 

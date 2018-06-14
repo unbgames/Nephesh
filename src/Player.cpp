@@ -10,14 +10,10 @@
 #include <MeleeAttack.h>
 #include "Player.h"
 
-#define MAX_SPEED 20
-#define SPEED 50
-#define SPR_TIME 0.1
-
 Player *Player::player = nullptr;
 
 Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), state(IDLE), hp(100) {
-    Sprite *spr = new Sprite(associated, "img/idle.png", IDLE_SPRITE_COUNT, 0.1, 0, true);
+    Sprite *spr = new Sprite(associated, "img/idle.png", PLAYER_IDLE_SPRITE_COUNT, 0.1, 0, true);
 
     associated.AddComponent(spr);
     associated.box.h = spr->GetHeight();
@@ -106,7 +102,7 @@ void Player::Update(float dt) {
         } else {
             timer.Update(dt);
             if (timer.Get() > BEAM_LIFETIME) {
-                SetSprite("img/idle.png", MAGIC_SPRITE_COUNT, 0.1);
+                SetSprite("img/idle.png", PLAYER_MAGIC_SPRITE_COUNT, 0.1);
                 newState = IDLE;
             }
         }
@@ -117,8 +113,8 @@ void Player::Update(float dt) {
             Attack();
         } else {
             timer.Update(dt);
-            if (timer.Get() > ATTACK_DURATION) {
-                SetSprite("img/idle.png", MAGIC_SPRITE_COUNT, 0.1);
+            if (timer.Get() > PLAYER_ATTACK_DURATION) {
+                SetSprite("img/idle.png", PLAYER_MAGIC_SPRITE_COUNT, 0.1);
                 newState = IDLE;
             }
         }
@@ -128,33 +124,33 @@ void Player::Update(float dt) {
         speed = Vec2();
         if (inputManager.IsKeyDown('a')) {
             directionsPressed.push_back(LEFT);
-            speed += Vec2(-SPEED * dt, 0);
+            speed += Vec2(-PLAYER_SPEED * dt, 0);
         }
 
         if (inputManager.IsKeyDown('d')) {
             directionsPressed.push_back(RIGHT);
-            speed += Vec2(SPEED * dt, 0);
+            speed += Vec2(PLAYER_SPEED * dt, 0);
         }
 
         if (inputManager.IsKeyDown('w')) {
             directionsPressed.push_back(UP);
-            speed += Vec2(0, -SPEED * dt);
+            speed += Vec2(0, -PLAYER_SPEED * dt);
         }
 
         if (inputManager.IsKeyDown('s')) {
             directionsPressed.push_back(DOWN);
-            speed += Vec2(0, SPEED * dt);
+            speed += Vec2(0, PLAYER_SPEED * dt);
         }
 
         auto oldDirection = currentDirection;
         currentDirection = GetNewDirection(directionsPressed);
         
         if (state != MOVING || currentDirection != oldDirection) {
-            SetSprite(GetMovementAnimation(), WALK_SPRITE_COUNT, SPR_TIME, currentDirection == LEFT);
+            SetSprite(GetMovementAnimation(), PLAYER_WALK_SPRITE_COUNT, PLAYER_SPR_TIME, currentDirection == LEFT);
         }
     } else {
         if (state != IDLE) {
-            SetSprite("img/idle.png", IDLE_SPRITE_COUNT, 0.1);
+            SetSprite("img/idle.png", PLAYER_IDLE_SPRITE_COUNT, 0.1);
         }
         speed = Vec2(0,0);
     }
@@ -205,7 +201,7 @@ void Player::Shoot() {
 
     currentDirection = GetDirection(target);
 
-    SetSprite(GetShootingAnimation(), MAGIC_SPRITE_COUNT, BEAM_LIFETIME/MAGIC_SPRITE_COUNT, currentDirection == LEFT);
+    SetSprite(GetShootingAnimation(), PLAYER_MAGIC_SPRITE_COUNT, BEAM_LIFETIME/PLAYER_MAGIC_SPRITE_COUNT, currentDirection == LEFT);
 
     auto playerBoxPosition = Vec2(associated.box.x, associated.box.y);
     auto beamObj = new GameObject(associated.GetLayer());
@@ -231,7 +227,7 @@ void Player::Attack() {
 
     currentDirection = GetDirection(target);
 
-    SetSprite(GetAttackAnimation(), ATTACK_SPRITE_COUNT, ATTACK_DURATION/ATTACK_SPRITE_COUNT, currentDirection == LEFT);
+    SetSprite(GetAttackAnimation(), PLAYER_ATTACK_SPRITE_COUNT, PLAYER_ATTACK_DURATION/PLAYER_ATTACK_SPRITE_COUNT, currentDirection == LEFT);
 
     auto attackObject = new GameObject(associated.GetLayer());
     attackObject->AddComponent(new MeleeAttack(*attackObject));
@@ -241,19 +237,19 @@ void Player::Attack() {
 
     if (currentDirection == RIGHT) {
         collider->SetOffset(Vec2(-35, 0));
-        attackObject->box = Rect(ATTACK_WIDTH, ATTACK_RANGE);
+        attackObject->box = Rect(PLAYER_ATTACK_WIDTH, PLAYER_ATTACK_RANGE);
         attackObject->box.PlaceCenterAt(playerBoxPosition + Vec2(associated.box.w + attackObject->box.w/2, associated.box.h/2));
     } else if (currentDirection == DOWN) {
         collider->SetOffset(Vec2(0, -30));
-        attackObject->box = Rect(ATTACK_RANGE, ATTACK_WIDTH);
+        attackObject->box = Rect(PLAYER_ATTACK_RANGE, PLAYER_ATTACK_WIDTH);
         attackObject->box.PlaceCenterAt(playerBoxPosition + Vec2(associated.box.w/2, associated.box.h + attackObject->box.h/2));
     } else if (currentDirection == LEFT) {
         collider->SetOffset(Vec2(50, 0));
-        attackObject->box = Rect(ATTACK_WIDTH, ATTACK_RANGE);
+        attackObject->box = Rect(PLAYER_ATTACK_WIDTH, PLAYER_ATTACK_RANGE);
         attackObject->box.PlaceCenterAt(playerBoxPosition + Vec2(-attackObject->box.w, associated.box.h/2));
     } else {
         collider->SetOffset(Vec2(0, 40));
-        attackObject->box = Rect(ATTACK_RANGE, ATTACK_WIDTH);
+        attackObject->box = Rect(PLAYER_ATTACK_RANGE, PLAYER_ATTACK_WIDTH);
         attackObject->box.PlaceCenterAt(playerBoxPosition + Vec2(associated.box.w/2, -attackObject->box.h));
     }
 
