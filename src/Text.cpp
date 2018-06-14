@@ -18,15 +18,17 @@ Text::Text(GameObject &associated,
                              style(style),
                              text(text),
                              color(color),
-                             texture(nullptr) {
+                             textures() {
     RemakeTexture();
 }
 
 
 Text::~Text() {
-    if (texture != nullptr) {
+    for (auto &texture : textures) {
         SDL_DestroyTexture(texture);
     }
+
+    textures.clear();
 }
 
 void Text::Update(float dt) { }
@@ -35,16 +37,22 @@ void Text::Render() {
     Game &game = Game::GetInstance();
     auto box = associated.box;
     auto renderPos = Camera::GetRenderPosition(0, Vec2(box.x, box.y));
-    SDL_Rect clipRect = { 0, 0, (int) box.w, (int) box.h };
     SDL_Point center = { (int) associated.rotationCenter.x, (int) associated.rotationCenter.y };
-    SDL_Rect dstRect = { (int)renderPos.x, (int)renderPos.y, clipRect.w, clipRect.h };
-    SDL_RenderCopyEx(game.GetRenderer(),
-                     texture,
-                     &clipRect,
-                     &dstRect,
-                     associated.angleDeg,
-                     &center,
-                     SDL_FLIP_NONE);
+    int i = 0;
+    for (auto &texture : textures) {
+        int w, h;
+        SDL_QueryTexture(texture, nullptr, nullptr, &w, &h);
+        SDL_Rect clipRect = { 0, 0, w, h };
+        SDL_Rect dstRect = { (int)renderPos.x, (int)renderPos.y + i*clipRect.h, clipRect.w, clipRect.h };
+        SDL_RenderCopyEx(game.GetRenderer(),
+                         texture,
+                         &clipRect,
+                         &dstRect,
+                         associated.angleDeg,
+                         &center,
+                         SDL_FLIP_NONE);
+        i++;
+    }
 }
 
 bool Text::Is(string type) {
@@ -72,34 +80,59 @@ void Text::SetFontSize(int fontSize) {
 }
 
 void Text::RemakeTexture() {
-    if (texture != nullptr) {
-        SDL_DestroyTexture(texture);
+    if (textures.size() != 0) {
+        for (auto &texture : textures) {
+            SDL_DestroyTexture(texture);
+        }
     }
+    textures.clear();
 
     font = Resources::GetFont(fontFile, fontSize);
 
-    SDL_Surface *surface = nullptr;
-    switch (style) {
-        case TextStyle::SOLID:
-            surface = TTF_RenderText_Solid(font.get(), text.c_str(), color);
-            break;
-        case TextStyle::BLENDED:
-            surface = TTF_RenderText_Blended(font.get(), text.c_str(), color);
-            break;
-        case TextStyle::SHADED:
-            SDL_Color black = { 0, 0, 0, 255 };
-            surface = TTF_RenderText_Shaded(font.get(), text.c_str(), color, black);
-            break;
-    }
+    auto lines = GetLines();
 
-    texture = SDL_CreateTextureFromSurface(Game::GetInstance().GetRenderer(), surface);
-    SDL_SetTextureAlphaMod(texture, color.a);
-    associated.box.w = surface->w;
-    associated.box.h = surface->h;
-    SDL_FreeSurface(surface);
+    for (auto &line: lines) {
+        SDL_Surface *surface = nullptr;
+        switch (style) {
+            case TextStyle::SOLID:
+                surface = TTF_RenderText_Solid(font.get(), line.c_str(), color);
+                break;
+            case TextStyle::BLENDED:
+                surface = TTF_RenderText_Blended(font.get(), line.c_str(), color);
+                break;
+            case TextStyle::SHADED:
+                SDL_Color black = { 0, 0, 0, 255 };
+                surface = TTF_RenderText_Shaded(font.get(), line.c_str(), color, black);
+                break;
+        }
+
+        auto texture = SDL_CreateTextureFromSurface(Game::GetInstance().GetRenderer(), surface);
+        SDL_SetTextureAlphaMod(texture, color.a);
+
+        textures.push_back(texture);
+        SDL_FreeSurface(surface);
+    }
 }
 
 SDL_Color Text::GetColor() {
     return color;
+}
+
+vector<string> Text::GetLines() {
+    int NumSubstrings = text.length() / MAX_CHAR_PER_LINE;
+    vector<string> ret;
+
+    for (auto i = 0; i < NumSubstrings; i++)
+    {
+        ret.push_back(text.substr(i * MAX_CHAR_PER_LINE, MAX_CHAR_PER_LINE));
+    }
+
+    // If there are leftover characters, create a shorter item at the end.
+    if (text.length() % MAX_CHAR_PER_LINE != 0)
+    {
+        ret.push_back(text.substr(MAX_CHAR_PER_LINE * NumSubstrings));
+    }
+
+    return ret;
 }
 

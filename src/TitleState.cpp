@@ -10,6 +10,7 @@
 #include <Player.h>
 #include <Collidable.h>
 #include <TextBox.h>
+#include <Npc.h>
 #include "TitleState.h"
 #include "Text.h"
 
@@ -25,10 +26,12 @@ TitleState::TitleState() : State() {
     playerObj->AddComponent(new Player(*playerObj));
     AddObject(playerObj);
 
-    auto textBox = new GameObject(1);
-    auto box = new TextBox(*textBox);
-    textBox->AddComponent(box);
-    AddObject(textBox);
+    auto npcObj = new GameObject();
+    npcObj->box.x = WIDTH/2;
+    npcObj->box.y = 10;
+    npcObj->AddComponent(new Sprite(*npcObj, "tests/img/penguin.png"));
+    npcObj->AddComponent(new Npc(*npcObj, "npcs/npcTest.txt"));
+    AddObject(npcObj);
 }
 
 TitleState::~TitleState() = default;

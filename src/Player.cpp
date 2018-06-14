@@ -18,14 +18,16 @@
 Player *Player::player = nullptr;
 
 Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), state(IDLE), hp(100) {
-    Sprite *spr = new Sprite(associated, "img/idle.png", IDLE_SPRITE_COUNT, 0.1, 0, true);
+    Sprite *spr = new Sprite(associated, IDLE_SPRITE, IDLE_SPRITE_COUNT, 0.1, 0, true);
 
     associated.AddComponent(spr);
 
-    auto collider = new Collider(associated);
+    auto collider = new Collider(associated, Vec2(0.8, 0.92));
     collider->SetCanCollide([&] (GameObject &other) -> bool {
         return other.HasComponent(NPC_TYPE);
     });
+    
+    associated.AddComponent(collider);
     associated.box.h = spr->GetHeight();
     associated.box.w = spr->GetWidth();
 
@@ -91,7 +93,7 @@ Player::PlayerDirection Player::GetNewDirection(vector<PlayerDirection> directio
 }
 
 void Player::Update(float dt) {
-    if (!state == TALKING) {
+    if (state != TALKING) {
         auto inputManager = InputManager::GetInstance();
         closestNpcDistance = numeric_limits<float>::infinity();
         closestNpc = weak_ptr<GameObject>();
@@ -115,7 +117,7 @@ void Player::Update(float dt) {
             } else {
                 timer.Update(dt);
                 if (timer.Get() > BEAM_LIFETIME) {
-                    SetSprite("img/idle.png", MAGIC_SPRITE_COUNT, 0.1);
+                    SetSprite(IDLE_SPRITE, MAGIC_SPRITE_COUNT, 0.1);
                     newState = IDLE;
                 }
             }
@@ -127,7 +129,7 @@ void Player::Update(float dt) {
             } else {
                 timer.Update(dt);
                 if (timer.Get() > ATTACK_DURATION) {
-                    SetSprite("img/idle.png", MAGIC_SPRITE_COUNT, 0.1);
+                    SetSprite(IDLE_SPRITE, MAGIC_SPRITE_COUNT, 0.1);
                     newState = IDLE;
                 }
             }
@@ -163,12 +165,20 @@ void Player::Update(float dt) {
             }
         } else {
             if (state != IDLE) {
-                SetSprite("img/idle.png", IDLE_SPRITE_COUNT, 0.1);
+                SetSprite(IDLE_SPRITE, IDLE_SPRITE_COUNT, 0.1);
             }
             speed = Vec2(0,0);
         }
 
         state = newState;
+
+        auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
+        if (state == IDLE) {
+            collider->SetOffset(Vec2(10, 0));
+        } else {
+            collider->SetOffset(Vec2(0, 0));
+        }
+
         associated.box += speed;
     }
 }
@@ -190,13 +200,13 @@ Player::~Player() {
 }
 
 void Player::NotifyCollision(GameObject &other) {
-    if (InputManager::GetInstance().KeyPress(SPACE_KEY)) {
+    if (InputManager::GetInstance().KeyPress(SPACE_KEY) && state != TALKING) {
         auto distance = (other.box.Center() - associated.box.Center()).Module();
 
         if (distance < closestNpcDistance) {
             closestNpcDistance = distance;
             closestNpc = Game::GetInstance().GetCurrentState().GetObjectPtr(&other);
-            SetSprite("img/idle.png", IDLE_SPRITE_COUNT, 0.1);
+            SetSprite(IDLE_SPRITE, IDLE_SPRITE_COUNT, 0.1);
             state = TALKING;
         }
     }

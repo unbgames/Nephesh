@@ -21,12 +21,9 @@ TextBox::TextBox(GameObject &associated) : Component(associated), containedText(
 }
 
 void TextBox::Update(float dt) {
-
 }
 
 void TextBox::Start() {
-    auto s = "ahsjdhakjsdhkjashdjkashdjkhasjkdhaskdhasjkhdhjaskjhdhjkaaaaaaaaaaaaaa";
-    SetText(s);
 }
 
 void TextBox::Render() {
@@ -34,7 +31,7 @@ void TextBox::Render() {
 }
 
 bool TextBox::Is(string type) {
-    return false;
+    return type == TEXT_BOX_TYPE;
 }
 
 void TextBox::SetText(string text) {
@@ -51,5 +48,10 @@ void TextBox::SetText(string text) {
     } else {
         auto textCpt = (Text *)containedText.lock()->GetComponent(TEXT_TYPE);
         textCpt->SetText(text);
+        textCpt->RemakeTexture();
     }
+}
+
+void TextBox::DeleteText() {
+    containedText.lock()->RequestDelete();
 }
