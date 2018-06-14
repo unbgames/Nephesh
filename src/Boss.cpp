@@ -3,6 +3,8 @@
 //
 
 #include <Player.h>
+#include <MeleeAttack.h>
+#include <Collider.h>
 #include "Boss.h"
 
 Boss::Boss(GameObject &associated) :
@@ -10,7 +12,8 @@ Boss::Boss(GameObject &associated) :
         hp(BOSS_INITIAL_HP),
         speed(0,0),
         bossState(IDLE),
-        timer() {
+        timer(),
+        attacksPerformed(0) {
 
     Sprite *spr = new Sprite(associated, "img/boss_walk_down_sheet.png", 4, 100000000, 0, true);
 
@@ -71,7 +74,7 @@ void Boss::Update(float dt) {
         else if(bossState == MOVING && Player::player->GetCenter().Distance(associated.box.Center()) <= BOSS_MIN_DIST_TO_PLAYER){
             bossState = ATTACKING;
 
-            SetSprite(GetAttackAnimation(), 4, BOSS_SPR_ATCK_TIME, currentDirection == LEFT);
+            Attack();
 
             timer.Restart(0);
         }
@@ -87,16 +90,19 @@ void Boss::Update(float dt) {
         }
         else if(bossState == ATTACKING && timer.Get() < BOSS_ATTACK_TIME){
             timer.Update(dt);
-
-            if(oldDirection != currentDirection){
-                SetSprite(GetAttackAnimation(), 4, BOSS_SPR_ATCK_TIME, currentDirection == LEFT);
-            }
         }
         else if(bossState == ATTACKING){
-            SetSprite(GetMovementAnimation(), 4, 100000000, currentDirection == LEFT);
-            
-            bossState = IDLE;
             timer.Restart(0);
+            attacksPerformed++;
+
+            if(attacksPerformed == BOSS_NUM_OF_ATTACKS){
+                attacksPerformed = 0;
+                SetSprite(GetMovementAnimation(), 4, 100000000, currentDirection == LEFT);
+                bossState = IDLE;
+            }
+            else{
+                Attack();
+            }
         }
     }
 
@@ -163,4 +169,33 @@ Boss::BossDirection Boss::GetNewDirection() {
     }
     
     return DOWN;
+}
+
+void Boss::Attack() {
+    SetSprite(GetAttackAnimation(), BOSS_ATTACK_SPRITE_COUNT, BOSS_ATTACK_TIME/BOSS_ATTACK_SPRITE_COUNT, currentDirection == LEFT);
+
+    auto attackObject = new GameObject(associated.GetLayer());
+    attackObject->AddComponent(new MeleeAttack(*attackObject, BOSS_ATTACK_TIME));
+    auto collider = (Collider *) attackObject->GetComponent(COLLIDER_TYPE);
+    auto bossBoxPosition = Vec2(associated.box.x, associated.box.y);
+
+    if (currentDirection == RIGHT) {
+        collider->SetOffset(Vec2(-35, 0));
+        attackObject->box = Rect(BOSS_ATTACK_WIDTH, BOSS_ATTACK_RANGE);
+        attackObject->box.PlaceCenterAt(bossBoxPosition + Vec2(associated.box.w + attackObject->box.w/2, associated.box.h/2));
+    } else if (currentDirection == DOWN) {
+        collider->SetOffset(Vec2(0, -30));
+        attackObject->box = Rect(BOSS_ATTACK_RANGE, BOSS_ATTACK_WIDTH);
+        attackObject->box.PlaceCenterAt(bossBoxPosition + Vec2(associated.box.w/2, associated.box.h + attackObject->box.h/2));
+    } else if (currentDirection == LEFT) {
+        collider->SetOffset(Vec2(50, 0));
+        attackObject->box = Rect(BOSS_ATTACK_WIDTH, BOSS_ATTACK_RANGE);
+        attackObject->box.PlaceCenterAt(bossBoxPosition + Vec2(-attackObject->box.w, associated.box.h/2));
+    } else {
+        collider->SetOffset(Vec2(0, 40));
+        attackObject->box = Rect(BOSS_ATTACK_RANGE, BOSS_ATTACK_WIDTH);
+        attackObject->box.PlaceCenterAt(bossBoxPosition + Vec2(associated.box.w/2, -attackObject->box.h));
+    }
+
+    Game::GetInstance().GetCurrentState().AddObject(attackObject);
 }
