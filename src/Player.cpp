@@ -24,7 +24,7 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
 
     auto collider = new Collider(associated, Vec2(0.8, 0.92));
     collider->SetCanCollide([&] (GameObject &other) -> bool {
-        return other.HasComponent(NPC_TYPE);
+        return other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY);
     });
     
     associated.AddComponent(collider);
@@ -180,6 +180,9 @@ void Player::Update(float dt) {
         }
 
         associated.box += speed;
+    } else if (!closestNpc.expired()) {
+        auto npc = (Npc *)closestNpc.lock()->GetComponent(NPC_TYPE);
+        npc->Talk();
     }
 }
 
@@ -200,15 +203,13 @@ Player::~Player() {
 }
 
 void Player::NotifyCollision(GameObject &other) {
-    if (InputManager::GetInstance().KeyPress(SPACE_KEY) && state != TALKING) {
-        auto distance = (other.box.Center() - associated.box.Center()).Module();
+    auto distance = (other.box.Center() - associated.box.Center()).Module();
 
-        if (distance < closestNpcDistance) {
-            closestNpcDistance = distance;
-            closestNpc = Game::GetInstance().GetCurrentState().GetObjectPtr(&other);
-            SetSprite(IDLE_SPRITE, IDLE_SPRITE_COUNT, 0.1);
-            state = TALKING;
-        }
+    if (distance < closestNpcDistance) {
+        closestNpcDistance = distance;
+        closestNpc = Game::GetInstance().GetCurrentState().GetObjectPtr(&other);
+        SetSprite(IDLE_SPRITE, IDLE_SPRITE_COUNT, 0.1);
+        state = TALKING;
     }
 }
 

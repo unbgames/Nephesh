@@ -17,33 +17,16 @@ Npc::Npc(GameObject &associated, string file) : Component(associated), isTalking
 }
 
 void Npc::Update(float dt) {
-    if (Player::player->IsTalking()) {
-        if (!isTalking) {
-            isTalking = true;
-
-            RestartLines();
-
-            auto textBoxObj = new GameObject(1);
-            auto box = new TextBox(*textBoxObj);
-            textBoxObj->AddComponent(box);
-            textBox = Game::GetInstance().GetCurrentState().AddObject(textBoxObj);
-
-            box->SetText(speechLines.front());
-            speechQueue.pop();
+    if (isTalking && InputManager::GetInstance().KeyPress(SPACE_KEY)) {
+        auto boxCpt = (TextBox *) textBox.lock()->GetComponent(TEXT_BOX_TYPE);
+        if (speechQueue.empty()) {
+            Player::player->StopTalking();
+            boxCpt->DeleteText();
+            textBox.lock()->RequestDelete();
+            isTalking = false;
         } else {
-            if (InputManager::GetInstance().KeyPress(SPACE_KEY)) {
-                auto boxCpt = (TextBox *) textBox.lock()->GetComponent(TEXT_BOX_TYPE);
-                if (speechQueue.empty()) {
-                    Player::player->StopTalking();
-                    boxCpt->DeleteText();
-                    textBox.lock()->RequestDelete();
-                    isTalking = false;
-                } else {
-                    boxCpt->SetText(speechQueue.front());
-                    speechQueue.pop();
-                }
-            }
-
+            boxCpt->SetText(speechQueue.front());
+            speechQueue.pop();
         }
     }
 }
@@ -66,7 +49,7 @@ void Npc::RestartLines() {
 
 void Npc::ReadSpeeches(string file) {
     ifstream stream(ASSETS_PATH + file);
-    
+    openedFile = file;
     if (!stream.is_open()) {
         throw "Impossible to open file: " + file;
     }
@@ -78,4 +61,21 @@ void Npc::ReadSpeeches(string file) {
     }
 
     stream.close();
+}
+
+void Npc::Talk() {
+    isTalking = true;
+    cout << openedFile << endl;
+
+    RestartLines();
+
+    auto textBoxObj = new GameObject(1);
+    auto box = new TextBox(*textBoxObj);
+    textBoxObj->AddComponent(box);
+    textBox = Game::GetInstance().GetCurrentState().AddObject(textBoxObj);
+
+    box->SetText(speechLines.front());
+    speechQueue.pop();
+
+    Player::player->closestNpc = weak_ptr<GameObject>();
 }

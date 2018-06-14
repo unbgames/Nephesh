@@ -21,11 +21,14 @@ public:
 
     bool Is(string type) override;
 
+    void Talk();
 private:
     bool isTalking;
     vector<string> speechLines;
     queue<string> speechQueue;
     weak_ptr<GameObject> textBox;
+
+    string openedFile;
 
     void RestartLines();
 

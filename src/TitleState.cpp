@@ -32,6 +32,13 @@ TitleState::TitleState() : State() {
     npcObj->AddComponent(new Sprite(*npcObj, "tests/img/penguin.png"));
     npcObj->AddComponent(new Npc(*npcObj, "npcs/npcTest.txt"));
     AddObject(npcObj);
+
+    auto npcObj2 = new GameObject();
+    npcObj2->box.x = WIDTH/2 + 100;
+    npcObj2->box.y = 10;
+    npcObj2->AddComponent(new Sprite(*npcObj2, "tests/img/penguin.png"));
+    npcObj2->AddComponent(new Npc(*npcObj2, "npcs/npcTest2.txt"));
+    AddObject(npcObj2);
 }
 
 TitleState::~TitleState() = default;
@@ -50,16 +57,6 @@ void TitleState::Update(float dt) {
         AddObject(blockObj);
     }
 
-//    if (inputManager.MousePress(LEFT_MOUSE_BUTTON)) {
-//        auto target = Vec2(inputManager.GetMouseX(), inputManager.GetMouseY());
-//        auto beamObj = new GameObject(1);
-//        beamObj->box.x = WIDTH/2;
-//        beamObj->box.y = HEIGHT/2;
-//        auto beamCpt = new BeamSkill(*beamObj, target);
-//        beamObj->AddComponent(beamCpt);
-//        this->AddObject(beamObj);
-//    }
-    
     UpdateArray(dt);
 
     CheckCollisions();
