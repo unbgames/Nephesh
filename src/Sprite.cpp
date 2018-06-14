@@ -162,4 +162,12 @@ void Sprite::SetFlip(bool f) {
     flip = f;
 }
 
+int Sprite::getFrameCount() {
+    return frameCount;
+}
+
+int Sprite::getCurrentFrame() {
+    return currentFrame;
+}
+
 
