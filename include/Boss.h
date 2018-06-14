@@ -68,7 +68,6 @@ private:
     string GetMovementAnimation();
     string GetAttackAnimation();
     void SetSprite(string file, int frameCount, float frameTime, bool flip = false);
-    void UpdateStateAction();
     void UpdateAnimationDirection();
 
 };
