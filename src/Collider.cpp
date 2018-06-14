@@ -2,7 +2,6 @@
 // Created by ftfnunes on 17/04/18.
 //
 
-#include <SDL_rect.h>
 #include <Camera.h>
 #include <Game.h>
 #include "Collider.h"
