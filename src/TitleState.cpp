@@ -4,7 +4,6 @@
 #include <CameraFollower.h>
 #include <Camera.h>
 #include <IntervalTimer.h>
-#include <tiff.h>
 #include <TileSet.h>
 #include <BeamSkill.h>
 #include <Collider.h>
