@@ -8,6 +8,7 @@
 
 #include "GameObject.h"
 #include "Vec2.h"
+#include "Timer.h"
 
 #define PLAYER_TYPE "Player"
 

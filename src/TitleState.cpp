@@ -10,6 +10,7 @@
 #include <Collider.h>
 #include <StageState.h>
 #include <Player.h>
+#include <Boss.h>
 #include "TitleState.h"
 #include "Text.h"
 
@@ -20,10 +21,16 @@ TitleState::TitleState() : State() {
     AddObject(bgObj);
 
     auto playerObj = new GameObject();
-    playerObj->box.x = WIDTH/2;
-    playerObj->box.y = HEIGHT/2;
+    playerObj->box.x = 50;
+    playerObj->box.y = HEIGHT-50;
     playerObj->AddComponent(new Player(*playerObj));
     AddObject(playerObj);
+
+    auto bossObj = new GameObject();
+    bossObj->box.x = WIDTH/2;
+    bossObj->box.y = HEIGHT/2;
+    bossObj->AddComponent(new Boss(*bossObj));
+    AddObject(bossObj);
 }
 
 TitleState::~TitleState() = default;
