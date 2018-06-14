@@ -25,12 +25,20 @@ Sprite::~Sprite() = default;
 
 void Sprite::Open(string file) {
     texture = Resources::GetImage(file);
+    
+    auto oldBox = associated.box;
 
     SDL_QueryTexture(texture.get(), nullptr, nullptr, &width, &height);
 
     associated.box.h = GetHeight();
     associated.box.w = GetWidth();
-    associated.rotationCenter = associated.box.Center();
+
+    // Check if it is the first time opening this sprite in this object
+    if (oldBox.w != 0 && oldBox.h != 0) {
+        associated.SetCenter(oldBox.Center());
+    }
+
+    associated.rotationCenter = Vec2(associated.box.w/2, associated.box.h/2);
 
     SetClip(0, 0, getFrameWidth(), height);
 }

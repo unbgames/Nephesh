@@ -14,9 +14,18 @@
 
 using namespace std;
 
+#define MAGIC_SPRITE_COUNT 6
+#define WALK_SPRITE_COUNT 6
+#define IDLE_SPRITE_COUNT 6
+#define ATTACK_SPRITE_COUNT 6
+#define ATTACK_DURATION 0.3
+#define ATTACK_RANGE 35
+#define ATTACK_WIDTH 60
+
 class Player : public Component {
 private:
     enum PlayerState {
+        ATTACKING,
         SHOOTING,
         MOVING,
         IDLE
@@ -32,17 +41,21 @@ private:
     PlayerDirection currentDirection;
     vector<pair<PlayerDirection, string>> movementAnimations;
     vector<pair<PlayerDirection, string>> shootingAnimations;
+    vector<pair<PlayerDirection, string>> attackAnimations;
 
     PlayerDirection GetNewDirection(vector<PlayerDirection> directions);
+    PlayerDirection GetDirection(Vec2 target);
     void Shoot();
+    void Attack();
     PlayerState state;
     Vec2 speed;
     int hp;
 
-    Timer shootingTimer;
+    Timer timer;
 
     string GetMovementAnimation();
     string GetShootingAnimation();
+    string GetAttackAnimation();
     void SetSprite(string file, int frameCount, float frameTime, bool flip = false);
 public:
     void Start() override;

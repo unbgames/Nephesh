@@ -4,13 +4,12 @@
 #include <CameraFollower.h>
 #include <Camera.h>
 #include <IntervalTimer.h>
-#include <tiff.h>
 #include <TileSet.h>
 #include <BeamSkill.h>
 #include <Collider.h>
-#include <StageState.h>
 #include <Player.h>
 #include <Boss.h>
+#include <Collidable.h>
 #include "TitleState.h"
 #include "Text.h"
 
@@ -41,7 +40,7 @@ void TitleState::Update(float dt) {
     if (inputManager.MousePress(RIGHT_MOUSE_BUTTON)) {
         auto mousePos = inputManager.GetMouse();
 
-        auto blockObj = new GameObject(1);
+        auto blockObj = new GameObject();
         blockObj->angleDeg = 45;
         blockObj->AddComponent(new Sprite(*blockObj, "img/block.png"));
         blockObj->AddComponent(new Collidable(*blockObj));
