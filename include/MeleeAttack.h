@@ -7,10 +7,11 @@
 
 
 #include "Component.h"
+#include "Timer.h"
 
-class MeleeAtack : public Component {
+class MeleeAttack : public Component {
 public:
-    MeleeAtack(GameObject &associated);
+    MeleeAttack(GameObject &associated);
 
     void Update(float dt) override;
 
@@ -18,6 +19,12 @@ public:
 
     bool Is(string type) override;
 
+    void NotifyCollision(GameObject &other) override;
+
+private:
+    Timer collisionTimer;
+    Timer durationTimer;
+    bool colliderCreated;
 };
 
 
