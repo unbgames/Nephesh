@@ -18,7 +18,7 @@ Vec2 LineSegment::GetIntersection(LineSegment seg) {
     double det = (A*seg.B) - (seg.A*B);
 
     if (det == 0) {
-        return Vec2(-INFINITY, -INFINITY);
+        return Vec2(-numeric_limits<float>::infinity(), -numeric_limits<float>::infinity());
     }
 
     auto x = ((seg.B * C) - (B * seg.C)) / det;

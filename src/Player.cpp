@@ -7,6 +7,7 @@
 #include <BeamSkill.h>
 #include <Game.h>
 #include <Collider.h>
+#include <MeleeAttack.h>
 #include "Player.h"
 
 #define MAX_SPEED 20
@@ -233,8 +234,8 @@ void Player::Attack() {
     SetSprite(GetAttackAnimation(), ATTACK_SPRITE_COUNT, ATTACK_DURATION/ATTACK_SPRITE_COUNT, currentDirection == LEFT);
 
     auto attackObject = new GameObject(associated.GetLayer());
-    auto collider = new Collider(*attackObject);
-    attackObject->AddComponent(collider);
+    attackObject->AddComponent(new MeleeAttack(*attackObject));
+    auto collider = (Collider *) attackObject->GetComponent(COLLIDER_TYPE);
     auto playerBoxPosition = Vec2(associated.box.x, associated.box.y);
     auto playerBoxCenter = associated.box.Center();
 

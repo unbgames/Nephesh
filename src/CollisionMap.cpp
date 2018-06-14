@@ -104,7 +104,7 @@ bool CollisionMap::IsColliding(Collider& collider) {
     };
 
 
-    float minX = INFINITY, maxX = -INFINITY, minY = INFINITY, maxY = -INFINITY;
+    float minX = numeric_limits<float>::infinity(), maxX = -numeric_limits<float>::infinity(), minY = numeric_limits<float>::infinity(), maxY = -numeric_limits<float>::infinity();
 
     // get the rotated vertices of the box, according to angleOfCollider (angleDeg)
     for (auto& v : colliderVertices) {

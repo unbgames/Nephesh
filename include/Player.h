@@ -8,6 +8,7 @@
 
 #include "GameObject.h"
 #include "Vec2.h"
+#include "Timer.h"
 
 using namespace std;
 
@@ -15,8 +16,8 @@ using namespace std;
 #define WALK_SPRITE_COUNT 6
 #define IDLE_SPRITE_COUNT 6
 #define ATTACK_SPRITE_COUNT 6
-#define ATTACK_DURATION 0.5
-#define ATTACK_RANGE 30
+#define ATTACK_DURATION 0.3
+#define ATTACK_RANGE 35
 #define ATTACK_WIDTH 60
 
 class Player : public Component {
