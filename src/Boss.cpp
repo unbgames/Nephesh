@@ -54,7 +54,8 @@ void Boss::Update(float dt) {
     auto oldDirection = currentDirection;
     currentDirection = GetNewDirection();
 
-    cout << "State: " << bossState << endl;
+    auto center = associated.box.Center();
+    cout << "State: " << bossState << " ||| Center: (" << center.x << ", " << center.y << ")" << endl;
 
     if(Player::player){
         if(bossState == IDLE && timer.Get() < BOSS_IDLE_TIME){
@@ -176,25 +177,24 @@ void Boss::Attack() {
 
     auto attackObject = new GameObject(associated.GetLayer());
     attackObject->AddComponent(new MeleeAttack(*attackObject, BOSS_ATTACK_TIME));
-    auto collider = (Collider *) attackObject->GetComponent(COLLIDER_TYPE);
     auto bossBoxPosition = Vec2(associated.box.x, associated.box.y);
 
     if (currentDirection == RIGHT) {
-        collider->SetOffset(Vec2(-35, 0));
         attackObject->box = Rect(BOSS_ATTACK_WIDTH, BOSS_ATTACK_RANGE);
-        attackObject->box.PlaceCenterAt(bossBoxPosition + Vec2(associated.box.w + attackObject->box.w/2, associated.box.h/2));
+        auto offset = Vec2(-associated.box.w/5, 0);
+        attackObject->box = bossBoxPosition + Vec2(associated.box.w, (associated.box.h - attackObject->box.h)/2) + offset;
     } else if (currentDirection == DOWN) {
-        collider->SetOffset(Vec2(0, -30));
         attackObject->box = Rect(BOSS_ATTACK_RANGE, BOSS_ATTACK_WIDTH);
-        attackObject->box.PlaceCenterAt(bossBoxPosition + Vec2(associated.box.w/2, associated.box.h + attackObject->box.h/2));
+        auto offset = Vec2(0, -associated.box.h/5);
+        attackObject->box = bossBoxPosition + Vec2((associated.box.w - attackObject->box.w)/2, associated.box.h) + offset;
     } else if (currentDirection == LEFT) {
-        collider->SetOffset(Vec2(50, 0));
         attackObject->box = Rect(BOSS_ATTACK_WIDTH, BOSS_ATTACK_RANGE);
-        attackObject->box.PlaceCenterAt(bossBoxPosition + Vec2(-attackObject->box.w, associated.box.h/2));
+        auto offset = Vec2(associated.box.w/5, 0);
+        attackObject->box = bossBoxPosition + Vec2(-attackObject->box.w, (associated.box.h - attackObject->box.h)/2) + offset;
     } else {
-        collider->SetOffset(Vec2(0, 40));
         attackObject->box = Rect(BOSS_ATTACK_RANGE, BOSS_ATTACK_WIDTH);
-        attackObject->box.PlaceCenterAt(bossBoxPosition + Vec2(associated.box.w/2, -attackObject->box.h));
+        auto offset = Vec2(0, associated.box.h/5);
+        attackObject->box = bossBoxPosition + Vec2((associated.box.w - attackObject->box.w)/2, -attackObject->box.h) + offset;
     }
 
     Game::GetInstance().GetCurrentState().AddObject(attackObject);

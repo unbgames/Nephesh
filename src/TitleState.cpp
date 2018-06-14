@@ -29,6 +29,7 @@ TitleState::TitleState() : State() {
     bossObj->box.x = WIDTH/2;
     bossObj->box.y = HEIGHT/2;
     bossObj->AddComponent(new Boss(*bossObj));
+    bossObj->AddComponent(new Collidable(*bossObj));
     AddObject(bossObj);
 }
 

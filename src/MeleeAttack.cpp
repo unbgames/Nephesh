@@ -41,5 +41,5 @@ bool MeleeAttack::Is(string type) {
 }
 
 void MeleeAttack::NotifyCollision(GameObject &other) {
-    other.RequestDelete();
+//    other.RequestDelete();
 }
