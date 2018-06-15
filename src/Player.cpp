@@ -8,6 +8,7 @@
 #include <Game.h>
 #include <Collider.h>
 #include <MeleeAttack.h>
+#include <Npc.h>
 #include "Player.h"
 
 #define MAX_SPEED 20
@@ -17,9 +18,16 @@
 Player *Player::player = nullptr;
 
 Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), state(IDLE), hp(100) {
-    Sprite *spr = new Sprite(associated, "img/idle.png", IDLE_SPRITE_COUNT, 0.1, 0, true);
+    Sprite *spr = new Sprite(associated, IDLE_SPRITE, IDLE_SPRITE_COUNT, 0.1, 0, true);
 
     associated.AddComponent(spr);
+
+    auto collider = new Collider(associated, Vec2(0.8, 0.92));
+    collider->SetCanCollide([&] (GameObject &other) -> bool {
+        return other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY);
+    });
+    
+    associated.AddComponent(collider);
     associated.box.h = spr->GetHeight();
     associated.box.w = spr->GetWidth();
 
@@ -41,6 +49,10 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     attackAnimations.emplace_back(make_pair(LEFT, "img/attack_side.png"));
     attackAnimations.emplace_back(make_pair(UP, "img/attack_up.png"));
     attackAnimations.emplace_back(make_pair(DOWN, "img/attack_down.png"));
+
+    closestNpcDistance = numeric_limits<float>::infinity();
+    closestNpc = weak_ptr<GameObject>();
+    shouldStopTalking = false;
 }
 
 string Player::GetMovementAnimation() {
@@ -85,82 +97,111 @@ Player::PlayerDirection Player::GetNewDirection(vector<PlayerDirection> directio
 }
 
 void Player::Update(float dt) {
-    auto inputManager = InputManager::GetInstance();
-    auto newState = state;
+        auto inputManager = InputManager::GetInstance();
+        auto newState = state;
 
-    if (inputManager.MousePress(LEFT_MOUSE_BUTTON) || state == SHOOTING) {
-        newState = SHOOTING;
-    } else if (inputManager.KeyPress(SPACE_KEY) || state == ATTACKING) {
-        newState = ATTACKING;
-    } else if (inputManager.IsKeyDown('a') || inputManager.IsKeyDown('d') || inputManager.IsKeyDown('s') || inputManager.IsKeyDown('w')) {
-        newState = MOVING;
-    } else {
-        newState = IDLE;
-    }
-    
-    if (newState == SHOOTING) {
-        speed = Vec2();
-        if (state != SHOOTING) {
-            timer.Restart();
-            Shoot();
+        if (state == TALKING && !shouldStopTalking) {
+            newState = TALKING;
+        } else if (inputManager.MousePress(RIGHT_MOUSE_BUTTON) || state == SHOOTING) {
+            newState = SHOOTING;
+        } else if (inputManager.MousePress(LEFT_MOUSE_BUTTON) || state == ATTACKING) {
+            newState = ATTACKING;
+        } else if (inputManager.IsKeyDown('a') || inputManager.IsKeyDown('d') || inputManager.IsKeyDown('s') || inputManager.IsKeyDown('w')) {
+            newState = MOVING;
         } else {
-            timer.Update(dt);
-            if (timer.Get() > BEAM_LIFETIME) {
-                SetSprite("img/idle.png", MAGIC_SPRITE_COUNT, 0.1);
-                newState = IDLE;
-            }
+            newState = IDLE;
         }
-    } else if (newState == ATTACKING) {
-        speed = Vec2();
-        if (state != ATTACKING) {
-            timer.Restart();
-            Attack();
-        } else {
-            timer.Update(dt);
-            if (timer.Get() > ATTACK_DURATION) {
-                SetSprite("img/idle.png", MAGIC_SPRITE_COUNT, 0.1);
-                newState = IDLE;
-            }
-        }
-    } else if (newState == MOVING) {
-        vector<PlayerDirection> directionsPressed;
-
-        speed = Vec2();
-        if (inputManager.IsKeyDown('a')) {
-            directionsPressed.push_back(LEFT);
-            speed += Vec2(-SPEED * dt, 0);
-        }
-
-        if (inputManager.IsKeyDown('d')) {
-            directionsPressed.push_back(RIGHT);
-            speed += Vec2(SPEED * dt, 0);
-        }
-
-        if (inputManager.IsKeyDown('w')) {
-            directionsPressed.push_back(UP);
-            speed += Vec2(0, -SPEED * dt);
-        }
-
-        if (inputManager.IsKeyDown('s')) {
-            directionsPressed.push_back(DOWN);
-            speed += Vec2(0, SPEED * dt);
-        }
-
-        auto oldDirection = currentDirection;
-        currentDirection = GetNewDirection(directionsPressed);
         
-        if (state != MOVING || currentDirection != oldDirection) {
-            SetSprite(GetMovementAnimation(), WALK_SPRITE_COUNT, SPR_TIME, currentDirection == LEFT);
+        if (shouldStopTalking && state != TALKING) {
+            shouldStopTalking = false;
+            auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
+            collider->SetCanCollide([&] (GameObject &other) -> bool {
+                return other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY);
+            });
         }
-    } else {
-        if (state != IDLE) {
-            SetSprite("img/idle.png", IDLE_SPRITE_COUNT, 0.1);
-        }
-        speed = Vec2(0,0);
-    }
 
-    state = newState;
-    associated.box += speed;
+        if (newState == TALKING && !closestNpc.expired()) {
+            auto npc = (Npc *)closestNpc.lock()->GetComponent(NPC_TYPE);
+            npc->Talk();
+            
+            speed = Vec2();
+            auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
+            collider->SetCanCollide([&] (GameObject &other) -> bool {
+                return false;
+            });
+            closestNpcDistance = numeric_limits<float>::infinity();
+            closestNpc = weak_ptr<GameObject>();
+        } else if (newState == SHOOTING) {
+            speed = Vec2();
+            if (state != SHOOTING) {
+                timer.Restart();
+                Shoot();
+            } else {
+                timer.Update(dt);
+                if (timer.Get() > BEAM_LIFETIME) {
+                    SetSprite(IDLE_SPRITE, MAGIC_SPRITE_COUNT, 0.1);
+                    newState = IDLE;
+                }
+            }
+        } else if (newState == ATTACKING) {
+            speed = Vec2();
+            if (state != ATTACKING) {
+                timer.Restart();
+                Attack();
+            } else {
+                timer.Update(dt);
+                if (timer.Get() > ATTACK_DURATION) {
+                    SetSprite(IDLE_SPRITE, MAGIC_SPRITE_COUNT, 0.1);
+                    newState = IDLE;
+                }
+            }
+        } else if (newState == MOVING) {
+            vector<PlayerDirection> directionsPressed;
+
+            speed = Vec2();
+            if (inputManager.IsKeyDown('a')) {
+                directionsPressed.push_back(LEFT);
+                speed += Vec2(-SPEED * dt, 0);
+            }
+
+            if (inputManager.IsKeyDown('d')) {
+                directionsPressed.push_back(RIGHT);
+                speed += Vec2(SPEED * dt, 0);
+            }
+
+            if (inputManager.IsKeyDown('w')) {
+                directionsPressed.push_back(UP);
+                speed += Vec2(0, -SPEED * dt);
+            }
+
+            if (inputManager.IsKeyDown('s')) {
+                directionsPressed.push_back(DOWN);
+                speed += Vec2(0, SPEED * dt);
+            }
+
+            auto oldDirection = currentDirection;
+            currentDirection = GetNewDirection(directionsPressed);
+
+            if (state != MOVING || currentDirection != oldDirection) {
+                SetSprite(GetMovementAnimation(), WALK_SPRITE_COUNT, SPR_TIME, currentDirection == LEFT);
+            }
+        } else if (newState == IDLE) {
+            if (state != IDLE) {
+                SetSprite(IDLE_SPRITE, IDLE_SPRITE_COUNT, 0.1);
+            }
+            speed = Vec2(0,0);
+        }
+
+        state = newState;
+
+        auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
+        if (state == IDLE) {
+            collider->SetOffset(Vec2(10, 0));
+        } else {
+            collider->SetOffset(Vec2(0, 0));
+        }
+
+        associated.box += speed;
 }
 
 void Player::Render() {
@@ -180,7 +221,14 @@ Player::~Player() {
 }
 
 void Player::NotifyCollision(GameObject &other) {
-    Component::NotifyCollision(other);
+    auto distance = (other.box.Center() - associated.box.Center()).Module();
+
+    if (distance < closestNpcDistance) {
+        closestNpcDistance = distance;
+        closestNpc = Game::GetInstance().GetCurrentState().GetObjectPtr(&other);
+        SetSprite(IDLE_SPRITE, IDLE_SPRITE_COUNT, 0.1);
+        state = TALKING;
+    }
 }
 
 void Player::SetSprite(string file, int frameCount, float frameTime, bool flip) {
@@ -237,7 +285,6 @@ void Player::Attack() {
     attackObject->AddComponent(new MeleeAttack(*attackObject));
     auto collider = (Collider *) attackObject->GetComponent(COLLIDER_TYPE);
     auto playerBoxPosition = Vec2(associated.box.x, associated.box.y);
-    auto playerBoxCenter = associated.box.Center();
 
     if (currentDirection == RIGHT) {
         collider->SetOffset(Vec2(-35, 0));
@@ -273,3 +320,12 @@ Player::PlayerDirection Player::GetDirection(Vec2 target) {
         return UP;
     }
 }
+
+void Player::StopTalking() {
+    shouldStopTalking = true;
+}
+
+bool Player::IsTalking() {
+    return state == TALKING;
+}
+

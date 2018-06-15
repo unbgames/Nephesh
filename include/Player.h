@@ -5,7 +5,6 @@
 #ifndef NEPHESH_PLAYER_H
 #define NEPHESH_PLAYER_H
 
-
 #include "GameObject.h"
 #include "Vec2.h"
 #include "Timer.h"
@@ -19,10 +18,12 @@ using namespace std;
 #define ATTACK_DURATION 0.3
 #define ATTACK_RANGE 35
 #define ATTACK_WIDTH 60
+#define IDLE_SPRITE "img/idle_up.png"
 
 class Player : public Component {
 private:
     enum PlayerState {
+        TALKING,
         ATTACKING,
         SHOOTING,
         MOVING,
@@ -46,6 +47,8 @@ private:
     void Shoot();
     void Attack();
     PlayerState state;
+    float closestNpcDistance;
+    bool shouldStopTalking;
     Vec2 speed;
     int hp;
 
@@ -58,12 +61,17 @@ private:
 public:
     void Start() override;
 
+    weak_ptr<GameObject> closestNpc;
+
     Player(GameObject& associated);
     ~Player();       
     
     void Update(float dt) override;
     void Render() override;
     bool Is(string type) override;
+
+    void StopTalking();
+    bool IsTalking();
     
     static Player* player;
 
