@@ -90,13 +90,13 @@ void TileMap::Load(string file) {
                     if (j == w) break;
                     if(n != ',') buff+=n; else
                     if(!buff.empty()) {
-                        int c = atoi(buff.c_str())-1;
+                        int c = atoi(buff.c_str());
                         j++;
                         tileMatrix.push_back(c);
                         buff = "";
                     }
                 }
-                if(!buff.empty()) tileMatrix.push_back(atoi(buff.c_str())-1);
+                if(!buff.empty()) tileMatrix.push_back(atoi(buff.c_str()));
             }
             if (!getline(f, line) && !line.empty()) {
                 throw "Error in file format in " + file;
