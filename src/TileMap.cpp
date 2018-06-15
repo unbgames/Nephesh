@@ -5,7 +5,7 @@
 #include <TileMap.h>
 
 TileMap::TileMap(GameObject &associated, string file, TileSet *tileSet) : Component(associated),
-                                                                          tileSet(tileSet) {
+                                                                          tileSet(tileSet){
     Load(file);
 }
 
@@ -25,9 +25,8 @@ void TileMap::RenderLayer(int layer, int cameraX, int cameraY) {
 void TileMap::RenderLayer(int layer) {
     for (int i = 0; i < mapWidth; i++) {
         for (int j = 0; j < mapHeight; ++j) {
-            auto x = i*tileSet->GetTileWidth();
-            auto y = j*tileSet->GetTileHeight();
-            Rect box = associated.box;
+            auto x = associated.box.x + i*tileSet->GetTileWidth();
+            auto y = associated.box.y + j*tileSet->GetTileHeight();
             tileSet->RenderTile(At(i, j, layer), x, y, layer);
         }
     }
@@ -74,6 +73,9 @@ void TileMap::Load(string file) {
         mapDepth = d;
         mapHeight = h;
         mapWidth = w;
+
+        associated.box.w = mapWidth*tileSet->GetTileWidth();
+        associated.box.h = mapHeight*tileSet->GetTileHeight();
 
         if (!getline(f, line)) {
             throw "Error while reading from file " + file;

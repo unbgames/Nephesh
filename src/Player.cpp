@@ -9,10 +9,10 @@
 #include <Collider.h>
 #include <MeleeAttack.h>
 #include <Npc.h>
+#include <Camera.h>
 #include "Player.h"
 
-#define MAX_SPEED 20
-#define SPEED 50
+#define SPEED 500
 #define SPR_TIME 0.1
 
 Player *Player::player = nullptr;
@@ -250,6 +250,7 @@ void Player::SetSprite(string file, int frameCount, float frameTime, bool flip) 
 void Player::Shoot() {
     auto& inputManager = InputManager::GetInstance();
     auto target = Vec2(inputManager.GetMouseX(), inputManager.GetMouseY());
+    target = Camera::GetAbsolutePosition(associated.GetLayer(), target);
 
     currentDirection = GetDirection(target);
 
@@ -276,6 +277,7 @@ void Player::Shoot() {
 void Player::Attack() {
     auto& inputManager = InputManager::GetInstance();
     auto target = Vec2(inputManager.GetMouseX(), inputManager.GetMouseY());
+    target = Camera::GetAbsolutePosition(associated.GetLayer(), target);
 
     currentDirection = GetDirection(target);
 

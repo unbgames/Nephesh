@@ -15,17 +15,19 @@
 #include "TitleState.h"
 #include "Text.h"
 
-TitleState::TitleState() : State() {
-    auto bgObj = new GameObject();
+TitleState::TitleState() : State(), currentMapIndex(0) {
+    auto obj = new GameObject();
+    bgObj = shared_ptr<GameObject>(obj);
     bgObj->AddComponent(new Sprite(*bgObj, "img/whiteBg.png"));
     bgObj->AddComponent(new CameraFollower(*bgObj));
-    AddObject(bgObj);
 
     auto playerObj = new GameObject();
     playerObj->box.x = WIDTH/2;
     playerObj->box.y = HEIGHT/2;
     playerObj->AddComponent(new Player(*playerObj));
     AddObject(playerObj);
+
+    Camera::Follow(playerObj);
 
     auto npcObj = new GameObject();
     npcObj->box.x = WIDTH/2;
@@ -35,11 +37,17 @@ TitleState::TitleState() : State() {
     npcObj->AddComponent(new Sound(*npcObj, "audio/gvms2.wav"));
 
     AddObject(npcObj);
+
+    maps.emplace_back("tests/map/tileMap.txt", "tests/img/tileset.png", Map::MapDirection::DOWN);
+    maps.emplace_back("tests/map/tileMap.txt", "tests/img/tileset.png", Map::MapDirection::DOWN);
+    maps.emplace_back("tests/map/tileMap.txt", "tests/img/tileset.png", Map::MapDirection::RIGHT);
 }
 
 TitleState::~TitleState() = default;
 
 void TitleState::Update(float dt) {
+    bgObj->Update(dt);
+    Camera::Update(dt);
     auto& inputManager = InputManager::GetInstance();
 
     if (inputManager.KeyPress(SDLK_t)) {
@@ -68,15 +76,52 @@ void TitleState::Update(float dt) {
         }
     }
 
+    UpdateLoadedMaps();
+
     quitRequested = inputManager.QuitRequested() || inputManager.KeyPress(ESCAPE_KEY);
 }
 
 void TitleState::Render() {
-    RenderArray();
+    bgObj->Render();
+
+    for (int i = 0; i < objectLayers.size(); i++) {
+        auto it = objectLayers.find(i);
+        
+        if (maps.size() > 0) {
+            auto tileMap = (TileMap *)maps[currentMapIndex].GetTileMap()->GetComponent(TILE_MAP_TYPE);
+            if (i < tileMap->GetDepth()) {
+                tileMap->RenderLayer(i);
+            }
+            auto prevIndex = currentMapIndex - 1;
+            if (prevIndex >= 0) {
+                tileMap = (TileMap *)maps[prevIndex].GetTileMap()->GetComponent(TILE_MAP_TYPE);
+                if (i < tileMap->GetDepth()) {
+                    tileMap->RenderLayer(i);
+                }
+            }
+            auto nextIndex = currentMapIndex + 1;
+            if (nextIndex < maps.size()) {
+                tileMap = (TileMap *)maps[nextIndex].GetTileMap()->GetComponent(TILE_MAP_TYPE);
+                if (i < tileMap->GetDepth()) {
+                    tileMap->RenderLayer(i);
+                }
+            }
+        }
+
+        if (it != objectLayers.end()) {
+            auto &objects = (*it).second;
+
+            for (auto &object : objects) {
+                object->Render();
+            }
+        }
+    }
 }
 
 void TitleState::Start() {
     StartArray();
+
+    LoadMaps();
 }
 
 void TitleState::Pause() {
@@ -148,4 +193,46 @@ weak_ptr<GameObject> TitleState::AddObject(GameObject *object) {
     auto ptr = shared_ptr<GameObject>(object);
 
     return AddObject(ptr);
+}
+
+void TitleState::UpdateLoadedMaps() {
+    auto player = Player::player;
+
+    if (!maps[currentMapIndex].GetTileMap()->box.Contains(player->GetGameObject().box.Center())) {
+        auto prevMap = currentMapIndex - 1;
+        auto nextMap = currentMapIndex + 1;
+        if (prevMap >= 0 && maps[prevMap].GetTileMap()->box.Contains(player->GetGameObject().box.Center())) {
+            currentMapIndex = prevMap;
+        } else if (nextMap < maps.size() && maps[nextMap].GetTileMap()->box.Contains(player->GetGameObject().box.Center())) {
+            currentMapIndex = nextMap;
+        } else {
+            throw string("Player out of bounds");
+        }
+    }
+}
+
+void TitleState::LoadMaps() {
+    for (int i = 0; i < maps.size()-1; ++i) {
+        auto currentMap = maps[i];
+        auto nextMap = maps[i+1];
+        auto currentBox = currentMap.GetTileMap()->box;
+
+        switch (nextMap.GetDirection()) {
+            case Map::MapDirection::DOWN:
+                nextMap.GetTileMap()->box.x = currentBox.x;
+                nextMap.GetTileMap()->box.y = currentBox.y + currentBox.h;
+                break;
+            case Map::MapDirection::UP:
+                nextMap.GetTileMap()->box.x = currentBox.x;
+                nextMap.GetTileMap()->box.y = currentBox.y - currentBox.h;
+                break;
+            case Map::MapDirection::LEFT:
+                nextMap.GetTileMap()->box.x = currentBox.x - currentBox.w;
+                nextMap.GetTileMap()->box.y = currentBox.y;
+                break;
+            default:
+                nextMap.GetTileMap()->box.x = currentBox.x + currentBox.w;
+                nextMap.GetTileMap()->box.y = currentBox.y;
+        }
+    }
 }
