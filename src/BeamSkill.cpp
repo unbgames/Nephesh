@@ -10,7 +10,7 @@
 #include "BeamSkill.h"
 
 BeamSkill::BeamSkill(GameObject &associated, Vec2 target) : Component(associated), target(target), lockBeam(false) {
-    auto raySprite = new Sprite(associated, "img/magic_effect_side2.png", 4, BEAM_LIFETIME/4);
+    auto raySprite = new Sprite(associated, "img/magic_effect_side2.png", 5, BEAM_LIFETIME/5);
     associated.AddComponent(raySprite);
     auto collider = new Collider(associated);
     associated.AddComponent(collider);
@@ -90,15 +90,16 @@ void BeamSkill::Start() {
     auto clip = sprite->GetClip();
     sprite->SetClip(clip.x, clip.y, cutoffPoint, clip.h);
 
-    auto initObj = new GameObject(associated.GetLayer());
+    auto initObj = new GameObject(associated.GetLayer()+1);
     initObj->angleDeg = associated.angleDeg;
-    initObj->AddComponent(new Sprite(*initObj, "img/magic_effect_side1.png", 4, BEAM_LIFETIME/4));
+    initObj->AddComponent(new Sprite(*initObj, "img/magic_effect_side1.png", 5, BEAM_LIFETIME/5));
     initObj->SetCenter(Vec2(associated.box.x, associated.box.y + associated.box.h/2));
     initObject = Game::GetInstance().GetCurrentState().AddObject(initObj);
 
-    auto endObj = new GameObject(associated.GetLayer());
+    auto endObj = new GameObject(associated.GetLayer()+1);
     endObj->angleDeg = associated.angleDeg;
-    endObj->AddComponent(new Sprite(*endObj, "img/magic_effect_side3.png", 4, BEAM_LIFETIME/4));
+    auto s = new Sprite(*endObj, "img/magic_effect_side3.png", 5, BEAM_LIFETIME/5);
+    endObj->AddComponent(s);
     endObj->SetCenter(target);
     endObject = Game::GetInstance().GetCurrentState().AddObject(endObj);
 }

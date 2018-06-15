@@ -127,6 +127,8 @@ void Sprite::SetScale(float scaleX, float scaleY) {
     box.h = GetHeight();
     box.x = center.x - box.w/2;
     box.y = center.y - box.h/2;
+
+    associated.rotationCenter = associated.box.Center();
 }
 
 Vec2 Sprite::GetScale() {

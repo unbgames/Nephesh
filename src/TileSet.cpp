@@ -15,7 +15,7 @@ void TileSet::RenderTile(unsigned int index, float x, float y) {
 
 void TileSet::RenderTile(unsigned int index, float x, float y, int layer) {
     int maxRange = columns*rows;
-    if (index < maxRange-1) {
+    if (index < maxRange) {
         int column = index % columns;
         int row = index / columns;
         tileSet.SetClip(column*tileWidth, row*tileHeight, tileWidth, tileHeight);

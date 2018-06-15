@@ -1,11 +1,10 @@
 #ifndef T1_TILEMAP_H
 #define T1_TILEMAP_H
 
-#define TILE_MAP_TYPE "TileMap"
-
-#include <vector>
-#include "Component.h"
 #include "TileSet.h"
+#include <vector>
+
+#define TILE_MAP_TYPE "TileMap"
 
 class TileMap : public Component {
 public:
@@ -21,9 +20,11 @@ public:
 
     void RenderLayer(int layer, int cameraX, int cameraY);
     void RenderLayer(int layer);
+
     int GetWidth();
     int GetHeight();
     int GetDepth();
+
 private:
     vector<int> tileMatrix;
     TileSet *tileSet;

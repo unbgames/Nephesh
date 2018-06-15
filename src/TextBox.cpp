@@ -42,6 +42,7 @@ void TextBox::SetText(string text) {
         textObj->AddComponent(textCpt);
         textObj->box.x = PADDING_LEFT;
         textObj->box.y = associated.box.y + PADDING_TOP;
+        textObj->AddComponent(new CameraFollower(*textObj, Vec2(textObj->box.x, textObj->box.y)));
 
         auto &game = Game::GetInstance();
         containedText = game.GetCurrentState().AddObject(textObj);
