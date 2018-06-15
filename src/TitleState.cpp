@@ -32,7 +32,7 @@ TitleState::TitleState() : State(), currentMapIndex(0) {
     auto npcObj = new GameObject();
     npcObj->box.x = WIDTH/2;
     npcObj->box.y = 10;
-    npcObj->AddComponent(new Sprite(*npcObj, "tests/img/penguin.png"));
+    npcObj->AddComponent(new Sprite(*npcObj, "img/criatura.png", 6, 0.1));
     npcObj->AddComponent(new Npc(*npcObj, "npcs/npcTest.txt"));
     npcObj->AddComponent(new Sound(*npcObj, "audio/gvms2.wav"));
 

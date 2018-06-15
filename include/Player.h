@@ -16,8 +16,8 @@ using namespace std;
 #define IDLE_SPRITE_COUNT 6
 #define ATTACK_SPRITE_COUNT 6
 #define ATTACK_DURATION 0.3
-#define ATTACK_RANGE 35
-#define ATTACK_WIDTH 60
+#define ATTACK_RANGE 70
+#define ATTACK_WIDTH 120
 #define IDLE_SPRITE "img/idle_up.png"
 
 class Player : public Component {

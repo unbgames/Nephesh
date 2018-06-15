@@ -38,7 +38,7 @@ void TextBox::SetText(string text) {
     if (containedText.expired()) {
         auto textObj = new GameObject(associated.GetLayer()+1);
         SDL_Color color = {0, 0, 0, 255};
-        auto textCpt = new Text(*textObj, "font/leadcoat.ttf", 30, Text::TextStyle::SOLID, text, color);
+        auto textCpt = new Text(*textObj, "font/leadcoat.ttf", 40, Text::TextStyle::SOLID, text, color);
         textObj->AddComponent(textCpt);
         textObj->box.x = PADDING_LEFT;
         textObj->box.y = associated.box.y + PADDING_TOP;
