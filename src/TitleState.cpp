@@ -84,7 +84,10 @@ void TitleState::Update(float dt) {
 void TitleState::Render() {
     bgObj->Render();
 
-    for (int i = 0; i < objectLayers.size(); i++) {
+    //TODO: Resolve 
+    auto currentTileMap = (TileMap *) (maps.size() > 0 ? maps[currentMapIndex].GetTileMap()->GetComponent(TILE_MAP_TYPE) : nullptr);
+    auto mapDepth = currentTileMap == nullptr ? 0 : currentTileMap->GetDepth();
+    for (int i = 0; i < (mapDepth > objectLayers.size() ? mapDepth : objectLayers.size()); i++) {
         auto it = objectLayers.find(i);
         
         if (maps.size() > 0) {
