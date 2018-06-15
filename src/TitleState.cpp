@@ -38,9 +38,9 @@ TitleState::TitleState() : State(), currentMapIndex(0) {
 
     AddObject(npcObj);
 
-    maps.emplace_back("tests/map/tileMap.txt", "tests/img/tileset.png", Map::MapDirection::DOWN);
-    maps.emplace_back("tests/map/tileMap.txt", "tests/img/tileset.png", Map::MapDirection::DOWN);
-    maps.emplace_back("tests/map/tileMap.txt", "tests/img/tileset.png", Map::MapDirection::RIGHT);
+    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::DOWN);
+    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::DOWN);
+    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::RIGHT);
 }
 
 TitleState::~TitleState() = default;

@@ -12,7 +12,7 @@
 #include <Camera.h>
 #include "Player.h"
 
-#define SPEED 500
+#define SPEED 200
 #define SPR_TIME 0.1
 
 Player *Player::player = nullptr;
