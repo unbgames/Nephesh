@@ -8,8 +8,10 @@
 #include "SDL_include.h"
 #include <Component.h>
 #include <bits/shared_ptr.h>
+#include <vector>
 
 #define TEXT_TYPE "Text"
+#define MAX_CHAR_PER_LINE 70
 
 class Text : public Component {
 public:
@@ -35,7 +37,7 @@ public:
     void RemakeTexture();
 private:
     shared_ptr<TTF_Font> font;
-    SDL_Texture *texture;
+    vector<SDL_Texture *> textures;
 
     string text;
     TextStyle style;
@@ -43,6 +45,7 @@ private:
     int fontSize;
     SDL_Color color;
 
+    vector<string> GetLines();
 };
 
 

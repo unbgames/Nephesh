@@ -9,6 +9,9 @@
 #include <Collider.h>
 #include <Player.h>
 #include <Collidable.h>
+#include <TextBox.h>
+#include <Npc.h>
+#include <Sound.h>
 #include "TitleState.h"
 #include "Text.h"
 
@@ -23,6 +26,15 @@ TitleState::TitleState() : State() {
     playerObj->box.y = HEIGHT/2;
     playerObj->AddComponent(new Player(*playerObj));
     AddObject(playerObj);
+
+    auto npcObj = new GameObject();
+    npcObj->box.x = WIDTH/2;
+    npcObj->box.y = 10;
+    npcObj->AddComponent(new Sprite(*npcObj, "tests/img/penguin.png"));
+    npcObj->AddComponent(new Npc(*npcObj, "npcs/npcTest.txt"));
+    npcObj->AddComponent(new Sound(*npcObj, "audio/gvms2.wav"));
+
+    AddObject(npcObj);
 }
 
 TitleState::~TitleState() = default;
@@ -30,7 +42,7 @@ TitleState::~TitleState() = default;
 void TitleState::Update(float dt) {
     auto& inputManager = InputManager::GetInstance();
 
-    if (inputManager.MousePress(RIGHT_MOUSE_BUTTON)) {
+    if (inputManager.KeyPress(SDLK_t)) {
         auto mousePos = inputManager.GetMouse();
 
         auto blockObj = new GameObject();
@@ -41,16 +53,6 @@ void TitleState::Update(float dt) {
         AddObject(blockObj);
     }
 
-//    if (inputManager.MousePress(LEFT_MOUSE_BUTTON)) {
-//        auto target = Vec2(inputManager.GetMouseX(), inputManager.GetMouseY());
-//        auto beamObj = new GameObject(1);
-//        beamObj->box.x = WIDTH/2;
-//        beamObj->box.y = HEIGHT/2;
-//        auto beamCpt = new BeamSkill(*beamObj, target);
-//        beamObj->AddComponent(beamCpt);
-//        this->AddObject(beamObj);
-//    }
-    
     UpdateArray(dt);
 
     CheckCollisions();
