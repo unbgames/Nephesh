@@ -48,6 +48,7 @@ private:
     void Attack();
     PlayerState state;
     float closestNpcDistance;
+    bool shouldStopTalking;
     Vec2 speed;
     int hp;
 

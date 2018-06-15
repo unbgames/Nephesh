@@ -49,6 +49,10 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     attackAnimations.emplace_back(make_pair(LEFT, "img/attack_side.png"));
     attackAnimations.emplace_back(make_pair(UP, "img/attack_up.png"));
     attackAnimations.emplace_back(make_pair(DOWN, "img/attack_down.png"));
+
+    closestNpcDistance = numeric_limits<float>::infinity();
+    closestNpc = weak_ptr<GameObject>();
+    shouldStopTalking = false;
 }
 
 string Player::GetMovementAnimation() {
@@ -93,13 +97,12 @@ Player::PlayerDirection Player::GetNewDirection(vector<PlayerDirection> directio
 }
 
 void Player::Update(float dt) {
-    if (state != TALKING) {
         auto inputManager = InputManager::GetInstance();
-        closestNpcDistance = numeric_limits<float>::infinity();
-        closestNpc = weak_ptr<GameObject>();
         auto newState = state;
 
-        if (inputManager.MousePress(RIGHT_MOUSE_BUTTON) || state == SHOOTING) {
+        if (state == TALKING && !shouldStopTalking) {
+            newState = TALKING;
+        } else if (inputManager.MousePress(RIGHT_MOUSE_BUTTON) || state == SHOOTING) {
             newState = SHOOTING;
         } else if (inputManager.MousePress(LEFT_MOUSE_BUTTON) || state == ATTACKING) {
             newState = ATTACKING;
@@ -108,8 +111,27 @@ void Player::Update(float dt) {
         } else {
             newState = IDLE;
         }
+        
+        if (shouldStopTalking && state != TALKING) {
+            shouldStopTalking = false;
+            auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
+            collider->SetCanCollide([&] (GameObject &other) -> bool {
+                return other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY);
+            });
+        }
 
-        if (newState == SHOOTING) {
+        if (newState == TALKING && !closestNpc.expired()) {
+            auto npc = (Npc *)closestNpc.lock()->GetComponent(NPC_TYPE);
+            npc->Talk();
+            
+            speed = Vec2();
+            auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
+            collider->SetCanCollide([&] (GameObject &other) -> bool {
+                return false;
+            });
+            closestNpcDistance = numeric_limits<float>::infinity();
+            closestNpc = weak_ptr<GameObject>();
+        } else if (newState == SHOOTING) {
             speed = Vec2();
             if (state != SHOOTING) {
                 timer.Restart();
@@ -163,7 +185,7 @@ void Player::Update(float dt) {
             if (state != MOVING || currentDirection != oldDirection) {
                 SetSprite(GetMovementAnimation(), WALK_SPRITE_COUNT, SPR_TIME, currentDirection == LEFT);
             }
-        } else {
+        } else if (newState == IDLE) {
             if (state != IDLE) {
                 SetSprite(IDLE_SPRITE, IDLE_SPRITE_COUNT, 0.1);
             }
@@ -180,10 +202,6 @@ void Player::Update(float dt) {
         }
 
         associated.box += speed;
-    } else if (!closestNpc.expired()) {
-        auto npc = (Npc *)closestNpc.lock()->GetComponent(NPC_TYPE);
-        npc->Talk();
-    }
 }
 
 void Player::Render() {
@@ -304,7 +322,7 @@ Player::PlayerDirection Player::GetDirection(Vec2 target) {
 }
 
 void Player::StopTalking() {
-    state = IDLE;
+    shouldStopTalking = true;
 }
 
 bool Player::IsTalking() {
