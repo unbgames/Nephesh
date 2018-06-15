@@ -11,7 +11,7 @@
 TextBox::TextBox(GameObject &associated) : Component(associated), containedText() {
     auto sprite = new Sprite(associated, "img/textBox.png");
     associated.box.w = WIDTH;
-    associated.box.h = 200;
+    associated.box.h = 300;
     associated.box.y = HEIGHT - associated.box.h;
     sprite->SetScale(associated.box.w/sprite->GetWidth(), associated.box.h/sprite->GetHeight());
     associated.AddComponent(sprite);
