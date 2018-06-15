@@ -7,7 +7,7 @@
 
 using namespace std;
 
-#define TILE_DIMENSIONS 32
+#define TILE_DIMENSIONS 64
 
 class TileSet {
 public:
