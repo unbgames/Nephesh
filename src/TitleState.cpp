@@ -11,6 +11,7 @@
 #include <Collidable.h>
 #include <TextBox.h>
 #include <Npc.h>
+#include <Sound.h>
 #include "TitleState.h"
 #include "Text.h"
 
@@ -31,14 +32,9 @@ TitleState::TitleState() : State() {
     npcObj->box.y = 10;
     npcObj->AddComponent(new Sprite(*npcObj, "tests/img/penguin.png"));
     npcObj->AddComponent(new Npc(*npcObj, "npcs/npcTest.txt"));
-    AddObject(npcObj);
+    npcObj->AddComponent(new Sound(*npcObj, "audio/gvms2.wav"));
 
-    auto npcObj2 = new GameObject();
-    npcObj2->box.x = WIDTH/2 + 100;
-    npcObj2->box.y = 100;
-    npcObj2->AddComponent(new Sprite(*npcObj2, "tests/img/penguin.png"));
-    npcObj2->AddComponent(new Npc(*npcObj2, "npcs/npcTest2.txt"));
-    AddObject(npcObj2);
+    AddObject(npcObj);
 }
 
 TitleState::~TitleState() = default;
