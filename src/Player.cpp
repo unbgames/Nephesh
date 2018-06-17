@@ -10,6 +10,7 @@
 #include <MeleeAttack.h>
 #include <Npc.h>
 #include <Camera.h>
+#include <CollisionMap.h>
 #include "Player.h"
 
 #define SPEED 200
@@ -22,9 +23,9 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
 
     associated.AddComponent(spr);
 
-    auto collider = new Collider(associated, Vec2(0.8, 0.92));
+    auto collider = new Collider(associated, Vec2(0.5, 0.92));
     collider->SetCanCollide([&] (GameObject &other) -> bool {
-        return other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY);
+        return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) || other.HasComponent(COLLISION_MAP_TYPE);
     });
     
     associated.AddComponent(collider);
@@ -49,6 +50,16 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     attackAnimations.emplace_back(make_pair(LEFT, "img/attack_side.png"));
     attackAnimations.emplace_back(make_pair(UP, "img/attack_up.png"));
     attackAnimations.emplace_back(make_pair(DOWN, "img/attack_down.png"));
+
+    directionOffsets.emplace_back(make_pair(RIGHT, Vec2(20, 0)));
+    directionOffsets.emplace_back(make_pair(LEFT, Vec2(-15, 0)));
+    directionOffsets.emplace_back(make_pair(UP, Vec2(0, 0)));
+    directionOffsets.emplace_back(make_pair(DOWN, Vec2(0, 0)));
+
+    directionScales.emplace_back(make_pair(RIGHT, Vec2(0.5, 0.92)));
+    directionScales.emplace_back(make_pair(LEFT, Vec2(0.5, 0.92)));
+    directionScales.emplace_back(make_pair(UP, Vec2(0.4, 0.92)));
+    directionScales.emplace_back(make_pair(DOWN, Vec2(0.4, 0.92)));
 
     closestNpcDistance = numeric_limits<float>::infinity();
     closestNpc = weak_ptr<GameObject>();
@@ -99,6 +110,8 @@ Player::PlayerDirection Player::GetNewDirection(vector<PlayerDirection> directio
 void Player::Update(float dt) {
         auto inputManager = InputManager::GetInstance();
         auto newState = state;
+        auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
+        lastPos = Vec2(associated.box.x, associated.box.y);
 
         if (state == TALKING && !shouldStopTalking) {
             newState = TALKING;
@@ -111,12 +124,13 @@ void Player::Update(float dt) {
         } else {
             newState = IDLE;
         }
+
         
         if (shouldStopTalking && state != TALKING) {
             shouldStopTalking = false;
             auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
             collider->SetCanCollide([&] (GameObject &other) -> bool {
-                return other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY);
+                return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) || other.HasComponent(COLLISION_MAP_TYPE);
             });
         }
 
@@ -125,7 +139,6 @@ void Player::Update(float dt) {
             npc->Talk();
             
             speed = Vec2();
-            auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
             collider->SetCanCollide([&] (GameObject &other) -> bool {
                 return false;
             });
@@ -182,26 +195,26 @@ void Player::Update(float dt) {
             auto oldDirection = currentDirection;
             currentDirection = GetNewDirection(directionsPressed);
 
+            collider->SetScale(GetDirectionScale());
+            collider->SetOffset(GetDirectionOffset());
+
             if (state != MOVING || currentDirection != oldDirection) {
                 SetSprite(GetMovementAnimation(), WALK_SPRITE_COUNT, SPR_TIME, currentDirection == LEFT);
             }
         } else if (newState == IDLE) {
             if (state != IDLE) {
+                collider->SetOffset(Vec2(25, 0));
+                collider->SetScale(Vec2(0.5, 0.92));
                 SetSprite(IDLE_SPRITE, IDLE_SPRITE_COUNT, 0.1);
             }
             speed = Vec2(0,0);
         }
 
         state = newState;
-
-        auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
-        if (state == IDLE) {
-            collider->SetOffset(Vec2(10, 0));
-        } else {
-            collider->SetOffset(Vec2(0, 0));
-        }
-
+        
         associated.box += speed;
+        //TODO: Find a way to make Collider update only after Player update
+        collider->Update(0);
 }
 
 void Player::Render() {
@@ -221,13 +234,19 @@ Player::~Player() {
 }
 
 void Player::NotifyCollision(GameObject &other) {
-    auto distance = (other.box.Center() - associated.box.Center()).Module();
+    if (other.HasComponent(NPC_TYPE)) {
+        auto distance = (other.box.Center() - associated.box.Center()).Module();
 
-    if (distance < closestNpcDistance) {
-        closestNpcDistance = distance;
-        closestNpc = Game::GetInstance().GetCurrentState().GetObjectPtr(&other);
-        SetSprite(IDLE_SPRITE, IDLE_SPRITE_COUNT, 0.1);
-        state = TALKING;
+        if (distance < closestNpcDistance) {
+            closestNpcDistance = distance;
+            closestNpc = Game::GetInstance().GetCurrentState().GetObjectPtr(&other);
+            SetSprite(IDLE_SPRITE, IDLE_SPRITE_COUNT, 0.1);
+            state = TALKING;
+        }
+    } else {
+        auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
+        associated.box -= speed;
+        collider->Update(0);
     }
 }
 
@@ -329,5 +348,25 @@ void Player::StopTalking() {
 
 bool Player::IsTalking() {
     return state == TALKING;
+}
+
+Vec2 Player::GetDirectionScale() {
+    for (auto &scale : directionScales) {
+        if (scale.first == currentDirection) {
+            return scale.second;
+        }
+    }
+
+    return Vec2();
+}
+
+Vec2 Player::GetDirectionOffset() {
+    for (auto &offset : directionOffsets) {
+        if (offset.first == currentDirection) {
+            return offset.second;
+        }
+    }
+
+    return Vec2();
 }
 

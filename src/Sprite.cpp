@@ -23,7 +23,7 @@ secondsToSelfDestruct, bool scaleSpriteForLayer, bool flip) : Sprite(associated)
 
 Sprite::~Sprite() = default;
 
-void Sprite::Open(string file) {
+void Sprite::Open(string file, bool shouldRecenter) {
     texture = Resources::GetImage(file);
     
     auto oldBox = associated.box;
@@ -34,7 +34,7 @@ void Sprite::Open(string file) {
     associated.box.w = GetWidth();
 
     // Check if it is the first time opening this sprite in this object
-    if (oldBox.w != 0 && oldBox.h != 0) {
+    if (oldBox.w != 0 && oldBox.h != 0 && shouldRecenter) {
         associated.SetCenter(oldBox.Center());
     }
 

@@ -19,7 +19,7 @@ public:
         DOWN
     };
 
-    Map(string mapName, string tileSetFile, MapDirection direction);
+    Map(string mapName, string tileSetFile, MapDirection direction, string collisionMapFile = "");
 
     MapDirection GetDirection();
     void SetPosition(Vec2 position);

@@ -41,9 +41,12 @@ private:
     vector<pair<PlayerDirection, string>> movementAnimations;
     vector<pair<PlayerDirection, string>> shootingAnimations;
     vector<pair<PlayerDirection, string>> attackAnimations;
+    vector<pair<PlayerDirection, Vec2>> directionScales;
+    vector<pair<PlayerDirection, Vec2>> directionOffsets;
 
     PlayerDirection GetNewDirection(vector<PlayerDirection> directions);
     PlayerDirection GetDirection(Vec2 target);
+
     void Shoot();
     void Attack();
     PlayerState state;
@@ -51,9 +54,12 @@ private:
     bool shouldStopTalking;
     Vec2 speed;
     int hp;
+    Vec2 lastPos;
 
     Timer timer;
 
+    Vec2 GetDirectionScale();
+    Vec2 GetDirectionOffset();
     string GetMovementAnimation();
     string GetShootingAnimation();
     string GetAttackAnimation();

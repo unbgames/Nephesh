@@ -23,7 +23,7 @@ public:
     void Update(float dt);
     bool Is(string type);
 
-    void Open(string file);
+    void Open(string file, bool shouldRecenter = true);
     void SetClip(int x, int y, int w, int h);
     void SetClip(int x, int y);
     void Render() override;
