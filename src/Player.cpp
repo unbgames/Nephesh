@@ -295,6 +295,7 @@ Player::PlayerStateData Player::GetStateData(vector<PlayerStateData> data) {
 Player::PlayerStateData Player::ChangeDirection() {
     auto playerData = PlayerStateData(LEFT, "", Vec2(), Vec2());
     auto frameCount = WALK_SPRITE_COUNT;
+    auto animationDuration = WALK_SPRITE_DURATION;
     auto shouldFlip = false;
     switch (state) {
         case MOVING:
@@ -304,21 +305,24 @@ Player::PlayerStateData Player::ChangeDirection() {
         case ATTACKING:
             playerData = GetStateData(attackingData);
             frameCount = ATTACK_SPRITE_COUNT;
+            animationDuration = ATTACK_DURATION;
             shouldFlip = currentDirection == LEFT;
             break;
         case SHOOTING:
             playerData = GetStateData(shootingData);
             frameCount = MAGIC_SPRITE_COUNT;
+            animationDuration = BEAM_LIFETIME;
             shouldFlip = currentDirection == LEFT;
             break;
         default:
             playerData = GetStateData(idleData);
             frameCount = IDLE_SPRITE_COUNT;
+            animationDuration = IDLE_SPRITE_DURATION;
     }
     auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
     collider->SetOffset(playerData.playerSpriteOffset);
     collider->SetScale(playerData.playerSpriteScale);
-    SetSprite(playerData.animation, frameCount, 0.1, shouldFlip);
+    SetSprite(playerData.animation, frameCount, animationDuration/frameCount, shouldFlip);
 
     return playerData;
 }
