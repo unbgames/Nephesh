@@ -18,13 +18,17 @@ using namespace std;
 #define ATTACK_DURATION 0.3
 #define ATTACK_RANGE 70
 #define ATTACK_WIDTH 120
+#define CHARGING_DURATION 0.3
+#define CHARGING_SPRITE_COUNT 0.3
 #define IDLE_SPRITE "img/idle_up.png"
 
 class Player : public Component {
 private:
     enum PlayerState {
+        STARTING,
         TALKING,
         ATTACKING,
+        CHARGING,
         SHOOTING,
         MOVING,
         IDLE
@@ -37,18 +41,35 @@ private:
         DOWN
     };
 
+    class PlayerStateData {
+    public:
+        PlayerDirection direction;
+        string animation;
+        Vec2 playerSpriteScale;
+        Vec2 playerSpriteOffset;
+        Vec2 objectSpriteOffset;
+
+        PlayerStateData (PlayerDirection direction, string movementAnimation, Vec2 scale, Vec2 offset, Vec2 objectSpriteOffset = Vec2());
+    };
+
     PlayerDirection currentDirection;
-    vector<pair<PlayerDirection, string>> movementAnimations;
-    vector<pair<PlayerDirection, string>> shootingAnimations;
-    vector<pair<PlayerDirection, string>> attackAnimations;
-    vector<pair<PlayerDirection, Vec2>> directionScales;
-    vector<pair<PlayerDirection, Vec2>> directionOffsets;
+
+    vector<PlayerStateData> movingData;
+    vector<PlayerStateData> attackingData;
+    vector<PlayerStateData> shootingData;
+    vector<PlayerStateData> chargingData;
+    vector<PlayerStateData> idleData;
 
     PlayerDirection GetNewDirection(vector<PlayerDirection> directions);
-    PlayerDirection GetDirection(Vec2 target);
+    PlayerDirection GetNewDirection(Vec2 target);
+
+    PlayerStateData ChangeDirection();
 
     void Shoot();
     void Attack();
+    void Charge();
+
+    Vec2 target;
     PlayerState state;
     float closestNpcDistance;
     bool shouldStopTalking;
@@ -58,11 +79,7 @@ private:
 
     Timer timer;
 
-    Vec2 GetDirectionScale();
-    Vec2 GetDirectionOffset();
-    string GetMovementAnimation();
-    string GetShootingAnimation();
-    string GetAttackAnimation();
+    PlayerStateData GetStateData(vector<PlayerStateData> data);
     void SetSprite(string file, int frameCount, float frameTime, bool flip = false);
 public:
     void Start() override;
