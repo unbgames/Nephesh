@@ -22,6 +22,7 @@ BeamSkill::~BeamSkill() {
 
 void BeamSkill::Update(float dt) {
     timer.Update(dt);
+    
     if (!charged) {
         if (timer.Get() > CHARGING_DURATION) {
             charged = true;
@@ -133,9 +134,7 @@ void BeamSkill::Fire() {
     auto d = target - Vec2(associated.box.x, associated.box.y + associated.box.h/2);
     associated.rotationCenter = Vec2(0, associated.box.h/2);
     associated.angleDeg = d.XAngleDeg();
-    cutoffPoint = d.Module();
-    collider->box.w = cutoffPoint;
-    associated.box.w = cutoffPoint;
+    cutoffPoint = associated.box.w;
     auto clip = sprite->GetClip();
     sprite->SetClip(clip.x, clip.y, cutoffPoint, clip.h);
 
@@ -149,6 +148,6 @@ void BeamSkill::Fire() {
     endObj->angleDeg = associated.angleDeg;
     auto s = new Sprite(*endObj, "img/magic_effect_side3.png", 5, BEAM_LIFETIME/5);
     endObj->AddComponent(s);
-    endObj->SetCenter(target);
+    endObj->SetCenter(Vec2(associated.box.x, associated.box.y) + Vec2(associated.box.w, 0).RotateDeg(associated.angleDeg));
     endObject = Game::GetInstance().GetCurrentState().AddObject(endObj);
 }

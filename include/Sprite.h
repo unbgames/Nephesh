@@ -41,6 +41,7 @@ public:
     void SetFlip(bool f);
     void LockFrame();
     void UnlockFrame();
+    int GetFrame();
 private:
     shared_ptr<SDL_Texture> texture;
     SDL_Rect clipRect;

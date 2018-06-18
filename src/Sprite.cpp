@@ -139,6 +139,7 @@ Vec2 Sprite::GetScale() {
 
 void Sprite::SetFrame(int frame) {
     currentFrame = frame;
+    timeElapsed = 0;
 
     SetClip(getFrameWidth()*frame, 0);
 }
@@ -172,6 +173,10 @@ void Sprite::LockFrame() {
 
 void Sprite::UnlockFrame() {
     lockFrame = false;
+}
+
+int Sprite::GetFrame() {
+    return currentFrame;
 }
 
 
