@@ -40,10 +40,10 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     movingData.emplace_back(UP, "img/walk_up.png", Vec2(0.4, 0.92), Vec2(0, 0));
     movingData.emplace_back(DOWN, "img/walk_down.png", Vec2(0.4, 0.92), Vec2(0, 0));
 
-    shootingData.emplace_back(RIGHT, "img/magic_side.png", Vec2(0.5, 0.92), Vec2(20, 0), Vec2(65, -20));
-    shootingData.emplace_back(LEFT, "img/magic_side.png", Vec2(0.5, 0.92), Vec2(-15, 0), Vec2(-60, -20));
-    shootingData.emplace_back(UP, "img/magic_up.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(0, -45));
-    shootingData.emplace_back(DOWN, "img/magic_down.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(5, 35));
+    shootingData.emplace_back(RIGHT, "img/magic_side.png", Vec2(0.5, 0.92), Vec2(20, 0), Vec2(65, -40));
+    shootingData.emplace_back(LEFT, "img/magic_side.png", Vec2(0.5, 0.92), Vec2(-15, 0), Vec2(-60, -40));
+    shootingData.emplace_back(UP, "img/magic_up.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(3, -80));
+    shootingData.emplace_back(DOWN, "img/magic_down.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(3, 35));
 
     attackingData.emplace_back(RIGHT, "img/attack_side.png", Vec2(0.3, 0.92), Vec2(-10, 0), Vec2(60, 0));
     attackingData.emplace_back(LEFT, "img/attack_side.png", Vec2(0.3, 0.92), Vec2(10, 0), Vec2(-60, 0));
@@ -77,7 +77,6 @@ void Player::Update(float dt) {
         auto inputManager = InputManager::GetInstance();
         auto newState = state;
         auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
-        lastPos = Vec2(associated.box.x, associated.box.y);
 
         if (state == TALKING && !shouldStopTalking) {
             newState = TALKING;
@@ -90,7 +89,6 @@ void Player::Update(float dt) {
         } else {
             newState = IDLE;
         }
-
         
         if (shouldStopTalking && state != TALKING) {
             shouldStopTalking = false;
@@ -113,12 +111,22 @@ void Player::Update(float dt) {
         } else if (newState == SHOOTING) {
             speed = Vec2();
             if (state != SHOOTING) {
+                preparing = true;
+                target = Camera::GetAbsolutePosition(associated.GetLayer(), Vec2(inputManager.GetMouseX(), inputManager.GetMouseY()));
+                currentDirection = GetNewDirection(target);
                 timer.Restart();
-                Shoot();
             } else {
                 timer.Update(dt);
-                if (timer.Get() > BEAM_LIFETIME) {
+                if (preparing && timer.Get() > MAGIC_SPRITE_DURATION) {
+                    Shoot();
+                    preparing = false;
+                    timer.Restart();
+                    auto sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
+                    sprite->LockFrame();
+                } else if (!preparing && timer.Get() > BEAM_LIFETIME + CHARGING_DURATION) {
                     newState = IDLE;
+                    auto sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
+                    sprite->UnlockFrame();
                 }
             }
         } else if (newState == ATTACKING) {
@@ -227,18 +235,12 @@ void Player::SetSprite(string file, int frameCount, float frameTime, bool flip) 
 }
 
 void Player::Shoot() {
-    auto& inputManager = InputManager::GetInstance();
-    auto target = Vec2(inputManager.GetMouseX(), inputManager.GetMouseY());
-    target = Camera::GetAbsolutePosition(associated.GetLayer(), target);
-
-    currentDirection = GetNewDirection(target);
-
     auto playerBoxCenter = associated.box.Center();
     auto beamObj = new GameObject(associated.GetLayer());
 
     beamObj->box = Rect() + playerBoxCenter + GetStateData(shootingData).objectSpriteOffset;
 
-    auto beamCpt = new BeamSkill(*beamObj, target);
+    auto beamCpt = new BeamSkill(*beamObj, target, currentDirection);
     beamObj->AddComponent(beamCpt);
     Game::GetInstance().GetCurrentState().AddObject(beamObj);
 }
@@ -278,10 +280,6 @@ void Player::StopTalking() {
     shouldStopTalking = true;
 }
 
-bool Player::IsTalking() {
-    return state == TALKING;
-}
-
 Player::PlayerStateData Player::GetStateData(vector<PlayerStateData> data) {
     for (auto &d : data) {
         if (d.direction == currentDirection) {
@@ -311,7 +309,7 @@ Player::PlayerStateData Player::ChangeDirection() {
         case SHOOTING:
             playerData = GetStateData(shootingData);
             frameCount = MAGIC_SPRITE_COUNT;
-            animationDuration = BEAM_LIFETIME;
+            animationDuration = MAGIC_SPRITE_DURATION;
             shouldFlip = currentDirection == LEFT;
             break;
         default:

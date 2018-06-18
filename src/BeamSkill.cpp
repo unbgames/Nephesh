@@ -9,23 +9,31 @@
 #include <Collidable.h>
 #include "BeamSkill.h"
 
-BeamSkill::BeamSkill(GameObject &associated, Vec2 target) : Component(associated), target(target), lockBeam(false) {
-    auto raySprite = new Sprite(associated, "img/magic_effect_side2.png", 5, BEAM_LIFETIME/5);
-    associated.AddComponent(raySprite);
+BeamSkill::BeamSkill(GameObject &associated, Vec2 target, Player::PlayerDirection direction) : Component(associated), target(target), direction(direction), lockBeam(false), charged(false) {
     auto collider = new Collider(associated);
     associated.AddComponent(collider);
-
-
-    associated.box.y -= associated.box.h/2;
+    collider->SetCanCollide([] (GameObject &other) -> bool {
+        return false;
+    });
 }
 
 BeamSkill::~BeamSkill() {
 }
 
 void BeamSkill::Update(float dt) {
-    lifeTimer.Update(dt);
-    if (lifeTimer.Get() > BEAM_LIFETIME) {
-        lifeTimer.Restart();
+    timer.Update(dt);
+    if (!charged) {
+        if (timer.Get() > CHARGING_DURATION) {
+            charged = true;
+            timer.Restart();
+            if (!chargeObject.expired()) {
+                chargeObject.lock()->RequestDelete();
+            }
+
+            Fire();
+        }
+    } else if (timer.Get() > BEAM_LIFETIME) {
+        timer.Restart();
         initObject.lock()->RequestDelete();
         endObject.lock()->RequestDelete();
         associated.RequestDelete();
@@ -33,7 +41,9 @@ void BeamSkill::Update(float dt) {
 }
 
 void BeamSkill::Render() {
-    lockBeam = true;
+    if (charged) {
+        lockBeam = true;
+    }
 }
 
 bool BeamSkill::Is(string type) {
@@ -78,8 +88,47 @@ void BeamSkill::NotifyCollision(GameObject &other) {
 }
 
 void BeamSkill::Start() {
-    auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
+    string spriteName = "";
+
+    switch (direction) {
+        case Player::PlayerDirection::RIGHT:
+        case Player::PlayerDirection::LEFT:
+            spriteName = "img/pre_magic_side.png";
+            break;
+        case Player::PlayerDirection::UP:
+            associated.box -= Vec2(24, 0);
+            spriteName = "img/pre_magic_up.png";
+            break;
+        case Player::PlayerDirection::DOWN:
+            associated.box -= Vec2(17, 0);
+            spriteName = "img/pre_magic_down.png";
+            break;
+    }
+
+    auto raySprite = new Sprite(associated, spriteName, 4, CHARGING_DURATION/4, 0, false, direction == Player::PlayerDirection::LEFT);
+    associated.AddComponent(raySprite);
+}
+
+void BeamSkill::Fire() {
     auto sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
+    
+    if (direction == Player::PlayerDirection::UP) {
+        associated.box += Vec2(24, 0);
+    } else if (direction == Player::PlayerDirection::DOWN) {
+        associated.box += Vec2(17, 0);
+    }
+    
+    sprite->SetFlip(false);
+    sprite->SetFrameCount(5);
+    sprite->SetFrameTime(BEAM_LIFETIME/5);
+    sprite->Open("img/magic_effect_side2.png", false);
+    sprite->SetFrame(0);
+
+    auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
+    collider->SetCanCollide([] (GameObject &other) -> bool {
+        return true;
+    });
+    collider->Update(0);
 
     auto d = target - Vec2(associated.box.x, associated.box.y + associated.box.h/2);
     associated.rotationCenter = Vec2(0, associated.box.h/2);
@@ -90,13 +139,13 @@ void BeamSkill::Start() {
     auto clip = sprite->GetClip();
     sprite->SetClip(clip.x, clip.y, cutoffPoint, clip.h);
 
-    auto initObj = new GameObject(associated.GetLayer()+1);
+    auto initObj = new GameObject(associated.GetLayer());
     initObj->angleDeg = associated.angleDeg;
     initObj->AddComponent(new Sprite(*initObj, "img/magic_effect_side1.png", 5, BEAM_LIFETIME/5));
     initObj->SetCenter(Vec2(associated.box.x, associated.box.y + associated.box.h/2));
     initObject = Game::GetInstance().GetCurrentState().AddObject(initObj);
 
-    auto endObj = new GameObject(associated.GetLayer()+1);
+    auto endObj = new GameObject(associated.GetLayer());
     endObj->angleDeg = associated.angleDeg;
     auto s = new Sprite(*endObj, "img/magic_effect_side3.png", 5, BEAM_LIFETIME/5);
     endObj->AddComponent(s);

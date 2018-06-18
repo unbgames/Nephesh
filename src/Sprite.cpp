@@ -6,8 +6,8 @@
 #include <Camera.h>
 #include <Sprite.h>
 
-Sprite::Sprite(GameObject &associated) : Component(associated), scale(Vec2(1, 1)), frameCount(0), frameTime
-(0), timeElapsed(0), currentFrame(0), scaleSpriteForLayer(false), flip(false) {
+Sprite::Sprite(GameObject &associated) : Component(associated), scale(Vec2(1, 1)), frameCount(1), frameTime
+(1), timeElapsed(0), currentFrame(0), scaleSpriteForLayer(false), flip(false) {
     texture = nullptr;
 }
 
@@ -103,14 +103,16 @@ void Sprite::Update(float dt) {
             associated.RequestDelete();
         }
     }
-
-    if (timeElapsed >= frameTime) {
-        auto nextFrame = currentFrame+1;
-        if (nextFrame == frameCount) {
-            nextFrame = 0;
+    
+    if (!lockFrame) {
+        if (timeElapsed >= frameTime) {
+            auto nextFrame = currentFrame+1;
+            if (nextFrame == frameCount) {
+                nextFrame = 0;
+            }
+            SetFrame(nextFrame);
+            timeElapsed = 0;
         }
-        SetFrame(nextFrame);
-        timeElapsed = 0;
     }
 }
 
@@ -162,6 +164,14 @@ SDL_Rect Sprite::GetClip() {
 
 void Sprite::SetFlip(bool f) {
     flip = f;
+}
+
+void Sprite::LockFrame() {
+    lockFrame = true;
+}
+
+void Sprite::UnlockFrame() {
+    lockFrame = false;
 }
 
 

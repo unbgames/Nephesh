@@ -39,6 +39,8 @@ public:
     void SetFrameCount(int frameCount);
     void SetFrameTime(float frameTime);
     void SetFlip(bool f);
+    void LockFrame();
+    void UnlockFrame();
 private:
     shared_ptr<SDL_Texture> texture;
     SDL_Rect clipRect;
@@ -53,6 +55,7 @@ private:
     float secondsToSelfDestruct;
     bool scaleSpriteForLayer;
     bool flip;
+    bool lockFrame;
 
 
     int getFrameWidth();
