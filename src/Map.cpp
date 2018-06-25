@@ -5,14 +5,24 @@
 #include <TileSet.h>
 #include <TileMap.h>
 #include <Map.h>
+#include <CollisionMap.h>
+#include <Game.h>
+#include <TitleState.h>
 
-Map::Map(string mapName, string tileSetFile, Map::MapDirection direction) : direction(direction) {
+Map::Map(string mapName, string tileSetFile, Map::MapDirection direction, string collisionMapFile) : direction(direction) {
     auto obj = new GameObject();
     auto tileSet = new TileSet(TILE_DIMENSIONS, TILE_DIMENSIONS, tileSetFile);
     auto map = new TileMap(*obj, mapName, tileSet);
     obj->AddComponent(map);
 
     tileMap = shared_ptr<GameObject>(obj);
+
+    if (!collisionMapFile.empty()) {
+        tileMap->AddComponent(new CollisionMap(*tileMap, collisionMapFile, TILE_DIMENSIONS, TILE_DIMENSIONS));
+        auto &state = (TitleState &) Game::GetInstance().GetCurrentState();
+        state.AddCollidable(tileMap);
+        cout << "added collisionMap" << endl;
+    }
 }
 
 shared_ptr<GameObject> Map::GetTileMap() {

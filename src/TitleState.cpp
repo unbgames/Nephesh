@@ -37,10 +37,6 @@ TitleState::TitleState() : State(), currentMapIndex(0) {
     npcObj->AddComponent(new Sound(*npcObj, "audio/gvms2.wav"));
 
     AddObject(npcObj);
-
-    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::DOWN);
-    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::DOWN);
-    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::RIGHT);
 }
 
 TitleState::~TitleState() = default;
@@ -122,6 +118,10 @@ void TitleState::Render() {
 }
 
 void TitleState::Start() {
+    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::DOWN, "map/collisionMap.txt");
+    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::DOWN, "map/collisionMap.txt");
+    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::RIGHT, "map/collisionMap.txt");
+
     StartArray();
 
     LoadMaps();

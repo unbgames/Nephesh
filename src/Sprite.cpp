@@ -6,8 +6,8 @@
 #include <Camera.h>
 #include <Sprite.h>
 
-Sprite::Sprite(GameObject &associated) : Component(associated), scale(Vec2(1, 1)), frameCount(0), frameTime
-(0), timeElapsed(0), currentFrame(0), scaleSpriteForLayer(false), flip(false) {
+Sprite::Sprite(GameObject &associated) : Component(associated), scale(Vec2(1, 1)), frameCount(1), frameTime
+(1), timeElapsed(0), currentFrame(0), scaleSpriteForLayer(false), flip(false) {
     texture = nullptr;
 }
 
@@ -23,7 +23,7 @@ secondsToSelfDestruct, bool scaleSpriteForLayer, bool flip) : Sprite(associated)
 
 Sprite::~Sprite() = default;
 
-void Sprite::Open(string file) {
+void Sprite::Open(string file, bool shouldRecenter) {
     texture = Resources::GetImage(file);
     
     auto oldBox = associated.box;
@@ -34,7 +34,7 @@ void Sprite::Open(string file) {
     associated.box.w = GetWidth();
 
     // Check if it is the first time opening this sprite in this object
-    if (oldBox.w != 0 && oldBox.h != 0) {
+    if (oldBox.w != 0 && oldBox.h != 0 && shouldRecenter) {
         associated.SetCenter(oldBox.Center());
     }
 
@@ -103,14 +103,16 @@ void Sprite::Update(float dt) {
             associated.RequestDelete();
         }
     }
-
-    if (timeElapsed >= frameTime) {
-        auto nextFrame = currentFrame+1;
-        if (nextFrame == frameCount) {
-            nextFrame = 0;
+    
+    if (!lockFrame) {
+        if (timeElapsed >= frameTime) {
+            auto nextFrame = currentFrame+1;
+            if (nextFrame == frameCount) {
+                nextFrame = 0;
+            }
+            SetFrame(nextFrame);
+            timeElapsed = 0;
         }
-        SetFrame(nextFrame);
-        timeElapsed = 0;
     }
 }
 
@@ -137,6 +139,7 @@ Vec2 Sprite::GetScale() {
 
 void Sprite::SetFrame(int frame) {
     currentFrame = frame;
+    timeElapsed = 0;
 
     SetClip(getFrameWidth()*frame, 0);
 }
@@ -162,6 +165,18 @@ SDL_Rect Sprite::GetClip() {
 
 void Sprite::SetFlip(bool f) {
     flip = f;
+}
+
+void Sprite::LockFrame() {
+    lockFrame = true;
+}
+
+void Sprite::UnlockFrame() {
+    lockFrame = false;
+}
+
+int Sprite::GetFrame() {
+    return currentFrame;
 }
 
 

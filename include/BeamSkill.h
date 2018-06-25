@@ -6,13 +6,16 @@
 #define NEPHESH_RAYPROJECTILE_H
 
 #include <GameObject.h>
+#include "Player.h"
 
 #define BEAM_SKILL_TYPE "BeamSkill"
-#define BEAM_LIFETIME 0.5
+#define BEAM_LIFETIME 0.3
+#define CHARGING_DURATION 0.3
 
 class BeamSkill : public Component {
 public:
-    BeamSkill(GameObject &associated, Vec2 target);
+
+    BeamSkill(GameObject &associated, Vec2 target, Player::PlayerDirection direction);
 
     ~BeamSkill() override;
 
@@ -24,15 +27,21 @@ public:
 
     void Start() override;
 
+    void Fire();
+
     void NotifyCollision(GameObject &other) override;
 
 private:
     weak_ptr<GameObject> initObject;
     weak_ptr<GameObject> endObject;
+    weak_ptr<GameObject> chargeObject;
+    Player::PlayerDirection direction;
+
     Vec2 target;
-    Timer lifeTimer;
+    Timer timer;
     float cutoffPoint;
     bool lockBeam;
+    bool charged;
 };
 
 

@@ -10,24 +10,19 @@
 #include <MeleeAttack.h>
 #include <Npc.h>
 #include <Camera.h>
+#include <CollisionMap.h>
+#include <TitleState.h>
 #include "Player.h"
 
 #define SPEED 200
-#define SPR_TIME 0.1
 
 Player *Player::player = nullptr;
 
-Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), state(IDLE), hp(100) {
+Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), state(STARTING), hp(100) {
     Sprite *spr = new Sprite(associated, IDLE_SPRITE, IDLE_SPRITE_COUNT, 0.1, 0, true);
 
     associated.AddComponent(spr);
 
-    auto collider = new Collider(associated, Vec2(0.8, 0.92));
-    collider->SetCanCollide([&] (GameObject &other) -> bool {
-        return other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY);
-    });
-    
-    associated.AddComponent(collider);
     associated.box.h = spr->GetHeight();
     associated.box.w = spr->GetWidth();
 
@@ -35,56 +30,33 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
 
     Player::player = this;
 
-    movementAnimations.emplace_back(make_pair(RIGHT, "img/walk_side.png"));
-    movementAnimations.emplace_back(make_pair(LEFT, "img/walk_side.png"));
-    movementAnimations.emplace_back(make_pair(UP, "img/walk_up.png"));
-    movementAnimations.emplace_back(make_pair(DOWN, "img/walk_down.png"));
+    movingData.emplace_back(RIGHT, "img/walk_side.png", Vec2(0.5, 0.92), Vec2(20, 0));
+    movingData.emplace_back(LEFT, "img/walk_side.png", Vec2(0.5, 0.92), Vec2(-15, 0));
+    movingData.emplace_back(UP, "img/walk_up.png", Vec2(0.4, 0.92), Vec2(0, 0));
+    movingData.emplace_back(DOWN, "img/walk_down.png", Vec2(0.4, 0.92), Vec2(0, 0));
 
-    shootingAnimations.emplace_back(make_pair(RIGHT, "img/magic_side.png"));
-    shootingAnimations.emplace_back(make_pair(LEFT, "img/magic_side.png"));
-    shootingAnimations.emplace_back(make_pair(UP, "img/magic_up.png"));
-    shootingAnimations.emplace_back(make_pair(DOWN, "img/magic_down.png"));
+    shootingData.emplace_back(RIGHT, "img/magic_side.png", Vec2(0.5, 0.92), Vec2(20, 0), Vec2(65, -40));
+    shootingData.emplace_back(LEFT, "img/magic_side.png", Vec2(0.5, 0.92), Vec2(-15, 0), Vec2(-60, -40));
+    shootingData.emplace_back(UP, "img/magic_up.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(3, -80));
+    shootingData.emplace_back(DOWN, "img/magic_down.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(4, 10));
 
-    attackAnimations.emplace_back(make_pair(RIGHT, "img/attack_side.png"));
-    attackAnimations.emplace_back(make_pair(LEFT, "img/attack_side.png"));
-    attackAnimations.emplace_back(make_pair(UP, "img/attack_up.png"));
-    attackAnimations.emplace_back(make_pair(DOWN, "img/attack_down.png"));
+    attackingData.emplace_back(RIGHT, "img/attack_side.png", Vec2(0.3, 0.92), Vec2(-10, 0), Vec2(60, 0));
+    attackingData.emplace_back(LEFT, "img/attack_side.png", Vec2(0.3, 0.92), Vec2(10, 0), Vec2(-60, 0));
+    attackingData.emplace_back(UP, "img/attack_up.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(0, -40));
+    attackingData.emplace_back(DOWN, "img/attack_down.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(0, 30));
+
+    idleData.emplace_back(RIGHT, "img/idle_down.png", Vec2(0.5, 0.92), Vec2(25, 0));
+    idleData.emplace_back(LEFT, "img/idle_up.png", Vec2(0.5, 0.92), Vec2(25, 0));
+    idleData.emplace_back(UP, "img/idle_up.png", Vec2(0.5, 0.92), Vec2(25, 0));
+    idleData.emplace_back(DOWN, "img/idle_down.png", Vec2(0.5, 0.92), Vec2(25, 0));
+
 
     closestNpcDistance = numeric_limits<float>::infinity();
     closestNpc = weak_ptr<GameObject>();
     shouldStopTalking = false;
 }
 
-string Player::GetMovementAnimation() {
-    for (auto &animation : movementAnimations) {
-        if (animation.first == currentDirection) {
-            return animation.second;
-        }
-    }
 
-    return nullptr;
-}
-
-string Player::GetShootingAnimation() {
-    for (auto &animation : shootingAnimations) {
-        if (animation.first == currentDirection) {
-            return animation.second;
-        }
-    }
-
-    return nullptr;
-}
-
-
-string Player::GetAttackAnimation() {
-    for (auto &animation : attackAnimations) {
-        if (animation.first == currentDirection) {
-            return animation.second;
-        }
-    }
-
-    return nullptr;
-}
 
 Player::PlayerDirection Player::GetNewDirection(vector<PlayerDirection> directionsPressed) {
     for (auto &direction : directionsPressed) {
@@ -99,6 +71,7 @@ Player::PlayerDirection Player::GetNewDirection(vector<PlayerDirection> directio
 void Player::Update(float dt) {
         auto inputManager = InputManager::GetInstance();
         auto newState = state;
+        auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
 
         if (state == TALKING && !shouldStopTalking) {
             newState = TALKING;
@@ -116,7 +89,7 @@ void Player::Update(float dt) {
             shouldStopTalking = false;
             auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
             collider->SetCanCollide([&] (GameObject &other) -> bool {
-                return other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY);
+                return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) || other.HasComponent(COLLISION_MAP_TYPE);
             });
         }
 
@@ -125,7 +98,6 @@ void Player::Update(float dt) {
             npc->Talk();
             
             speed = Vec2();
-            auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
             collider->SetCanCollide([&] (GameObject &other) -> bool {
                 return false;
             });
@@ -134,24 +106,37 @@ void Player::Update(float dt) {
         } else if (newState == SHOOTING) {
             speed = Vec2();
             if (state != SHOOTING) {
+                //Start the shooting animation
+                preparing = true;
+                target = Camera::GetAbsolutePosition(associated.GetLayer(), Vec2(inputManager.GetMouseX(), inputManager.GetMouseY()));
+                currentDirection = GetNewDirection(target);
                 timer.Restart();
-                Shoot();
             } else {
                 timer.Update(dt);
-                if (timer.Get() > BEAM_LIFETIME) {
-                    SetSprite(IDLE_SPRITE, MAGIC_SPRITE_COUNT, 0.1);
+                if (preparing && timer.Get() > MAGIC_SPRITE_DURATION) {
+                    //Player has finished preparing, lock the animation in the last frame and cast the magic.
+                    Shoot();
+                    preparing = false;
+                    timer.Restart();
+                    auto sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
+                    sprite->LockFrame();
+                } else if (!preparing && timer.Get() > BEAM_LIFETIME + CHARGING_DURATION) {
+                    //Player magic has finished, return player to IDLE state
                     newState = IDLE;
+                    auto sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
+                    sprite->UnlockFrame();
                 }
             }
         } else if (newState == ATTACKING) {
             speed = Vec2();
             if (state != ATTACKING) {
+                //Start player attacking animation and create MeleeAttack object
                 timer.Restart();
                 Attack();
             } else {
                 timer.Update(dt);
                 if (timer.Get() > ATTACK_DURATION) {
-                    SetSprite(IDLE_SPRITE, MAGIC_SPRITE_COUNT, 0.1);
+                    //Melee attack has finished, return player to IDLE state
                     newState = IDLE;
                 }
             }
@@ -159,6 +144,8 @@ void Player::Update(float dt) {
             vector<PlayerDirection> directionsPressed;
 
             speed = Vec2();
+
+            //Add movement vectors according to the pressed keys, also, store which keys were pressed
             if (inputManager.IsKeyDown('a')) {
                 directionsPressed.push_back(LEFT);
                 speed += Vec2(-SPEED * dt, 0);
@@ -180,25 +167,26 @@ void Player::Update(float dt) {
             }
 
             auto oldDirection = currentDirection;
+
+            //Get new direction based on keys pressed, the selection is as follow
+                // if the key corresponding to the current direction was pressed, keep the current direction
+                // else choose the direction of the first key pressed
+
             currentDirection = GetNewDirection(directionsPressed);
 
-            if (state != MOVING || currentDirection != oldDirection) {
-                SetSprite(GetMovementAnimation(), WALK_SPRITE_COUNT, SPR_TIME, currentDirection == LEFT);
+            if (currentDirection != oldDirection) {
+                //if the direction changed, force an sprite direction update
+                ChangeDirection();
             }
         } else if (newState == IDLE) {
-            if (state != IDLE) {
-                SetSprite(IDLE_SPRITE, IDLE_SPRITE_COUNT, 0.1);
-            }
             speed = Vec2(0,0);
         }
 
+        auto oldState = state;
         state = newState;
 
-        auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
-        if (state == IDLE) {
-            collider->SetOffset(Vec2(10, 0));
-        } else {
-            collider->SetOffset(Vec2(0, 0));
+        if (state != oldState) {
+            ChangeDirection();
         }
 
         associated.box += speed;
@@ -213,7 +201,14 @@ bool Player::Is(string type) {
 }
 
 void Player::Start() {
-    Component::Start();
+    auto collider = new Collider(associated, Vec2(0.5, 0.92));
+    collider->SetCanCollide([&] (GameObject &other) -> bool {
+        return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) || other.HasComponent(COLLISION_MAP_TYPE);
+    });
+
+    associated.AddComponent(collider);
+    auto &state = (TitleState &) Game::GetInstance().GetCurrentState();
+    state.AddCollider(state.GetObjectPtr(&associated).lock());
 }
 
 Player::~Player() {
@@ -221,13 +216,18 @@ Player::~Player() {
 }
 
 void Player::NotifyCollision(GameObject &other) {
-    auto distance = (other.box.Center() - associated.box.Center()).Module();
+    if (other.HasComponent(NPC_TYPE)) {
+        auto distance = (other.box.Center() - associated.box.Center()).Module();
 
-    if (distance < closestNpcDistance) {
-        closestNpcDistance = distance;
-        closestNpc = Game::GetInstance().GetCurrentState().GetObjectPtr(&other);
-        SetSprite(IDLE_SPRITE, IDLE_SPRITE_COUNT, 0.1);
-        state = TALKING;
+        if (distance < closestNpcDistance) {
+            closestNpcDistance = distance;
+            closestNpc = Game::GetInstance().GetCurrentState().GetObjectPtr(&other);
+            state = TALKING;
+        }
+    } else {
+        auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
+        associated.box -= speed;
+        collider->Update(0);
     }
 }
 
@@ -248,28 +248,12 @@ void Player::SetSprite(string file, int frameCount, float frameTime, bool flip) 
 }
 
 void Player::Shoot() {
-    auto& inputManager = InputManager::GetInstance();
-    auto target = Vec2(inputManager.GetMouseX(), inputManager.GetMouseY());
-    target = Camera::GetAbsolutePosition(associated.GetLayer(), target);
-
-    currentDirection = GetDirection(target);
-
-    SetSprite(GetShootingAnimation(), MAGIC_SPRITE_COUNT, BEAM_LIFETIME/MAGIC_SPRITE_COUNT, currentDirection == LEFT);
-
-    auto playerBoxPosition = Vec2(associated.box.x, associated.box.y);
+    auto playerBoxCenter = associated.box.Center();
     auto beamObj = new GameObject(associated.GetLayer());
 
-    if (currentDirection == RIGHT) {
-        beamObj->box = Rect() + playerBoxPosition + Vec2(associated.box.w, associated.box.h/2 );
-    } else if (currentDirection == DOWN) {
-        beamObj->box = Rect() + playerBoxPosition + Vec2(associated.box.w/2, associated.box.h);
-    } else if (currentDirection == LEFT) {
-        beamObj->box = Rect() + playerBoxPosition + Vec2(0, associated.box.h/2);
-    } else {
-        beamObj->box = Rect() + playerBoxPosition + Vec2(associated.box.w/2, 0);
-    }
+    beamObj->box = Rect() + playerBoxCenter + GetStateData(shootingData).objectSpriteOffset;
 
-    auto beamCpt = new BeamSkill(*beamObj, target);
+    auto beamCpt = new BeamSkill(*beamObj, target, currentDirection);
     beamObj->AddComponent(beamCpt);
     Game::GetInstance().GetCurrentState().AddObject(beamObj);
 }
@@ -279,37 +263,19 @@ void Player::Attack() {
     auto target = Vec2(inputManager.GetMouseX(), inputManager.GetMouseY());
     target = Camera::GetAbsolutePosition(associated.GetLayer(), target);
 
-    currentDirection = GetDirection(target);
+    currentDirection = GetNewDirection(target);
 
-    SetSprite(GetAttackAnimation(), ATTACK_SPRITE_COUNT, ATTACK_DURATION/ATTACK_SPRITE_COUNT, currentDirection == LEFT);
-
+    auto playerBoxCenter = associated.box.Center();
     auto attackObject = new GameObject(associated.GetLayer());
-    attackObject->AddComponent(new MeleeAttack(*attackObject));
-    auto collider = (Collider *) attackObject->GetComponent(COLLIDER_TYPE);
-    auto playerBoxPosition = Vec2(associated.box.x, associated.box.y);
 
-    if (currentDirection == RIGHT) {
-        collider->SetOffset(Vec2(-65, 0));
-        attackObject->box = Rect(ATTACK_WIDTH, ATTACK_RANGE);
-        attackObject->box.PlaceCenterAt(playerBoxPosition + Vec2(associated.box.w + attackObject->box.w/2, associated.box.h/2));
-    } else if (currentDirection == DOWN) {
-        collider->SetOffset(Vec2(0, -60));
-        attackObject->box = Rect(ATTACK_RANGE, ATTACK_WIDTH);
-        attackObject->box.PlaceCenterAt(playerBoxPosition + Vec2(associated.box.w/2, associated.box.h + attackObject->box.h/2));
-    } else if (currentDirection == LEFT) {
-        collider->SetOffset(Vec2(100, 0));
-        attackObject->box = Rect(ATTACK_WIDTH, ATTACK_RANGE);
-        attackObject->box.PlaceCenterAt(playerBoxPosition + Vec2(-attackObject->box.w, associated.box.h/2));
-    } else {
-        collider->SetOffset(Vec2(0, 80));
-        attackObject->box = Rect(ATTACK_RANGE, ATTACK_WIDTH);
-        attackObject->box.PlaceCenterAt(playerBoxPosition + Vec2(associated.box.w/2, -attackObject->box.h));
-    }
+    attackObject->box = currentDirection == LEFT || currentDirection == RIGHT ? Rect(ATTACK_WIDTH, ATTACK_RANGE) : Rect(ATTACK_RANGE, ATTACK_WIDTH);
+    attackObject->box.PlaceCenterAt(playerBoxCenter + GetStateData(attackingData).objectSpriteOffset);
+    attackObject->AddComponent(new MeleeAttack(*attackObject));
 
     Game::GetInstance().GetCurrentState().AddObject(attackObject);
 }
 
-Player::PlayerDirection Player::GetDirection(Vec2 target) {
+Player::PlayerDirection Player::GetNewDirection(Vec2 target) {
     auto angle = (target - associated.box.Center()).XAngleDeg();
 
     if (angle > -45 && angle < 45) {
@@ -327,7 +293,57 @@ void Player::StopTalking() {
     shouldStopTalking = true;
 }
 
-bool Player::IsTalking() {
-    return state == TALKING;
+Player::PlayerStateData Player::GetStateData(vector<PlayerStateData> data) {
+    for (auto &d : data) {
+        if (d.direction == currentDirection) {
+            return d;
+        }
+    }
+
+    return data[0];
 }
 
+Player::PlayerStateData Player::ChangeDirection() {
+    auto playerData = PlayerStateData(LEFT, "", Vec2(), Vec2());
+    auto frameCount = WALK_SPRITE_COUNT;
+    auto animationDuration = WALK_SPRITE_DURATION;
+    auto shouldFlip = false;
+    switch (state) {
+        case MOVING:
+            playerData = GetStateData(movingData);
+            shouldFlip = currentDirection == LEFT;
+            break;
+        case ATTACKING:
+            playerData = GetStateData(attackingData);
+            frameCount = ATTACK_SPRITE_COUNT;
+            animationDuration = ATTACK_DURATION;
+            shouldFlip = currentDirection == LEFT;
+            break;
+        case SHOOTING:
+            playerData = GetStateData(shootingData);
+            frameCount = MAGIC_SPRITE_COUNT;
+            animationDuration = MAGIC_SPRITE_DURATION;
+            shouldFlip = currentDirection == LEFT;
+            break;
+        default:
+            playerData = GetStateData(idleData);
+            frameCount = IDLE_SPRITE_COUNT;
+            animationDuration = IDLE_SPRITE_DURATION;
+    }
+    auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
+    collider->SetOffset(playerData.playerSpriteOffset);
+    collider->SetScale(playerData.playerSpriteScale);
+    SetSprite(playerData.animation, frameCount, animationDuration/frameCount, shouldFlip);
+
+    return playerData;
+}
+
+Player::PlayerStateData::PlayerStateData(PlayerDirection direction,
+                                         string animation,
+                                         Vec2 scale,
+                                         Vec2 offset,
+                                         Vec2 objectSpriteDisplacement) : direction(direction),
+                                                        animation(animation),
+                                                        playerSpriteScale(scale),
+                                                        playerSpriteOffset(offset), objectSpriteOffset(objectSpriteDisplacement) {
+}
