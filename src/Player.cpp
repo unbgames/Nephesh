@@ -11,6 +11,7 @@
 #include <Npc.h>
 #include <Camera.h>
 #include <CollisionMap.h>
+#include <TitleState.h>
 #include "Player.h"
 
 #define SPEED 200
@@ -22,12 +23,6 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
 
     associated.AddComponent(spr);
 
-    auto collider = new Collider(associated, Vec2(0.5, 0.92));
-    collider->SetCanCollide([&] (GameObject &other) -> bool {
-        return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) || other.HasComponent(COLLISION_MAP_TYPE);
-    });
-
-    associated.AddComponent(collider);
     associated.box.h = spr->GetHeight();
     associated.box.w = spr->GetWidth();
 
@@ -111,6 +106,7 @@ void Player::Update(float dt) {
         } else if (newState == SHOOTING) {
             speed = Vec2();
             if (state != SHOOTING) {
+                //Start the shooting animation
                 preparing = true;
                 target = Camera::GetAbsolutePosition(associated.GetLayer(), Vec2(inputManager.GetMouseX(), inputManager.GetMouseY()));
                 currentDirection = GetNewDirection(target);
@@ -118,12 +114,14 @@ void Player::Update(float dt) {
             } else {
                 timer.Update(dt);
                 if (preparing && timer.Get() > MAGIC_SPRITE_DURATION) {
+                    //Player has finished preparing, lock the animation in the last frame and cast the magic.
                     Shoot();
                     preparing = false;
                     timer.Restart();
                     auto sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
                     sprite->LockFrame();
                 } else if (!preparing && timer.Get() > BEAM_LIFETIME + CHARGING_DURATION) {
+                    //Player magic has finished, return player to IDLE state
                     newState = IDLE;
                     auto sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
                     sprite->UnlockFrame();
@@ -132,11 +130,13 @@ void Player::Update(float dt) {
         } else if (newState == ATTACKING) {
             speed = Vec2();
             if (state != ATTACKING) {
+                //Start player attacking animation and create MeleeAttack object
                 timer.Restart();
                 Attack();
             } else {
                 timer.Update(dt);
                 if (timer.Get() > ATTACK_DURATION) {
+                    //Melee attack has finished, return player to IDLE state
                     newState = IDLE;
                 }
             }
@@ -144,6 +144,8 @@ void Player::Update(float dt) {
             vector<PlayerDirection> directionsPressed;
 
             speed = Vec2();
+
+            //Add movement vectors according to the pressed keys, also, store which keys were pressed
             if (inputManager.IsKeyDown('a')) {
                 directionsPressed.push_back(LEFT);
                 speed += Vec2(-SPEED * dt, 0);
@@ -165,9 +167,15 @@ void Player::Update(float dt) {
             }
 
             auto oldDirection = currentDirection;
+
+            //Get new direction based on keys pressed, the selection is as follow
+                // if the key corresponding to the current direction was pressed, keep the current direction
+                // else choose the direction of the first key pressed
+
             currentDirection = GetNewDirection(directionsPressed);
 
             if (currentDirection != oldDirection) {
+                //if the direction changed, force an sprite direction update
                 ChangeDirection();
             }
         } else if (newState == IDLE) {
@@ -182,8 +190,6 @@ void Player::Update(float dt) {
         }
 
         associated.box += speed;
-        //TODO: Find a way to make Collider update only after Player update
-        collider->Update(0);
 }
 
 void Player::Render() {
@@ -195,7 +201,14 @@ bool Player::Is(string type) {
 }
 
 void Player::Start() {
-    Component::Start();
+    auto collider = new Collider(associated, Vec2(0.5, 0.92));
+    collider->SetCanCollide([&] (GameObject &other) -> bool {
+        return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) || other.HasComponent(COLLISION_MAP_TYPE);
+    });
+
+    associated.AddComponent(collider);
+    auto &state = (TitleState &) Game::GetInstance().GetCurrentState();
+    state.AddCollider(state.GetObjectPtr(&associated).lock());
 }
 
 Player::~Player() {
