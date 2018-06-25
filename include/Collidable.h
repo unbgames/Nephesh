@@ -26,7 +26,7 @@ public:
 
     virtual bool IsColliding(Collider& collider);
 
-    vector<pair<LineSegment, Vec2>> GetIntersections(Collider &collider);
+    virtual vector<pair<LineSegment, Vec2>> GetIntersections(Collider &collider);
 
     void SetScale(Vec2 scale);
     void SetOffset(Vec2 offset);

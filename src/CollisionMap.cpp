@@ -94,7 +94,7 @@ bool CollisionMap::IsColliding(Collider& collider) {
 
     int layer = colliderObject.GetLayer();
 
-    // get the unrotated vertices of the collider box (the vertices from the Rect itself)
+    // get the rotated vertices of the collider box (the vertices from the Rect itself)
     vector<Vec2> colliderVertices = collider.box.GetCorners(colliderObject.angleDeg, colliderObject.rotationCenter);
 
     float minX = numeric_limits<float>::infinity(), maxX = -numeric_limits<float>::infinity(), minY = numeric_limits<float>::infinity(), maxY = -numeric_limits<float>::infinity();
@@ -242,3 +242,85 @@ int CollisionMap::GetMapDepth() {
     return mapDepth;
 }
 
+vector<pair<LineSegment, Vec2>> CollisionMap::GetIntersections(Collider &collider) {
+    vector<pair<LineSegment, Vec2>> intersections;
+    auto &colliderObject = collider.GetGameObject();
+    auto layer = colliderObject.GetLayer();
+    // get the rotated vertices of the collider box (the vertices from the Rect itself)
+    vector<Vec2> colliderVertices = collider.box.GetCorners(colliderObject.angleDeg, colliderObject.rotationCenter);
+
+    float minX = numeric_limits<float>::infinity(), maxX = -numeric_limits<float>::infinity(), minY = numeric_limits<float>::infinity(), maxY = -numeric_limits<float>::infinity();
+
+    // get the min and max of collider vertices
+    for (auto& v : colliderVertices) {
+        // find the minima and the maxima of the coordinates x and y (the vertices of the AABB). This is used on SAT ON TILES ALGORITHM)
+        if(v.x > maxX)
+            maxX = v.x;
+        if(v.x < minX)
+            minX = v.x;
+        if(v.y > maxY)
+            maxY = v.y;
+        if(v.y < minY)
+            minY = v.y;
+    }
+
+    auto box = associated.box;
+
+    if (maxY < box.y || minY > box.y + box.h || maxX < box.x || minX > box.x + box.w) {
+        return intersections;
+    }
+    minX -= box.x;
+    minY -= box.y;
+    maxX -= box.x;
+    maxY -= box.y;
+
+    int tilesMinCol = minX > 0 ? (int)(minX)/tileWidth : 0;
+    int tilesMaxCol = maxX < box.w ? (int)(maxX)/tileWidth : mapWidth-1;
+    int tilesMinRow = minY > 0 ? (int)(minY)/tileHeight : 0;
+    int tilesMaxRow = maxY < box.h ? (int)(maxY)/tileHeight : mapHeight-1;
+
+    for(int tileRow = tilesMinRow; tileRow <= tilesMaxRow; tileRow++){
+        for(int tileCol = tilesMinCol; tileCol <= tilesMaxCol; tileCol++) {
+
+            if (At(tileCol, tileRow, layer) == 1)
+                continue; // we just want to check the non-walkable tiles
+
+            vector<LineSegment> colliderLines;
+            vector<LineSegment> collidableLines;
+
+            auto colliderCorners = collider.box.GetCorners(colliderObject.angleDeg, colliderObject.rotationCenter);
+            int tileMinX = box.x + tileCol * tileWidth;
+            int tileMaxX = tileMinX + tileWidth;
+            int tileMinY = box.y + tileRow * tileHeight;
+            int tileMaxY = tileMinY + tileHeight;
+
+            vector<Vec2> collidableCorners = {
+                Vec2( tileMinX, tileMaxY ),
+                Vec2( tileMaxX, tileMaxY ),
+                Vec2( tileMaxX, tileMinY ),
+                Vec2( tileMinX, tileMinY )
+            };
+
+            for (int i = 0; i < 4; ++i) {
+                auto next = (i+1)%4;
+                colliderLines.emplace_back(colliderCorners[i], colliderCorners[next]);
+                collidableLines.emplace_back(collidableCorners[i], collidableCorners[next]);
+            }
+
+            for (auto &colliderLine : colliderLines) {
+                for (auto &collidableLine : collidableLines) {
+                    if (colliderLine == collidableLine) {
+                        intersections.push_back(make_pair(colliderLine, (colliderLine.dot1 - colliderLine.dot2)*0.5));
+                    } else {
+                        auto intersection = colliderLine.GetIntersection(collidableLine);
+                        if (collidableLine.Contains(intersection) && colliderLine.Contains(intersection)) {
+                            intersections.push_back(make_pair(colliderLine, intersection));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return intersections;
+}
