@@ -5,16 +5,17 @@
 #include "State.h"
 #include "TileMap.h"
 #include "Map.h"
+#include "Music.h"
 #include <vector>
 #include <memory>
 
 using namespace std;
 
-class TitleState : public State {
+class WorldState : public State {
     public:
 
-        TitleState();
-        ~TitleState();
+        WorldState();
+        ~WorldState();
 
         void LoadAssets();
 
@@ -45,6 +46,8 @@ private:
 
         int currentMapIndex;
         vector<Map> maps;
+
+        Music *bgMusic;
 
         void UpdateLoadedMaps();
         void LoadMaps();

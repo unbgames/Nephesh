@@ -2,9 +2,10 @@
 #include <Log.h>
 #include <Vec2.h>
 #include <Rect.h>
-#include <TitleState.h>
+#include <WorldState.h>
 #include <chrono>
 #include "Game.h"
+#include "TitleState.h"
 
 int main(int argc, char **argv) {
     try {
