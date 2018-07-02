@@ -11,7 +11,7 @@
 #include <Npc.h>
 #include <Camera.h>
 #include <CollisionMap.h>
-#include <TitleState.h>
+#include <WorldState.h>
 #include "Player.h"
 
 #define SPEED 200
@@ -207,7 +207,7 @@ void Player::Start() {
     });
 
     associated.AddComponent(collider);
-    auto &state = (TitleState &) Game::GetInstance().GetCurrentState();
+    auto &state = (WorldState &) Game::GetInstance().GetCurrentState();
     state.AddCollider(state.GetObjectPtr(&associated).lock());
 }
 
