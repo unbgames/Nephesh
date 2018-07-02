@@ -35,6 +35,11 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     movingData.emplace_back(UP, "img/walk_up.png", Vec2(0.4, 0.92), Vec2(0, 0));
     movingData.emplace_back(DOWN, "img/walk_down.png", Vec2(0.4, 0.92), Vec2(0, 0));
 
+    dashingData.emplace_back(RIGHT, "img/dash_side.png", Vec2(0.5, 0.92), Vec2(20, 0));
+    dashingData.emplace_back(LEFT, "img/dash_side.png", Vec2(0.5, 0.92), Vec2(-15, 0));
+    dashingData.emplace_back(UP, "img/dash_up.png", Vec2(0.4, 0.92), Vec2(0, 0));
+    dashingData.emplace_back(DOWN, "img/dash_down.png", Vec2(0.4, 0.92), Vec2(0, 0));
+
     shootingData.emplace_back(RIGHT, "img/magic_side.png", Vec2(0.5, 0.92), Vec2(20, 0), Vec2(65, -40));
     shootingData.emplace_back(LEFT, "img/magic_side.png", Vec2(0.5, 0.92), Vec2(-15, 0), Vec2(-60, -40));
     shootingData.emplace_back(UP, "img/magic_up.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(3, -80));
@@ -44,6 +49,7 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     attackingData.emplace_back(LEFT, "img/attack_side.png", Vec2(0.3, 0.92), Vec2(10, 0), Vec2(-60, 0));
     attackingData.emplace_back(UP, "img/attack_up.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(0, -40));
     attackingData.emplace_back(DOWN, "img/attack_down.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(0, 30));
+
 
     idleData.emplace_back(RIGHT, "img/idle_down.png", Vec2(0.5, 0.92), Vec2(25, 0));
     idleData.emplace_back(LEFT, "img/idle_up.png", Vec2(0.5, 0.92), Vec2(25, 0));
@@ -73,16 +79,20 @@ void Player::Update(float dt) {
         auto newState = state;
         auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
 
-        if (state == TALKING && !shouldStopTalking) {
-            newState = TALKING;
-        } else if (inputManager.MousePress(RIGHT_MOUSE_BUTTON) || state == SHOOTING) {
-            newState = SHOOTING;
-        } else if (inputManager.MousePress(LEFT_MOUSE_BUTTON) || state == ATTACKING) {
-            newState = ATTACKING;
-        } else if (inputManager.IsKeyDown('a') || inputManager.IsKeyDown('d') || inputManager.IsKeyDown('s') || inputManager.IsKeyDown('w')) {
-            newState = MOVING;
-        } else {
-            newState = IDLE;
+        if (state != SHOOTING && state != ATTACKING && state != DASHING) {
+            if (state == TALKING && !shouldStopTalking) {
+                newState = TALKING;
+            } else if (inputManager.MousePress(RIGHT_MOUSE_BUTTON) || state == SHOOTING) {
+                newState = SHOOTING;
+            } else if (inputManager.MousePress(LEFT_MOUSE_BUTTON) || state == ATTACKING) {
+                newState = ATTACKING;
+            } else if (inputManager.KeyPress(SHIFT_KEY) || state == DASHING) {
+                newState = DASHING;
+            } else if (inputManager.IsKeyDown('a') || inputManager.IsKeyDown('d') || inputManager.IsKeyDown('s') || inputManager.IsKeyDown('w')) {
+                newState = MOVING;
+            } else {
+                newState = IDLE;
+            }
         }
         
         if (shouldStopTalking && state != TALKING) {
@@ -103,6 +113,30 @@ void Player::Update(float dt) {
             });
             closestNpcDistance = numeric_limits<float>::infinity();
             closestNpc = weak_ptr<GameObject>();
+        } else if (newState == DASHING) {
+            speed = Vec2();
+            if (state != DASHING) {
+                //Start player dash animation
+                timer.Restart();
+                collider->SetCanCollide([&] (GameObject &other) -> bool {
+                    return other.HasComponent(COLLISION_MAP_TYPE);
+                });
+                Dash();
+            } else {
+                timer.Update(dt);
+
+                if (timer.Get() > DASH_DURATION) {
+                    collider->SetCanCollide([&] (GameObject &other) -> bool {
+                        return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) || other.HasComponent(COLLISION_MAP_TYPE);
+                    });
+                    //Melee attack has finished, return player to IDLE state
+                    newState = IDLE;
+                } else {
+                    auto d = target - collider->box.Center();
+                    speed = Vec2(DASH_SPEED, 0).RotateDeg(d.XAngleDeg())*dt;
+                }
+            }
+
         } else if (newState == SHOOTING) {
             speed = Vec2();
             if (state != SHOOTING) {
@@ -243,7 +277,7 @@ void Player::SetSprite(string file, int frameCount, float frameTime, bool flip) 
     sprite->SetFrameTime(frameTime);
     sprite->Open(file);
     sprite->SetFrame(0);
-    
+
     associated.SetCenter(associated.box.Center());
 }
 
@@ -319,6 +353,12 @@ Player::PlayerStateData Player::ChangeDirection() {
             animationDuration = ATTACK_DURATION;
             shouldFlip = currentDirection == LEFT;
             break;
+        case DASHING:
+            playerData = GetStateData(dashingData);
+            frameCount = DASH_SPRITE_COUNT;
+            animationDuration = DASH_DURATION;
+            shouldFlip = currentDirection == LEFT;
+            break;
         case SHOOTING:
             playerData = GetStateData(shootingData);
             frameCount = MAGIC_SPRITE_COUNT;
@@ -336,6 +376,15 @@ Player::PlayerStateData Player::ChangeDirection() {
     SetSprite(playerData.animation, frameCount, animationDuration/frameCount, shouldFlip);
 
     return playerData;
+}
+
+void Player::Dash() {
+    auto &inputManager = InputManager::GetInstance();
+    auto mousePos = inputManager.GetMouse() + Camera::pos;
+
+    currentDirection = GetNewDirection(mousePos);
+
+    target = associated.box.Center() + Vec2(DASH_SPEED*DASH_DURATION, 0).RotateDeg((mousePos - associated.box.Center()).XAngleDeg());
 }
 
 Player::PlayerStateData::PlayerStateData(PlayerDirection direction,
