@@ -131,9 +131,7 @@ private:
 
     //Indicates if the player is in the middle of the magic animation
     bool preparing;
-
-    //Indicates if any attack was hit in that attacking animation
-    bool attackHit;
+    bool attacked;
 
     Vec2 speed;
     int hp;
@@ -141,6 +139,8 @@ private:
     Vec2 target;
 
     Timer timer;
+
+    weak_ptr<GameObject> meleeAttack;
 
     PlayerStateData GetStateData(vector<PlayerStateData> data);
     void SetSprite(string file, int frameCount, float frameTime, bool flip = false);

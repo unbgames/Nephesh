@@ -6,7 +6,7 @@
 #include <Collider.h>
 #include "MeleeAttack.h"
 
-MeleeAttack::MeleeAttack(GameObject &associated) : Component(associated), collisionTimer(), colliderCreated(false) {
+MeleeAttack::MeleeAttack(GameObject &associated) : Component(associated), collisionTimer(), colliderCreated(false), attackHit(false) {
     auto collider = new Collider(associated);
     collider->SetCanCollide([](GameObject& collidable) -> bool {
         return false;
@@ -34,10 +34,14 @@ void MeleeAttack::Render() {
 }
 
 bool MeleeAttack::Is(string type) {
-    return false;
+    return type == MELEE_ATTACK_TYPE;
 }
 
 void MeleeAttack::NotifyCollision(GameObject &other) {
     other.RequestDelete();
-    Player::player->AttackHit();
+    attackHit = true;
+}
+
+bool MeleeAttack::AttackHit() {
+    return attackHit;
 }

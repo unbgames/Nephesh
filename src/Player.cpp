@@ -189,14 +189,20 @@ void Player::Update(float dt) {
             if (state != ATTACKING) {
                 //Start player attacking animation and create MeleeAttack object
                 timer.Restart();
-                attackHit = false;
+                attacked = false;
                 Attack();
             } else {
                 timer.Update(dt);
-                if (!attackHit) {
-                    PlaySound(attackMissSounds[rand()%attackMissSounds.size()]);
-                    attackHit = true;
+                if (!attacked) {
+                    auto attack = (MeleeAttack *) meleeAttack.lock()->GetComponent(MELEE_ATTACK_TYPE);
+                    attacked = true;
+                    if (!attack->AttackHit()) {
+                        PlaySound(attackMissSounds[rand()%attackMissSounds.size()]);
+                    } else {
+                        PlaySound(attackHitSounds[rand()%attackHitSounds.size()]);
+                    }
                 }
+
                 if (timer.Get() > ATTACK_DURATION) {
                     //Melee attack has finished, return player to IDLE state
                     newState = IDLE;
@@ -341,7 +347,7 @@ void Player::Attack() {
     attackObject->box.PlaceCenterAt(playerBoxCenter + GetStateData(attackingData).objectSpriteOffset);
     attackObject->AddComponent(new MeleeAttack(*attackObject));
 
-    Game::GetInstance().GetCurrentState().AddObject(attackObject);
+    meleeAttack = Game::GetInstance().GetCurrentState().AddObject(attackObject);
 }
 
 Player::PlayerDirection Player::GetNewDirection(Vec2 target) {
@@ -428,11 +434,6 @@ void Player::PlaySound(string file) {
     auto sound = (Sound *) associated.GetComponent(SOUND_TYPE);
     sound->Open(file);
     sound->Play();
-}
-
-void Player::AttackHit() {
-    PlaySound(attackHitSounds[rand()%attackHitSounds.size()]);
-    attackHit = true;
 }
 
 Player::PlayerStateData::PlayerStateData(PlayerDirection direction,
