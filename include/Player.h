@@ -104,6 +104,7 @@ private:
     vector<PlayerStateData> dashingData;
 
     vector<string> grassStepSounds;
+    vector<string> dashSounds;
 
     //Get a direction for the player based on the pressed directions in this tick
     PlayerDirection GetNewDirection(vector<PlayerDirection> directions);

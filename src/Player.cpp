@@ -49,6 +49,9 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     dashingData.emplace_back(LEFT, "img/dash_side.png", Vec2(0.5, 0.92), Vec2(-15, 0));
     dashingData.emplace_back(UP, "img/dash_up.png", Vec2(0.4, 0.92), Vec2(0, 0));
     dashingData.emplace_back(DOWN, "img/dash_down.png", Vec2(0.4, 0.92), Vec2(0, 0));
+    dashSounds.emplace_back("audio/dash/dash_1.wav");
+    dashSounds.emplace_back("audio/dash/dash_2.wav");
+    dashSounds.emplace_back("audio/dash/dash_3.wav");
 
     shootingData.emplace_back(RIGHT, "img/magic_side.png", Vec2(0.5, 0.92), Vec2(20, 0), Vec2(65, -40));
     shootingData.emplace_back(LEFT, "img/magic_side.png", Vec2(0.5, 0.92), Vec2(-15, 0), Vec2(-60, -40));
@@ -312,6 +315,9 @@ void Player::Shoot() {
     auto beamCpt = new BeamSkill(*beamObj, target, currentDirection);
     beamObj->AddComponent(beamCpt);
     Game::GetInstance().GetCurrentState().AddObject(beamObj);
+    auto sound = (Sound *) associated.GetComponent(SOUND_TYPE);
+    sound->Open("audio/magic_attack.wav");
+    sound->Play();
 }
 
 void Player::Attack() {
@@ -407,6 +413,10 @@ void Player::Dash() {
     currentDirection = GetNewDirection(mousePos);
 
     target = associated.box.Center() + Vec2(DASH_SPEED*DASH_DURATION, 0).RotateDeg((mousePos - associated.box.Center()).XAngleDeg());
+
+    auto sound = (Sound *) associated.GetComponent(SOUND_TYPE);
+    sound->Open(dashSounds[rand()%dashSounds.size()]);
+    sound->Play();
 }
 
 Player::PlayerStateData::PlayerStateData(PlayerDirection direction,
