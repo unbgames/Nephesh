@@ -62,7 +62,12 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     attackingData.emplace_back(LEFT, "img/attack_side.png", Vec2(0.3, 0.92), Vec2(10, 0), Vec2(-60, 0));
     attackingData.emplace_back(UP, "img/attack_up.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(0, -40));
     attackingData.emplace_back(DOWN, "img/attack_down.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(0, 30));
-
+    attackMissSounds.emplace_back("audio/sword/attack_miss_1.wav");
+    attackMissSounds.emplace_back("audio/sword/attack_miss_2.wav");
+    attackMissSounds.emplace_back("audio/sword/attack_miss_3.wav");
+    attackHitSounds.emplace_back("audio/sword/attack_hit_1.wav");
+    attackHitSounds.emplace_back("audio/sword/attack_hit_2.wav");
+    attackHitSounds.emplace_back("audio/sword/attack_hit_3.wav");
 
     idleData.emplace_back(RIGHT, "img/idle_down.png", Vec2(0.5, 0.92), Vec2(25, 0));
     idleData.emplace_back(LEFT, "img/idle_up.png", Vec2(0.5, 0.92), Vec2(25, 0));
@@ -184,21 +189,25 @@ void Player::Update(float dt) {
             if (state != ATTACKING) {
                 //Start player attacking animation and create MeleeAttack object
                 timer.Restart();
+                attackHit = false;
                 Attack();
             } else {
                 timer.Update(dt);
+                if (!attackHit) {
+                    PlaySound(attackMissSounds[rand()%attackMissSounds.size()]);
+                    attackHit = true;
+                }
                 if (timer.Get() > ATTACK_DURATION) {
                     //Melee attack has finished, return player to IDLE state
                     newState = IDLE;
                 }
             }
+
         } else if (newState == MOVING) {
 
             if (state != MOVING) {
                 associated.AddComponent(new IntervalTimer(associated, STEP_INTERVAL, [&] () -> void {
-                    auto sound = (Sound *) associated.GetComponent(SOUND_TYPE);
-                    sound->Open(grassStepSounds[rand()%grassStepSounds.size()]);
-                    sound->Play();
+                    PlaySound(grassStepSounds[rand()%grassStepSounds.size()]);
                 }));
             }
             vector<PlayerDirection> directionsPressed;
@@ -315,9 +324,7 @@ void Player::Shoot() {
     auto beamCpt = new BeamSkill(*beamObj, target, currentDirection);
     beamObj->AddComponent(beamCpt);
     Game::GetInstance().GetCurrentState().AddObject(beamObj);
-    auto sound = (Sound *) associated.GetComponent(SOUND_TYPE);
-    sound->Open("audio/magic_attack.wav");
-    sound->Play();
+    PlaySound("audio/magic_attack.wav");
 }
 
 void Player::Attack() {
@@ -414,9 +421,18 @@ void Player::Dash() {
 
     target = associated.box.Center() + Vec2(DASH_SPEED*DASH_DURATION, 0).RotateDeg((mousePos - associated.box.Center()).XAngleDeg());
 
+    PlaySound(dashSounds[rand()%dashSounds.size()]);
+}
+
+void Player::PlaySound(string file) {
     auto sound = (Sound *) associated.GetComponent(SOUND_TYPE);
-    sound->Open(dashSounds[rand()%dashSounds.size()]);
+    sound->Open(file);
     sound->Play();
+}
+
+void Player::AttackHit() {
+    PlaySound(attackHitSounds[rand()%attackHitSounds.size()]);
+    attackHit = true;
 }
 
 Player::PlayerStateData::PlayerStateData(PlayerDirection direction,

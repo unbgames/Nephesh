@@ -51,6 +51,7 @@ public:
     bool Is(string type) override;
 
     void StopTalking();
+    void AttackHit();
     
     static Player* player;
 
@@ -105,6 +106,8 @@ private:
 
     vector<string> grassStepSounds;
     vector<string> dashSounds;
+    vector<string> attackMissSounds;
+    vector<string> attackHitSounds;
 
     //Get a direction for the player based on the pressed directions in this tick
     PlayerDirection GetNewDirection(vector<PlayerDirection> directions);
@@ -129,6 +132,9 @@ private:
     //Indicates if the player is in the middle of the magic animation
     bool preparing;
 
+    //Indicates if any attack was hit in that attacking animation
+    bool attackHit;
+
     Vec2 speed;
     int hp;
 
@@ -138,6 +144,7 @@ private:
 
     PlayerStateData GetStateData(vector<PlayerStateData> data);
     void SetSprite(string file, int frameCount, float frameTime, bool flip = false);
+    void PlaySound(string file);
 };
 
 
