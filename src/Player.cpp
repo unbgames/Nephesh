@@ -12,6 +12,8 @@
 #include <Camera.h>
 #include <CollisionMap.h>
 #include <WorldState.h>
+#include <Sound.h>
+#include <IntervalTimer.h>
 #include "Player.h"
 
 #define SPEED 200
@@ -19,6 +21,7 @@
 Player *Player::player = nullptr;
 
 Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), state(STARTING), hp(100) {
+    associated.AddComponent(new Sound(associated));
     Sprite *spr = new Sprite(associated, IDLE_SPRITE, IDLE_SPRITE_COUNT, 0.1, 0, true);
 
     associated.AddComponent(spr);
@@ -34,6 +37,13 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     movingData.emplace_back(LEFT, "img/walk_side.png", Vec2(0.5, 0.92), Vec2(-15, 0));
     movingData.emplace_back(UP, "img/walk_up.png", Vec2(0.4, 0.92), Vec2(0, 0));
     movingData.emplace_back(DOWN, "img/walk_down.png", Vec2(0.4, 0.92), Vec2(0, 0));
+    grassStepSounds.emplace_back("audio/steps/step_grass_1.wav");
+    grassStepSounds.emplace_back("audio/steps/step_grass_2.wav");
+    grassStepSounds.emplace_back("audio/steps/step_grass_3.wav");
+    grassStepSounds.emplace_back("audio/steps/step_grass_4.wav");
+    grassStepSounds.emplace_back("audio/steps/step_grass_5.wav");
+    grassStepSounds.emplace_back("audio/steps/step_grass_6.wav");
+
 
     dashingData.emplace_back(RIGHT, "img/dash_side.png", Vec2(0.5, 0.92), Vec2(20, 0));
     dashingData.emplace_back(LEFT, "img/dash_side.png", Vec2(0.5, 0.92), Vec2(-15, 0));
@@ -101,6 +111,11 @@ void Player::Update(float dt) {
             collider->SetCanCollide([&] (GameObject &other) -> bool {
                 return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) || other.HasComponent(COLLISION_MAP_TYPE);
             });
+        }
+
+        if (state == MOVING && newState != MOVING) {
+            auto intervalTimer = (IntervalTimer *)associated.GetComponent(EVENT_TIMER_TYPE);
+            associated.RemoveComponent(intervalTimer);
         }
 
         if (newState == TALKING && !closestNpc.expired()) {
@@ -175,8 +190,15 @@ void Player::Update(float dt) {
                 }
             }
         } else if (newState == MOVING) {
-            vector<PlayerDirection> directionsPressed;
 
+            if (state != MOVING) {
+                associated.AddComponent(new IntervalTimer(associated, STEP_INTERVAL, [&] () -> void {
+                    auto sound = (Sound *) associated.GetComponent(SOUND_TYPE);
+                    sound->Open(grassStepSounds[rand()%grassStepSounds.size()]);
+                    sound->Play();
+                }));
+            }
+            vector<PlayerDirection> directionsPressed;
             speed = Vec2();
 
             //Add movement vectors according to the pressed keys, also, store which keys were pressed

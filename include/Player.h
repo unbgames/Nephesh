@@ -23,7 +23,7 @@ using namespace std;
 #define IDLE_SPRITE_DURATION 1.2
 #define ATTACK_SPRITE_COUNT 6
 #define ATTACK_DURATION 0.3
-#define ATTACK_ANIMATION_COUNT 5
+#define STEP_INTERVAL 0.35
 #define ATTACK_RANGE 70
 #define ATTACK_WIDTH 120
 #define IDLE_SPRITE "img/idle_up.png"
@@ -102,6 +102,8 @@ private:
     vector<PlayerStateData> idleData;
     //Collection of state information relative to the DASHING state
     vector<PlayerStateData> dashingData;
+
+    vector<string> grassStepSounds;
 
     //Get a direction for the player based on the pressed directions in this tick
     PlayerDirection GetNewDirection(vector<PlayerDirection> directions);
