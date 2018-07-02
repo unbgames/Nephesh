@@ -11,6 +11,10 @@
 
 using namespace std;
 
+
+#define DASH_DURATION 0.35
+#define DASH_SPRITE_COUNT 4
+#define DASH_SPEED 1000
 #define MAGIC_SPRITE_COUNT 6
 #define MAGIC_SPRITE_DURATION 0.3
 #define WALK_SPRITE_COUNT 6
@@ -19,6 +23,7 @@ using namespace std;
 #define IDLE_SPRITE_DURATION 1.2
 #define ATTACK_SPRITE_COUNT 6
 #define ATTACK_DURATION 0.3
+#define ATTACK_ANIMATION_COUNT 5
 #define ATTACK_RANGE 70
 #define ATTACK_WIDTH 120
 #define IDLE_SPRITE "img/idle_up.png"
@@ -54,6 +59,8 @@ private:
     enum PlayerState {
         //Starting state of player
         STARTING,
+        // Stays in this state while player is dashing
+        DASHING,
         //Stays in this state while an NPC is talking
         TALKING,
         //Stays in this state while the melee attack is being performed (as long as the attack animation lasts)
@@ -63,7 +70,7 @@ private:
         //Stays in this state while a movement key is pressed (W, A, S, D)
         MOVING,
         //When the user is not doing anything
-        IDLE
+        IDLE,
     };
 
     //This internal class stores information about how to render the player in each state.
@@ -93,6 +100,8 @@ private:
     vector<PlayerStateData> shootingData;
     //Collection of state information relative to the IDLE state
     vector<PlayerStateData> idleData;
+    //Collection of state information relative to the DASHING state
+    vector<PlayerStateData> dashingData;
 
     //Get a direction for the player based on the pressed directions in this tick
     PlayerDirection GetNewDirection(vector<PlayerDirection> directions);
@@ -104,6 +113,7 @@ private:
 
     void Shoot();
     void Attack();
+    void Dash();
 
     PlayerState state;
 
