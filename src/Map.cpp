@@ -8,8 +8,9 @@
 #include <CollisionMap.h>
 #include <Game.h>
 #include <WorldState.h>
+#include <TerrainMap.h>
 
-Map::Map(string mapName, string tileSetFile, Map::MapDirection direction, string collisionMapFile) : direction(direction) {
+Map::Map(string mapName, string tileSetFile, Map::MapDirection direction, string collisionMapFile, string terrainMapFile) : direction(direction) {
     auto obj = new GameObject();
     auto tileSet = new TileSet(TILE_DIMENSIONS, TILE_DIMENSIONS, tileSetFile);
     auto map = new TileMap(*obj, mapName, tileSet);
@@ -21,7 +22,10 @@ Map::Map(string mapName, string tileSetFile, Map::MapDirection direction, string
         tileMap->AddComponent(new CollisionMap(*tileMap, collisionMapFile, TILE_DIMENSIONS, TILE_DIMENSIONS));
         auto &state = (WorldState &) Game::GetInstance().GetCurrentState();
         state.AddCollidable(tileMap);
-        cout << "added collisionMap" << endl;
+    }
+
+    if (!terrainMapFile.empty()) {
+        tileMap->AddComponent(new TerrainMap(*tileMap, terrainMapFile, TILE_DIMENSIONS, TILE_DIMENSIONS));
     }
 }
 

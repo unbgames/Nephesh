@@ -123,9 +123,9 @@ void WorldState::Render() {
 }
 
 void WorldState::Start() {
-    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::DOWN, "map/collisionMap.txt");
-    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::DOWN, "map/collisionMap.txt");
-    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::RIGHT, "map/collisionMap.txt");
+    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::DOWN, "map/collisionMap.txt", "map/terrainMap.txt");
+    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::DOWN, "map/collisionMap.txt", "map/terrainMap.txt");
+    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::RIGHT, "map/collisionMap.txt", "map/terrainMap.txt");
 
     StartArray();
 
@@ -244,4 +244,8 @@ void WorldState::LoadMaps() {
                 nextMap.GetTileMap()->box.y = currentBox.y;
         }
     }
+}
+
+Map &WorldState::GetCurrentMap() {
+    return maps[currentMapIndex];
 }

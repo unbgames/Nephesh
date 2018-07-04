@@ -23,7 +23,7 @@ using namespace std;
 #define IDLE_SPRITE_DURATION 1.2
 #define ATTACK_SPRITE_COUNT 6
 #define ATTACK_DURATION 0.3
-#define STEP_INTERVAL 0.35
+#define STEP_INTERVAL 0.33
 #define ATTACK_RANGE 70
 #define ATTACK_WIDTH 120
 #define IDLE_SPRITE "img/idle_up.png"
@@ -105,6 +105,8 @@ private:
     vector<PlayerStateData> dashingData;
 
     vector<string> grassStepSounds;
+    vector<string> stoneStepSounds;
+    vector<string> dirtStepSounds;
     vector<string> dashSounds;
     vector<string> attackMissSounds;
     vector<string> attackHitSounds;
@@ -145,6 +147,7 @@ private:
     PlayerStateData GetStateData(vector<PlayerStateData> data);
     void SetSprite(string file, int frameCount, float frameTime, bool flip = false);
     void PlaySound(string file);
+    string GetRandomStepSound();
 };
 
 

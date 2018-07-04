@@ -14,6 +14,7 @@
 #include <WorldState.h>
 #include <Sound.h>
 #include <IntervalTimer.h>
+#include <TerrainMap.h>
 #include "Player.h"
 
 #define SPEED 200
@@ -37,12 +38,24 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     movingData.emplace_back(LEFT, "img/walk_side.png", Vec2(0.5, 0.92), Vec2(-15, 0));
     movingData.emplace_back(UP, "img/walk_up.png", Vec2(0.4, 0.92), Vec2(0, 0));
     movingData.emplace_back(DOWN, "img/walk_down.png", Vec2(0.4, 0.92), Vec2(0, 0));
-    grassStepSounds.emplace_back("audio/steps/step_grass_1.wav");
-    grassStepSounds.emplace_back("audio/steps/step_grass_2.wav");
-    grassStepSounds.emplace_back("audio/steps/step_grass_3.wav");
-    grassStepSounds.emplace_back("audio/steps/step_grass_4.wav");
-    grassStepSounds.emplace_back("audio/steps/step_grass_5.wav");
-    grassStepSounds.emplace_back("audio/steps/step_grass_6.wav");
+    grassStepSounds.emplace_back("audio/steps/grass/grass_1.wav");
+    grassStepSounds.emplace_back("audio/steps/grass/grass_2.wav");
+    grassStepSounds.emplace_back("audio/steps/grass/grass_3.wav");
+    grassStepSounds.emplace_back("audio/steps/grass/grass_4.wav");
+    grassStepSounds.emplace_back("audio/steps/grass/grass_5.wav");
+    grassStepSounds.emplace_back("audio/steps/grass/grass_6.wav");
+    stoneStepSounds.emplace_back("audio/steps/stone/stone_1.wav");
+    stoneStepSounds.emplace_back("audio/steps/stone/stone_2.wav");
+    stoneStepSounds.emplace_back("audio/steps/stone/stone_3.wav");
+    stoneStepSounds.emplace_back("audio/steps/stone/stone_4.wav");
+    stoneStepSounds.emplace_back("audio/steps/stone/stone_5.wav");
+    stoneStepSounds.emplace_back("audio/steps/stone/stone_6.wav");
+    dirtStepSounds.emplace_back("audio/steps/dirt/dirt_1.wav");
+    dirtStepSounds.emplace_back("audio/steps/dirt/dirt_2.wav");
+    dirtStepSounds.emplace_back("audio/steps/dirt/dirt_3.wav");
+    dirtStepSounds.emplace_back("audio/steps/dirt/dirt_4.wav");
+    dirtStepSounds.emplace_back("audio/steps/dirt/dirt_5.wav");
+    dirtStepSounds.emplace_back("audio/steps/dirt/dirt_6.wav");
 
 
     dashingData.emplace_back(RIGHT, "img/dash_side.png", Vec2(0.5, 0.92), Vec2(20, 0));
@@ -213,7 +226,7 @@ void Player::Update(float dt) {
 
             if (state != MOVING) {
                 associated.AddComponent(new IntervalTimer(associated, STEP_INTERVAL, [&] () -> void {
-                    PlaySound(grassStepSounds[rand()%grassStepSounds.size()]);
+                    PlaySound(GetRandomStepSound());
                 }));
             }
             vector<PlayerDirection> directionsPressed;
@@ -434,6 +447,24 @@ void Player::PlaySound(string file) {
     auto sound = (Sound *) associated.GetComponent(SOUND_TYPE);
     sound->Open(file);
     sound->Play();
+}
+
+string Player::GetRandomStepSound() {
+    auto &map = ((WorldState &)Game::GetInstance().GetCurrentState()).GetCurrentMap();
+
+    auto terrainMap = (TerrainMap *) map.GetTileMap()->GetComponent(TERRAIN_MAP_TYPE);
+    if (terrainMap != nullptr) {
+        auto terrain = terrainMap->GetCurrentTerrain(associated.box.Center() + Vec2(0, associated.box.h/2), associated.GetLayer());
+
+        switch (terrain) {
+            case TerrainMap::TerrainType::DIRT:
+                return dirtStepSounds[rand()%dirtStepSounds.size()];
+            case TerrainMap::TerrainType::STONE:
+                return stoneStepSounds[rand()%stoneStepSounds.size()];
+            case TerrainMap::TerrainType::GRASS:
+                return grassStepSounds[rand()%grassStepSounds.size()];
+        }
+    }
 }
 
 Player::PlayerStateData::PlayerStateData(PlayerDirection direction,

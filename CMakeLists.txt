@@ -79,4 +79,4 @@ add_executable(Nephesh src/Main.cpp
         src/LineSegment.cpp
         include/LineSegment.h
         src/Player.cpp
-        include/Player.h src/MeleeAttack.cpp include/MeleeAttack.h src/Npc.cpp include/Npc.h src/TextBox.cpp include/TextBox.h src/Map.cpp include/Map.h src/TitleState.cpp src/TitleState.h)
+        include/Player.h src/MeleeAttack.cpp include/MeleeAttack.h src/Npc.cpp include/Npc.h src/TextBox.cpp include/TextBox.h src/Map.cpp include/Map.h src/TitleState.cpp include/TitleState.h src/TerrainMap.cpp include/TerrainMap.h)
