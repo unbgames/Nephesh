@@ -60,8 +60,8 @@ add_executable(Nephesh src/Main.cpp
         include/Text.h
         src/IntervalTimer.cpp
         include/IntervalTimer.h
-        include/TitleState.h
-        src/TitleState.cpp
+        include/WorldState.h
+        src/WorldState.cpp
         src/CollisionMap.cpp
         include/CollisionMap.h
         src/Collidable.cpp
@@ -82,6 +82,13 @@ add_executable(Nephesh src/Main.cpp
         include/Player.h
         src/Boss.cpp
         include/Boss.h
-        include/Player.h
         src/MeleeAttack.cpp
-        include/MeleeAttack.h)
+        include/MeleeAttack.h
+        src/Npc.cpp
+        include/Npc.h
+        src/TextBox.cpp
+        include/TextBox.h
+        src/Map.cpp
+        include/Map.h
+        src/TitleState.cpp
+        src/TitleState.h)

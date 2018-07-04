@@ -5,7 +5,6 @@
 #ifndef NEPHESH_COLLISIONMAP_H
 #define NEPHESH_COLLISIONMAP_H
 
-
 #include <vector>
 #include "Collidable.h"
 
@@ -30,6 +29,8 @@ public:
     int GetMapWidth();
     int GetMapHeight();
     int GetMapDepth();
+
+    vector<pair<LineSegment, Vec2>> GetIntersections(Collider &collider) override;
 
 private:
     vector<int> collisionTilesMatrix;

@@ -5,7 +5,7 @@
 #include <TileMap.h>
 
 TileMap::TileMap(GameObject &associated, string file, TileSet *tileSet) : Component(associated),
-                                                                          tileSet(tileSet) {
+                                                                          tileSet(tileSet){
     Load(file);
 }
 
@@ -25,9 +25,8 @@ void TileMap::RenderLayer(int layer, int cameraX, int cameraY) {
 void TileMap::RenderLayer(int layer) {
     for (int i = 0; i < mapWidth; i++) {
         for (int j = 0; j < mapHeight; ++j) {
-            auto x = i*tileSet->GetTileWidth();
-            auto y = j*tileSet->GetTileHeight();
-            Rect box = associated.box;
+            auto x = associated.box.x + i*tileSet->GetTileWidth();
+            auto y = associated.box.y + j*tileSet->GetTileHeight();
             tileSet->RenderTile(At(i, j, layer), x, y, layer);
         }
     }
@@ -75,6 +74,9 @@ void TileMap::Load(string file) {
         mapHeight = h;
         mapWidth = w;
 
+        associated.box.w = mapWidth*tileSet->GetTileWidth();
+        associated.box.h = mapHeight*tileSet->GetTileHeight();
+
         if (!getline(f, line)) {
             throw "Error while reading from file " + file;
         }
@@ -90,13 +92,13 @@ void TileMap::Load(string file) {
                     if (j == w) break;
                     if(n != ',') buff+=n; else
                     if(!buff.empty()) {
-                        int c = atoi(buff.c_str())-1;
+                        int c = atoi(buff.c_str());
                         j++;
                         tileMatrix.push_back(c);
                         buff = "";
                     }
                 }
-                if(!buff.empty()) tileMatrix.push_back(atoi(buff.c_str())-1);
+                if(!buff.empty()) tileMatrix.push_back(atoi(buff.c_str()));
             }
             if (!getline(f, line) && !line.empty()) {
                 throw "Error in file format in " + file;

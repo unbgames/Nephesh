@@ -25,7 +25,7 @@ shared_ptr<SDL_Texture> Resources::GetImage(string file) {
 }
 
 void Resources::ClearImages() {
-    for (auto it = imageTable.begin(); it != imageTable.end() ; ++it) {
+    for (auto it = imageTable.begin(); it != imageTable.end();) {
         if (((*it).second).unique()) {
             it = imageTable.erase(it);
         } else {
@@ -39,7 +39,8 @@ shared_ptr<Mix_Music> Resources::GetMusic(string file) {
     if (it != musicTable.end()) {
         return (*it).second;
     } else {
-        auto music = Mix_LoadMUS((ASSETS_PATH + file).c_str());
+        auto f = (ASSETS_PATH + file);
+        auto music = Mix_LoadMUS(f.c_str());
         if (music == nullptr) {
             throw "Error loading backgroundMusic: " + file + ". Reason: " + string(SDL_GetError());
         }
@@ -54,7 +55,7 @@ shared_ptr<Mix_Music> Resources::GetMusic(string file) {
 }
 
 void Resources::ClearMusics() {
-    for (auto it = musicTable.begin(); it != musicTable.end(); ++it) {
+    for (auto it = musicTable.begin(); it != musicTable.end();) {
         if (((*it).second).unique()) {
             it = musicTable.erase(it);
         } else {
@@ -83,7 +84,7 @@ shared_ptr<Mix_Chunk> Resources::GetSound(string file) {
 }
 
 void Resources::ClearSounds() {
-    for (auto it = soundTable.begin(); it != soundTable.end(); ++it) {
+    for (auto it = soundTable.begin(); it != soundTable.end();) {
         if (((*it).second).unique()) {
             it = soundTable.erase(it);
         } else {
@@ -113,7 +114,7 @@ shared_ptr<TTF_Font> Resources::GetFont(string file, int size) {
 }
 
 void Resources::ClearFonts() {
-    for (auto it = fontTable.begin(); it != fontTable.end(); ++it) {
+    for (auto it = fontTable.begin(); it != fontTable.end();) {
         if (((*it).second).unique()) {
             it = fontTable.erase(it);
         } else {

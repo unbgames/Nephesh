@@ -3,11 +3,19 @@
 
 
 #include "State.h"
+#include "TileMap.h"
+#include "Map.h"
+#include "Music.h"
+#include <vector>
+#include <memory>
 
-class TitleState : public State {
+using namespace std;
+
+class WorldState : public State {
     public:
-        TitleState();
-        ~TitleState();
+
+        WorldState();
+        ~WorldState();
 
         void LoadAssets();
 
@@ -33,6 +41,16 @@ class TitleState : public State {
 private:
         vector<weak_ptr<GameObject>> collidables;
         vector<weak_ptr<GameObject>> colliders;
+
+        shared_ptr<GameObject> bgObj;
+
+        int currentMapIndex;
+        vector<Map> maps;
+
+        Music *bgMusic;
+
+        void UpdateLoadedMaps();
+        void LoadMaps();
 };
 
 

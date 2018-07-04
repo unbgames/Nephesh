@@ -12,13 +12,18 @@
 
 class CameraFollower : public Component {
 public:
-    explicit CameraFollower(GameObject &associated);
+    explicit CameraFollower(GameObject &associated, Vec2 position = Vec2());
 
     void Update(float dt) override;
 
     void Render() override;
 
     bool Is(string type) override;
+
+    void SetPosition(Vec2 position);
+
+private:
+    Vec2 position;
 
 };
 
