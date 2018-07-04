@@ -51,7 +51,6 @@ public:
     bool Is(string type) override;
 
     void StopTalking();
-    void AttackHit();
     
     static Player* player;
 

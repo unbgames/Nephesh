@@ -30,6 +30,7 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
     Camera::Follow(playerObj);
 
     bgMusic = new Music("audio/mundo.ogg");
+    Mix_VolumeMusic(32);
 
     auto npcObj = new GameObject();
     npcObj->box.x = WIDTH/2;
