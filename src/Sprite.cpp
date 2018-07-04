@@ -179,4 +179,8 @@ int Sprite::GetFrame() {
     return currentFrame;
 }
 
+void Sprite::SetAlpha(Uint8 a) {
+    SDL_SetTextureAlphaMod(texture.get(), a);
+}
+
 
