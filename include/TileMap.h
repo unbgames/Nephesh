@@ -9,8 +9,10 @@
 class TileMap : public Component {
 public:
     TileMap(GameObject &associated, string file, TileSet *tileSet);
+    TileMap(GameObject &associated, vector<string> files, int tileWidth, int tileHeight);
 
     void Load(string file);
+    void LoadImages(vector<string> files, int tileWidth, int tileHeight);
     void SetTileSet(TileSet *tileSet);
     int &At(int x, int y, int z = 0);
 
@@ -28,6 +30,8 @@ public:
 private:
     vector<int> tileMatrix;
     TileSet *tileSet;
+    vector<Sprite> layers;
+    bool useImages;
     int mapWidth;
     int mapHeight;
     int mapDepth;

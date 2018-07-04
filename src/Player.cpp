@@ -465,6 +465,8 @@ string Player::GetRandomStepSound() {
                 return grassStepSounds[rand()%grassStepSounds.size()];
         }
     }
+
+    return dirtStepSounds[rand()%dirtStepSounds.size()];
 }
 
 Player::PlayerStateData::PlayerStateData(PlayerDirection direction,

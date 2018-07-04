@@ -20,6 +20,7 @@ public:
     };
 
     Map(string mapName, string tileSetFile, MapDirection direction, string collisionMapFile = "", string terrainMapFile = "");
+    Map(vector<string> layersFiles, MapDirection direction, string collisionMapFile = "", string terrainMapFile = "");
 
     MapDirection GetDirection();
     void SetPosition(Vec2 position);
@@ -27,6 +28,8 @@ public:
 private:
     MapDirection direction;
     shared_ptr<GameObject> tileMap;
+
+    void LoadAuxiliaryMaps(string collisionMapFile, string terrainMapFile);
 };
 
 #endif //NEPHESH_MAP_H

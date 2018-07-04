@@ -22,8 +22,8 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
     bgObj->AddComponent(new CameraFollower(*bgObj));
 
     auto playerObj = new GameObject();
-    playerObj->box.x = WIDTH/2;
-    playerObj->box.y = HEIGHT/2;
+    playerObj->box.x = 1024;
+    playerObj->box.y = 1024;
     playerObj->AddComponent(new Player(*playerObj));
     AddObject(playerObj);
 
@@ -86,7 +86,6 @@ void WorldState::Update(float dt) {
 void WorldState::Render() {
     bgObj->Render();
 
-    //TODO: Resolve 
     auto currentTileMap = (TileMap *) (maps.size() > 0 ? maps[currentMapIndex].GetTileMap()->GetComponent(TILE_MAP_TYPE) : nullptr);
     auto mapDepth = currentTileMap == nullptr ? 0 : currentTileMap->GetDepth();
     for (int i = 0; i < (mapDepth > objectLayers.size() ? mapDepth : objectLayers.size()); i++) {
@@ -124,9 +123,8 @@ void WorldState::Render() {
 }
 
 void WorldState::Start() {
-    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::DOWN, "map/collisionMap.txt", "map/terrainMap.txt");
-    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::DOWN, "map/collisionMap.txt", "map/terrainMap.txt");
-    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::RIGHT, "map/collisionMap.txt", "map/terrainMap.txt");
+    vector<string> m1 = { "map/1/ground.png", "map/1/rocks.png" };
+    maps.emplace_back(m1, Map::MapDirection::DOWN, "map/1/collisionMap.txt");
 
     StartArray();
 
