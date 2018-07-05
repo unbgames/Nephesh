@@ -21,7 +21,7 @@ Map::Map(string mapName, string tileSetFile, Map::MapDirection direction, string
         tileMap->AddComponent(new CollisionMap(*tileMap, collisionMapFile, TILE_DIMENSIONS, TILE_DIMENSIONS));
         auto &state = (WorldState &) Game::GetInstance().GetCurrentState();
         state.AddCollidable(tileMap);
-        cout << "added collisionMap" << endl;
+        //cout << "added collisionMap" << endl;
     }
 }
 

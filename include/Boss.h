@@ -19,10 +19,19 @@
 #define BOSS_MIN_DIST_TO_PLAYER 100 // in pixels
 #define BOSS_SPR_MOV_TIME 0.05 // in seconds
 #define BOSS_ATTACK_TIME 1.0 // in seconds
-#define BOSS_NUM_OF_ATTACKS 3
+#define BOSS_MIN_NUM_OF_ATTACKS 1
+#define BOSS_MAX_NUM_OF_ATTACKS 5
 #define BOSS_ATTACK_SPRITE_COUNT 4
 #define BOSS_ATTACK_RANGE 100 // in pixels
 #define BOSS_ATTACK_WIDTH 200 // in pixels
+#define BOSS_SLAP_DISTANCE 250
+
+#define BOSS_IDLE_SPRITE "img/boss_idle.png"
+#define BOSS_SLAP_RIGHT_SPRITE "img/boss_slap_right.png"
+#define BOSS_SLAP_LEFT_SPRITE "img/boss_slap_left.png"
+#define BOSS_SLAM_SPRITE "img/boss_slam.png"
+#define BOSS_CLAP_SPRITE "img/boss_clap.png"
+
 
 using namespace std;
 
@@ -30,15 +39,14 @@ class Boss : public Component {
 public:
     enum BossState {
         ATTACKING,
-        MOVING,
         IDLE
     };
 
-    enum BossDirection{
+    enum BossAttack{
         LEFT,
         RIGHT,
-        UP,
-        DOWN
+        SLAM,
+        CLAP
     };
 
     explicit Boss(GameObject& associated);
@@ -48,7 +56,7 @@ public:
     bool Is(string type) override;
 
     void Attack();
-    void ChangeState(BossState newState);
+    void UpdateState(BossState newState);
 
 private:
 
@@ -58,17 +66,9 @@ private:
     BossState oldState;
     Timer timer;
     int attacksPerformed;
+    int numOfAttacks;
     
-    BossDirection currentDirection;
-    BossDirection oldDirection;
-    BossDirection GetNewDirection();
-    vector<pair<BossDirection, string>> movementAnimations;
-    vector<pair<BossDirection, string>> attackAnimations;
-
-    string GetMovementAnimation();
-    string GetAttackAnimation();
     void SetSprite(string file, int frameCount, float frameTime, bool flip = false);
-    void UpdateAnimationDirection();
 
 };
 

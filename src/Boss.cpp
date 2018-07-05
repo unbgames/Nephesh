@@ -16,25 +16,14 @@ Boss::Boss(GameObject &associated) :
         timer(),
         attacksPerformed(0) {
 
-    Sprite *spr = new Sprite(associated, "img/boss_walk_down_sheet.png", 4, 100000000, 0, true);
+    Sprite *spr = new Sprite(associated, BOSS_SLAP_LEFT_SPRITE, 10, 0.1, 0, true);
+    //Sprite *spr = new Sprite(associated, "img/boss_clap.png", 10, 0.2, 0, true);
 
     associated.AddComponent(spr);
     associated.box.h = spr->GetHeight();
     associated.box.w = spr->GetWidth();
 
     associated.SetCenter({associated.box.x, associated.box.y});
-    
-    movementAnimations.emplace_back(make_pair(RIGHT, "img/boss_walk_side_sheet.png"));
-    movementAnimations.emplace_back(make_pair(LEFT, "img/boss_walk_side_sheet.png"));
-    movementAnimations.emplace_back(make_pair(UP, "img/boss_walk_up_sheet.png"));
-    movementAnimations.emplace_back(make_pair(DOWN, "img/boss_walk_down_sheet.png"));
-
-    attackAnimations.emplace_back(make_pair(RIGHT, "img/boss_attack_side_sheet.png"));
-    attackAnimations.emplace_back(make_pair(LEFT, "img/boss_attack_side_sheet.png"));
-    attackAnimations.emplace_back(make_pair(UP, "img/boss_attack_up_sheet.png"));
-    attackAnimations.emplace_back(make_pair(DOWN, "img/boss_attack_down_sheet.png"));
-    
-    currentDirection = DOWN;
 }
 
 void Boss::Update(float dt) {
@@ -50,55 +39,56 @@ void Boss::Update(float dt) {
         Game::GetInstance().GetCurrentState().AddObject(explosionGO);
 
         return;
-    }
-
-    oldDirection = currentDirection;
-    currentDirection = GetNewDirection();
+    }    
 
     auto center = associated.box.Center();
-    cout << "State: " << currentState << " ||| Center: (" << center.x << ", " << center.y << ")" << endl;
-
+    //cout << "State: " << currentState << " ||| Center: (" << center.x << ", " << center.y << ")" << endl;
+    
     if(Player::player){
-        if(currentState == IDLE && timer.Get() < BOSS_IDLE_TIME){
-            if(oldDirection != currentDirection){
-                UpdateAnimationDirection();
-            }
+        auto newState = currentState;
+        
+        switch(currentState){
+            case IDLE:
+                if(oldState == ATTACKING){
+                    SetSprite(BOSS_IDLE_SPRITE, 10, 0.1);
+                    timer.Restart();
+                } else if(timer.Get() < BOSS_IDLE_TIME){
+                    timer.Update(dt);
+                } else {
+                    newState = ATTACKING;
+                }
+                break;
+                
+            case ATTACKING:
+                if(oldState == IDLE){
+                    numOfAttacks = (rand()%(BOSS_MAX_NUM_OF_ATTACKS - BOSS_MIN_NUM_OF_ATTACKS + 1)) + 
+                    BOSS_MIN_NUM_OF_ATTACKS;
+                    Attack();
+                    timer.Restart();
+                } else if( timer.Get() < BOSS_ATTACK_TIME){
+                    timer.Update(dt);
+                } else {
+                    timer.Restart(0);
+                    attacksPerformed++;
 
-            timer.Update(dt);
+                    if (attacksPerformed == numOfAttacks) {
+                        attacksPerformed = 0;
+                        newState = IDLE;
+                    } else {
+                        Attack();
+                    }
+                }
+                break;
         }
-        else if(currentState == IDLE){
-            ChangeState(MOVING);
-        }
-        else if(currentState == MOVING && Player::player->GetCenter().Distance(associated.box.Center()) <= BOSS_MIN_DIST_TO_PLAYER){
-            timer.Restart(0);
+        
+        UpdateState(newState);
+        
 
-            ChangeState(ATTACKING);
-        }
-        else if(currentState == MOVING){
-            if(oldDirection != currentDirection){
-                UpdateAnimationDirection();
-            }
-
-            speed = {BOSS_SPEED, 0};
-            speed = speed.Rotate(associated.box.Center().DiferenceAngle(Player::player->GetCenter()));
-            associated.box += speed*dt;
-        }
-        else if(currentState == ATTACKING && timer.Get() < BOSS_ATTACK_TIME){
-            timer.Update(dt);
-        }
-        else if(currentState == ATTACKING){
-            timer.Restart(0);
-            attacksPerformed++;
-
-            if(attacksPerformed == BOSS_NUM_OF_ATTACKS){
-                attacksPerformed = 0;
-                ChangeState(IDLE);
-            }
-            else{
-                Attack();
-            }
-        }
+    } else{
+        UpdateState(IDLE);
+        SetSprite(BOSS_IDLE_SPRITE, 10, 0.1);
     }
+    
 
 }
 
@@ -108,26 +98,6 @@ void Boss::Render() {
 
 bool Boss::Is(string type) {
     return type == BOSS_TYPE;
-}
-
-string Boss::GetMovementAnimation() {
-    for (auto &animation : movementAnimations) {
-        if (animation.first == currentDirection) {
-            return animation.second;
-        }
-    }
-
-    return nullptr; // not supposed to happen
-}
-
-string Boss::GetAttackAnimation() {
-    for (auto &animation : attackAnimations) {
-        if (animation.first == currentDirection) {
-            return animation.second;
-        }
-    }
-
-    return nullptr; // not supposed to happen
 }
 
 void Boss::SetSprite(string file, int frameCount, float frameTime, bool flip) {
@@ -144,80 +114,74 @@ void Boss::SetSprite(string file, int frameCount, float frameTime, bool flip) {
     sprite->SetFrame(0);
 }
 
-Boss::BossDirection Boss::GetNewDirection() {
-    if(Player::player){
-        
-        auto target = Player::player->GetCenter();
-        auto angle = (target - associated.box.Center()).XAngleDeg();
-
-        if(angle > -60 && angle < 60){
-            return RIGHT;
-        } else if (angle > 60 && angle < 120) {
-            return DOWN;
-        } else if (angle > 120 || angle < -120) {
-            return LEFT;
-        } else {
-            return UP;
-        }
-    
-    }
-    
-    return DOWN;
-}
 
 void Boss::Attack() {
-    SetSprite(GetAttackAnimation(), BOSS_ATTACK_SPRITE_COUNT, BOSS_ATTACK_TIME/BOSS_ATTACK_SPRITE_COUNT, currentDirection == LEFT);
-
-    auto attackObject = new GameObject(associated.GetLayer());
-    attackObject->AddComponent(new MeleeAttack(*attackObject, BOSS_ATTACK_TIME));
-    auto bossBoxPosition = Vec2(associated.box.x, associated.box.y);
-
-    if (currentDirection == RIGHT) {
-        attackObject->box = Rect(BOSS_ATTACK_WIDTH, BOSS_ATTACK_RANGE);
-        auto offset = Vec2(-associated.box.w/5, 0);
-        attackObject->box = bossBoxPosition + Vec2(associated.box.w, (associated.box.h - attackObject->box.h)/2) + offset;
-    } else if (currentDirection == DOWN) {
-        attackObject->box = Rect(BOSS_ATTACK_RANGE, BOSS_ATTACK_WIDTH);
-        auto offset = Vec2(0, -associated.box.h/5);
-        attackObject->box = bossBoxPosition + Vec2((associated.box.w - attackObject->box.w)/2, associated.box.h) + offset;
-    } else if (currentDirection == LEFT) {
-        attackObject->box = Rect(BOSS_ATTACK_WIDTH, BOSS_ATTACK_RANGE);
-        auto offset = Vec2(associated.box.w/5, 0);
-        attackObject->box = bossBoxPosition + Vec2(-attackObject->box.w, (associated.box.h - attackObject->box.h)/2) + offset;
+    auto playerBox = Player::player->GetCenter();
+    auto bossBox = associated.box.Center();
+    auto dist = bossBox.Distance(playerBox);    
+    
+    
+    if(dist <= BOSS_SLAP_DISTANCE){
+        auto sprites = vector<string>();
+        if(playerBox.x <= bossBox.x){
+            sprites.emplace_back(BOSS_SLAP_LEFT_SPRITE);
+            sprites.emplace_back(BOSS_SLAP_LEFT_SPRITE);
+            sprites.emplace_back(BOSS_SLAP_LEFT_SPRITE);
+            sprites.emplace_back(BOSS_SLAM_SPRITE);
+            sprites.emplace_back(BOSS_CLAP_SPRITE);
+        } else{
+            sprites.emplace_back(BOSS_SLAP_RIGHT_SPRITE);
+            sprites.emplace_back(BOSS_SLAP_RIGHT_SPRITE);
+            sprites.emplace_back(BOSS_SLAP_RIGHT_SPRITE);
+            sprites.emplace_back(BOSS_SLAM_SPRITE);
+            sprites.emplace_back(BOSS_CLAP_SPRITE);
+        }
+        
+        string attack = sprites[rand()%sprites.size()];
+        
+        SetSprite(attack, 10, BOSS_ATTACK_TIME/10);
+                
     } else {
-        attackObject->box = Rect(BOSS_ATTACK_RANGE, BOSS_ATTACK_WIDTH);
-        auto offset = Vec2(0, associated.box.h/5);
-        attackObject->box = bossBoxPosition + Vec2((associated.box.w - attackObject->box.w)/2, -attackObject->box.h) + offset;
+        if(rand()%100 < 50){
+            SetSprite(BOSS_SLAM_SPRITE, 10, BOSS_ATTACK_TIME/10);
+//            attackObject->box = Rect(BOSS_ATTACK_RANGE, BOSS_ATTACK_WIDTH);
+//            auto offset = Vec2(0, -associated.box.h/5);
+//            attackObject->box = bossBoxPosition + Vec2((associated.box.w - attackObject->box.w)/2, associated.box.h) + offset;
+        } else{
+            SetSprite(BOSS_CLAP_SPRITE, 10, BOSS_ATTACK_TIME/10);
+//            attackObject->box = Rect(BOSS_ATTACK_RANGE, BOSS_ATTACK_WIDTH);
+//            auto offset = Vec2(0, -associated.box.h/5);
+//            attackObject->box = bossBoxPosition + Vec2((associated.box.w - attackObject->box.w)/2, associated.box.h) + offset;
+        }
     }
-
-    Game::GetInstance().GetCurrentState().AddObject(attackObject);
+//    SetSprite(GetAttackAnimation(), BOSS_ATTACK_SPRITE_COUNT, BOSS_ATTACK_TIME/BOSS_ATTACK_SPRITE_COUNT, currentDirection == LEFT);
+//
+//    auto attackObject = new GameObject(associated.GetLayer());
+//    attackObject->AddComponent(new MeleeAttack(*attackObject, BOSS_ATTACK_TIME));
+//    auto bossBoxPosition = Vec2(associated.box.x, associated.box.y);
+//
+//    if (currentDirection == RIGHT) {
+//        attackObject->box = Rect(BOSS_ATTACK_WIDTH, BOSS_ATTACK_RANGE);
+//        auto offset = Vec2(-associated.box.w/5, 0);
+//        attackObject->box = bossBoxPosition + Vec2(associated.box.w, (associated.box.h - attackObject->box.h)/2) + offset;
+//    } else if (currentDirection == DOWN) {
+//        attackObject->box = Rect(BOSS_ATTACK_RANGE, BOSS_ATTACK_WIDTH);
+//        auto offset = Vec2(0, -associated.box.h/5);
+//        attackObject->box = bossBoxPosition + Vec2((associated.box.w - attackObject->box.w)/2, associated.box.h) + offset;
+//    } else if (currentDirection == LEFT) {
+//        attackObject->box = Rect(BOSS_ATTACK_WIDTH, BOSS_ATTACK_RANGE);
+//        auto offset = Vec2(associated.box.w/5, 0);
+//        attackObject->box = bossBoxPosition + Vec2(-attackObject->box.w, (associated.box.h - attackObject->box.h)/2) + offset;
+//    } else {
+//        attackObject->box = Rect(BOSS_ATTACK_RANGE, BOSS_ATTACK_WIDTH);
+//        auto offset = Vec2(0, associated.box.h/5);
+//        attackObject->box = bossBoxPosition + Vec2((associated.box.w - attackObject->box.w)/2, -attackObject->box.h) + offset;
+//    }
+//
+//    Game::GetInstance().GetCurrentState().AddObject(attackObject);
 }
 
-void Boss::ChangeState(Boss::BossState newState) {
+void Boss::UpdateState(Boss::BossState newState) {
     oldState = currentState;
     currentState = newState;
-
-    switch(currentState){
-        case IDLE:
-            SetSprite(GetMovementAnimation(), 4, 100000000, currentDirection == LEFT);
-            break;
-        case MOVING:
-            SetSprite(GetMovementAnimation(), 4, BOSS_SPR_MOV_TIME, currentDirection == LEFT);
-            break;
-        default: // ATTACKING
-            Attack();
-    }
-}
-
-void Boss::UpdateAnimationDirection() {
-    switch(currentState){
-        case IDLE:
-            SetSprite(GetMovementAnimation(), 4, 100000000, currentDirection == LEFT);
-            break;
-        case MOVING:
-            SetSprite(GetMovementAnimation(), 4, BOSS_SPR_MOV_TIME, currentDirection == LEFT);
-            break;
-        default: // ATTACKING
-            return; // (UpdateAnimationDirection will not be called for this state)
-    }
 }
