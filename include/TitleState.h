@@ -28,6 +28,7 @@ public:
 
 private:
     Music *bgMusic;
+    bool frozen;
 };
 
 

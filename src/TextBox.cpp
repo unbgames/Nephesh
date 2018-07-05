@@ -6,6 +6,7 @@
 #include <Game.h>
 #include <Text.h>
 #include <CameraFollower.h>
+#include <Sound.h>
 #include "TextBox.h"
 
 TextBox::TextBox(GameObject &associated) : Component(associated), containedText() {
@@ -16,6 +17,9 @@ TextBox::TextBox(GameObject &associated) : Component(associated), containedText(
     sprite->SetScale(associated.box.w/sprite->GetWidth(), associated.box.h/sprite->GetHeight());
     associated.AddComponent(sprite);
     associated.AddComponent(new CameraFollower(associated, Vec2(0, HEIGHT - associated.box.h)));
+    auto sound = new Sound(associated, "audio/popup_chat.wav");
+    associated.AddComponent(sound);
+    sound->Play();
 
     associated.box.w = WIDTH;
 }

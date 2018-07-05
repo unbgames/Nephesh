@@ -55,6 +55,8 @@ public:
     static Player* player;
 
     void NotifyCollision(GameObject& other) override;
+    void Freeze();
+    void Unfreeze();
 private:
     enum PlayerState {
         //Starting state of player
@@ -133,6 +135,7 @@ private:
     //Indicates if the player is in the middle of the magic animation
     bool preparing;
     bool attacked;
+    bool frozen;
 
     Vec2 speed;
     int hp;

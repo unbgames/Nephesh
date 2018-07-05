@@ -12,6 +12,7 @@
 #include <TextBox.h>
 #include <Npc.h>
 #include <Sound.h>
+#include <FadeEffect.h>
 #include "WorldState.h"
 #include "Text.h"
 
@@ -34,13 +35,16 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
 
     auto npcObj = new GameObject();
     npcObj->box.x = WIDTH/2;
-    npcObj->box.y = 10;
+    npcObj->box.y = HEIGHT/2;
     npcObj->AddComponent(new Sprite(*npcObj, "img/criatura.png", 6, 0.1));
     npcObj->AddComponent(new Npc(*npcObj, "npcs/npcTest.txt"));
-    npcObj->AddComponent(new Sound(*npcObj, "audio/gvms2.wav"));
+    npcObj->AddComponent(new Sound(*npcObj, "audio/npcs/criatura_magica_1.wav"));
 
     AddObject(npcObj);
-    fadingIn = true;
+    Player::player->Freeze();
+    auto fadeInObj = new GameObject(2);
+    fadeInObj->AddComponent(new FadeEffect(*fadeInObj, 11.5, 2, [] { Player::player->Unfreeze(); }));
+    AddObject(fadeInObj);
 }
 
 WorldState::~WorldState() = default;
@@ -60,8 +64,17 @@ void WorldState::Update(float dt) {
         blockObj->SetCenter(Camera::pos +  mousePos);
         AddObject(blockObj);
     }
+
     if (inputManager.KeyPress(ESCAPE_KEY)) {
-        popRequested = true;
+        auto fadeObj = new GameObject(2);
+        bgMusic->Stop();
+        function<void()> callback;
+        callback = [&] {
+            popRequested = true;
+        };
+
+        fadeObj->AddComponent(new FadeEffect(*fadeObj, 1, 0, callback, FadeEffect::FadeType::OUT));
+        AddObject(fadeObj);
     }
 
     UpdateArray(dt);
@@ -80,7 +93,6 @@ void WorldState::Update(float dt) {
     }
 
     UpdateLoadedMaps();
-
     quitRequested = inputManager.QuitRequested();
 }
 
@@ -89,7 +101,8 @@ void WorldState::Render() {
 
     auto currentTileMap = (TileMap *) (maps.size() > 0 ? maps[currentMapIndex].GetTileMap()->GetComponent(TILE_MAP_TYPE) : nullptr);
     auto mapDepth = currentTileMap == nullptr ? 0 : currentTileMap->GetDepth();
-    for (int i = 0; i < (mapDepth > objectLayers.size() ? mapDepth : objectLayers.size()); i++) {
+    auto layersDepth = objectLayers.rbegin() != objectLayers.rend() ? (*objectLayers.rbegin()).first + 1 : 0;
+    for (int i = 0; i < (mapDepth > layersDepth ? mapDepth : layersDepth); i++) {
         auto it = objectLayers.find(i);
         
         if (maps.size() > 0) {
@@ -125,13 +138,13 @@ void WorldState::Render() {
 
 void WorldState::Start() {
     vector<string> m1 = { "map/1/ground.png", "map/1/rocks.png" };
-//    maps.emplace_back(m1, Map::MapDirection::DOWN, "map/1/collisionMap.txt");
-    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::DOWN, "map/collisionMap.txt", "map/terrainMap.txt");
+    maps.emplace_back(m1, Map::MapDirection::DOWN, "map/1/collisionMap.txt");
+//    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::DOWN, "map/collisionMap.txt", "map/terrainMap.txt");
 
     StartArray();
 
     LoadMaps();
-    // bgMusic->Play();
+    bgMusic->Play();
 
 }
 

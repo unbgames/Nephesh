@@ -50,7 +50,6 @@ private:
         vector<Map> maps;
 
         Music *bgMusic;
-        bool fadingIn;
 
         void UpdateLoadedMaps();
         void LoadMaps();

@@ -106,9 +106,10 @@ Player::PlayerDirection Player::GetNewDirection(vector<PlayerDirection> directio
 }
 
 void Player::Update(float dt) {
+    if (!frozen) {
         auto inputManager = InputManager::GetInstance();
         auto newState = state;
-        auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
+        auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
 
         if (state != SHOOTING && state != ATTACKING && state != DASHING) {
             if (state == TALKING && !shouldStopTalking) {
@@ -119,32 +120,34 @@ void Player::Update(float dt) {
                 newState = ATTACKING;
             } else if (inputManager.KeyPress(SHIFT_KEY) || state == DASHING) {
                 newState = DASHING;
-            } else if (inputManager.IsKeyDown('a') || inputManager.IsKeyDown('d') || inputManager.IsKeyDown('s') || inputManager.IsKeyDown('w')) {
+            } else if (inputManager.IsKeyDown('a') || inputManager.IsKeyDown('d') || inputManager.IsKeyDown('s') ||
+                       inputManager.IsKeyDown('w')) {
                 newState = MOVING;
             } else {
                 newState = IDLE;
             }
         }
-        
+
         if (shouldStopTalking && state != TALKING) {
             shouldStopTalking = false;
-            auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
-            collider->SetCanCollide([&] (GameObject &other) -> bool {
-                return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) || other.HasComponent(COLLISION_MAP_TYPE);
+            auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
+            collider->SetCanCollide([&](GameObject &other) -> bool {
+                return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) ||
+                       other.HasComponent(COLLISION_MAP_TYPE);
             });
         }
 
         if (state == MOVING && newState != MOVING) {
-            auto intervalTimer = (IntervalTimer *)associated.GetComponent(EVENT_TIMER_TYPE);
+            auto intervalTimer = (IntervalTimer *) associated.GetComponent(EVENT_TIMER_TYPE);
             associated.RemoveComponent(intervalTimer);
         }
 
         if (newState == TALKING && !closestNpc.expired()) {
-            auto npc = (Npc *)closestNpc.lock()->GetComponent(NPC_TYPE);
+            auto npc = (Npc *) closestNpc.lock()->GetComponent(NPC_TYPE);
             npc->Talk();
-            
+
             speed = Vec2();
-            collider->SetCanCollide([&] (GameObject &other) -> bool {
+            collider->SetCanCollide([&](GameObject &other) -> bool {
                 return false;
             });
             closestNpcDistance = numeric_limits<float>::infinity();
@@ -154,7 +157,7 @@ void Player::Update(float dt) {
             if (state != DASHING) {
                 //Start player dash animation
                 timer.Restart();
-                collider->SetCanCollide([&] (GameObject &other) -> bool {
+                collider->SetCanCollide([&](GameObject &other) -> bool {
                     return other.HasComponent(COLLISION_MAP_TYPE);
                 });
                 Dash();
@@ -162,14 +165,15 @@ void Player::Update(float dt) {
                 timer.Update(dt);
 
                 if (timer.Get() > DASH_DURATION) {
-                    collider->SetCanCollide([&] (GameObject &other) -> bool {
-                        return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) || other.HasComponent(COLLISION_MAP_TYPE);
+                    collider->SetCanCollide([&](GameObject &other) -> bool {
+                        return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) ||
+                               other.HasComponent(COLLISION_MAP_TYPE);
                     });
                     //Melee attack has finished, return player to IDLE state
                     newState = IDLE;
                 } else {
                     auto d = target - collider->box.Center();
-                    speed = Vec2(DASH_SPEED, 0).RotateDeg(d.XAngleDeg())*dt;
+                    speed = Vec2(DASH_SPEED, 0).RotateDeg(d.XAngleDeg()) * dt;
                 }
             }
 
@@ -178,7 +182,8 @@ void Player::Update(float dt) {
             if (state != SHOOTING) {
                 //Start the shooting animation
                 preparing = true;
-                target = Camera::GetAbsolutePosition(associated.GetLayer(), Vec2(inputManager.GetMouseX(), inputManager.GetMouseY()));
+                target = Camera::GetAbsolutePosition(associated.GetLayer(),
+                                                     Vec2(inputManager.GetMouseX(), inputManager.GetMouseY()));
                 currentDirection = GetNewDirection(target);
                 timer.Restart();
             } else {
@@ -210,9 +215,9 @@ void Player::Update(float dt) {
                     auto attack = (MeleeAttack *) meleeAttack.lock()->GetComponent(MELEE_ATTACK_TYPE);
                     attacked = true;
                     if (!attack->AttackHit()) {
-                        PlaySound(attackMissSounds[rand()%attackMissSounds.size()]);
+                        PlaySound(attackMissSounds[rand() % attackMissSounds.size()]);
                     } else {
-                        PlaySound(attackHitSounds[rand()%attackHitSounds.size()]);
+                        PlaySound(attackHitSounds[rand() % attackHitSounds.size()]);
                     }
                 }
 
@@ -225,7 +230,7 @@ void Player::Update(float dt) {
         } else if (newState == MOVING) {
 
             if (state != MOVING) {
-                associated.AddComponent(new IntervalTimer(associated, STEP_INTERVAL, [&] () -> void {
+                associated.AddComponent(new IntervalTimer(associated, STEP_INTERVAL, [&]() -> void {
                     PlaySound(GetRandomStepSound());
                 }));
             }
@@ -256,8 +261,8 @@ void Player::Update(float dt) {
             auto oldDirection = currentDirection;
 
             //Get new direction based on keys pressed, the selection is as follow
-                // if the key corresponding to the current direction was pressed, keep the current direction
-                // else choose the direction of the first key pressed
+            // if the key corresponding to the current direction was pressed, keep the current direction
+            // else choose the direction of the first key pressed
 
             currentDirection = GetNewDirection(directionsPressed);
 
@@ -266,7 +271,7 @@ void Player::Update(float dt) {
                 ChangeDirection();
             }
         } else if (newState == IDLE) {
-            speed = Vec2(0,0);
+            speed = Vec2(0, 0);
         }
 
         auto oldState = state;
@@ -277,6 +282,11 @@ void Player::Update(float dt) {
         }
 
         associated.box += speed;
+    } else {
+        state = IDLE;
+
+        ChangeDirection();
+    }
 }
 
 void Player::Render() {
@@ -467,6 +477,14 @@ string Player::GetRandomStepSound() {
     }
 
     return dirtStepSounds[rand()%dirtStepSounds.size()];
+}
+
+void Player::Freeze() {
+    frozen = true;
+}
+
+void Player::Unfreeze() {
+    frozen = false;
 }
 
 Player::PlayerStateData::PlayerStateData(PlayerDirection direction,
