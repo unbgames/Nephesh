@@ -9,15 +9,16 @@
 
 #include "Component.h"
 #include "Player.h"
+#include <cmath>
 
-namespace std;
+using namespace std;
 
-class RollingRocks : public Component {
+class RollingStones : public Component {
 public:
 
-    RollingRocks(GameObject &associated, int damage);
+    RollingStones(GameObject &associated, int damage, float speed, float maxDist = 0);
 
-    ~RollingRocks() override;
+    ~RollingStones() override;
 
     void Update(float dt) override;
 
@@ -30,10 +31,13 @@ public:
     void NotifyCollision(GameObject &other) override;
 
 private:
-    Vec2 target;
-    float targetAngle;
+    float targetAngleDeg;
+    float speed;
+    Vec2 speedVec;
     Timer timer;
     int damage;
+    float maxDist;
+    float distCovered;
 };
 
 

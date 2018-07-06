@@ -22,7 +22,8 @@
 
 Player *Player::player = nullptr;
 
-Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), state(STARTING), hp(100) {
+Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), state(STARTING), hp(100),
+                                         tookDamageRecently(false) {
     associated.AddComponent(new Sound(associated));
     Sprite *spr = new Sprite(associated, PLAYER_IDLE_SPRITE, PLAYER_IDLE_SPRITE_COUNT, 0.1, 0, true);
 
@@ -95,7 +96,6 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
 }
 
 
-
 Player::PlayerDirection Player::GetNewDirection(vector<PlayerDirection> directionsPressed) {
     for (auto &direction : directionsPressed) {
         if (direction == currentDirection) {
@@ -111,6 +111,13 @@ void Player::Update(float dt) {
         auto inputManager = InputManager::GetInstance();
         auto newState = state;
         auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
+        
+        if(tookDamageRecently && recentDamageTimer.Get() < PLAYER_INVULNERABILITY_DURATION){
+            recentDamageTimer.Update(dt);
+        } else if(tookDamageRecently && recentDamageTimer.Get() >= PLAYER_INVULNERABILITY_DURATION){
+            tookDamageRecently = false;
+            recentDamageTimer.Restart();
+        }
 
         if (state != SHOOTING && state != ATTACKING && state != DASHING) {
             if (state == TALKING && !shouldStopTalking) {
@@ -121,7 +128,8 @@ void Player::Update(float dt) {
                 newState = ATTACKING;
             } else if (inputManager.KeyPress(SHIFT_KEY) || state == DASHING) {
                 newState = DASHING;
-            } else if (inputManager.IsKeyDown('a') || inputManager.IsKeyDown('d') || inputManager.IsKeyDown('s') ||
+            } else if (inputManager.IsKeyDown('a') || inputManager.IsKeyDown('d') ||
+                       inputManager.IsKeyDown('s') ||
                        inputManager.IsKeyDown('w')) {
                 newState = MOVING;
             } else {
@@ -168,14 +176,16 @@ void Player::Update(float dt) {
                 timer.Update(dt);
 
                 if (timer.Get() > PLAYER_DASH_DURATION) {
-                    collider->SetCanCollide([&] (GameObject &other) -> bool {
-                        return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) || other.HasComponent(COLLISION_MAP_TYPE);
+                    collider->SetCanCollide([&](GameObject &other) -> bool {
+                        return (other.HasComponent(NPC_TYPE) &&
+                                InputManager::GetInstance().KeyPress(SPACE_KEY)) ||
+                               other.HasComponent(COLLISION_MAP_TYPE);
                     });
                     //Melee attack has finished, return player to IDLE state
                     newState = IDLE;
                 } else {
                     auto d = target - collider->box.Center();
-                    speed = Vec2(PLAYER_DASH_SPEED, 0).RotateDeg(d.XAngleDeg())*dt;
+                    speed = Vec2(PLAYER_DASH_SPEED, 0).RotateDeg(d.XAngleDeg()) * dt;
                 }
             }
 
@@ -185,7 +195,8 @@ void Player::Update(float dt) {
                 //Start the shooting animation
                 preparing = true;
                 target = Camera::GetAbsolutePosition(associated.GetLayer(),
-                                                     Vec2(inputManager.GetMouseX(), inputManager.GetMouseY()));
+                                                     Vec2(inputManager.GetMouseX(),
+                                                          inputManager.GetMouseY()));
                 currentDirection = GetNewDirection(target);
                 timer.Restart();
             } else {
@@ -301,8 +312,9 @@ bool Player::Is(string type) {
 
 void Player::Start() {
     auto collider = new Collider(associated, Vec2(0.5, 0.92));
-    collider->SetCanCollide([&] (GameObject &other) -> bool {
-        return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) || other.HasComponent(COLLISION_MAP_TYPE);
+    collider->SetCanCollide([&](GameObject &other) -> bool {
+        return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) ||
+               other.HasComponent(COLLISION_MAP_TYPE);
     });
 
     associated.AddComponent(collider);
@@ -325,19 +337,19 @@ void Player::NotifyCollision(GameObject &other) {
             ChangeDirection();
         }
     } else {
-        auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
+        auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
         associated.box -= speed;
         collider->Update(0);
     }
 }
 
 void Player::SetSprite(string file, int frameCount, float frameTime, bool flip) {
-    auto sprite = (Sprite*)associated.GetComponent("Sprite");
-    
-    if(!sprite) {
-        throw("Sprite component not found on Player's GameObject.");
+    auto sprite = (Sprite *) associated.GetComponent("Sprite");
+
+    if (!sprite) {
+        throw ("Sprite component not found on Player's GameObject.");
     }
-    
+
     sprite->SetFlip(flip);
     sprite->SetFrameCount(frameCount);
     sprite->SetFrameTime(frameTime);
@@ -376,7 +388,8 @@ void Player::Shoot() {
 
     auto chargeObj = new GameObject(associated.GetLayer());
     chargeObj->AddComponent(new Charge(*chargeObj, beamObj, CHARGING_DURATION));
-    auto raySprite = new Sprite(*chargeObj, spriteName, 4, CHARGING_DURATION/4, 0, false, currentDirection == LEFT);
+    auto raySprite = new Sprite(*chargeObj, spriteName, 4, CHARGING_DURATION / 4, 0, false,
+                                currentDirection == LEFT);
     chargeObj->AddComponent(raySprite);
     chargeObj->box = Rect() + playerBoxCenter + GetStateData(shootingData).objectSpriteOffset;
     chargeObj->box += offset;
@@ -385,7 +398,7 @@ void Player::Shoot() {
 }
 
 void Player::Attack() {
-    auto& inputManager = InputManager::GetInstance();
+    auto &inputManager = InputManager::GetInstance();
     auto target = Vec2(inputManager.GetMouseX(), inputManager.GetMouseY());
     target = Camera::GetAbsolutePosition(associated.GetLayer(), target);
 
@@ -394,7 +407,10 @@ void Player::Attack() {
     auto playerBoxCenter = associated.box.Center();
     auto attackObject = new GameObject(associated.GetLayer());
 
-    attackObject->box = currentDirection == LEFT || currentDirection == RIGHT ? Rect(PLAYER_ATTACK_WIDTH, PLAYER_ATTACK_RANGE) : Rect(PLAYER_ATTACK_RANGE, PLAYER_ATTACK_WIDTH);
+    attackObject->box = currentDirection == LEFT || currentDirection == RIGHT ? Rect(PLAYER_ATTACK_WIDTH,
+                                                                                     PLAYER_ATTACK_RANGE)
+                                                                              : Rect(PLAYER_ATTACK_RANGE,
+                                                                                     PLAYER_ATTACK_WIDTH);
     attackObject->box.PlaceCenterAt(playerBoxCenter + GetStateData(attackingData).objectSpriteOffset);
     attackObject->AddComponent(new MeleeAttack(*attackObject));
 
@@ -465,7 +481,7 @@ Player::PlayerStateData Player::ChangeDirection() {
     auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
     collider->SetOffset(playerData.playerSpriteOffset);
     collider->SetScale(playerData.playerSpriteScale);
-    SetSprite(playerData.animation, frameCount, animationDuration/frameCount, shouldFlip);
+    SetSprite(playerData.animation, frameCount, animationDuration / frameCount, shouldFlip);
 
     return playerData;
 }
@@ -476,8 +492,9 @@ void Player::Dash() {
 
     currentDirection = GetNewDirection(mousePos);
 
-    target = associated.box.Center() + Vec2(PLAYER_DASH_SPEED*PLAYER_DASH_DURATION, 0).RotateDeg((mousePos - associated.box.Center()).XAngleDeg());
-    PlaySound(dashSounds[rand()%dashSounds.size()]);
+    target = associated.box.Center() + Vec2(PLAYER_DASH_SPEED * PLAYER_DASH_DURATION, 0).RotateDeg(
+            (mousePos - associated.box.Center()).XAngleDeg());
+    PlaySound(dashSounds[rand() % dashSounds.size()]);
 }
 
 Vec2 Player::GetCenter() {
@@ -491,23 +508,24 @@ void Player::PlaySound(string file) {
 }
 
 string Player::GetRandomStepSound() {
-    auto &map = ((WorldState &)Game::GetInstance().GetCurrentState()).GetCurrentMap();
+    auto &map = ((WorldState &) Game::GetInstance().GetCurrentState()).GetCurrentMap();
 
     auto terrainMap = (TerrainMap *) map.GetTileMap()->GetComponent(TERRAIN_MAP_TYPE);
     if (terrainMap != nullptr) {
-        auto terrain = terrainMap->GetCurrentTerrain(associated.box.Center() + Vec2(0, associated.box.h/2), associated.GetLayer());
+        auto terrain = terrainMap->GetCurrentTerrain(associated.box.Center() + Vec2(0, associated.box.h / 2),
+                                                     associated.GetLayer());
 
         switch (terrain) {
             case TerrainMap::TerrainType::DIRT:
-                return dirtStepSounds[rand()%dirtStepSounds.size()];
+                return dirtStepSounds[rand() % dirtStepSounds.size()];
             case TerrainMap::TerrainType::STONE:
-                return stoneStepSounds[rand()%stoneStepSounds.size()];
+                return stoneStepSounds[rand() % stoneStepSounds.size()];
             case TerrainMap::TerrainType::GRASS:
-                return grassStepSounds[rand()%grassStepSounds.size()];
+                return grassStepSounds[rand() % grassStepSounds.size()];
         }
     }
 
-    return dirtStepSounds[rand()%dirtStepSounds.size()];
+    return dirtStepSounds[rand() % dirtStepSounds.size()];
 }
 
 void Player::Freeze() {
@@ -518,12 +536,26 @@ void Player::Unfreeze() {
     frozen = false;
 }
 
+void Player::IncreaseHp(int healing) {
+    hp += healing;
+}
+
+void Player::DecreaseHp(int damage) {
+    if (!tookDamageRecently) {
+        hp -= damage;
+        recentDamageTimer.Restart();
+        tookDamageRecently = true;
+    }
+}
+
 Player::PlayerStateData::PlayerStateData(PlayerDirection direction,
                                          string animation,
                                          Vec2 scale,
                                          Vec2 offset,
                                          Vec2 objectSpriteDisplacement) : direction(direction),
-                                                        animation(animation),
-                                                        playerSpriteScale(scale),
-                                                        playerSpriteOffset(offset), objectSpriteOffset(objectSpriteDisplacement) {
+                                                                          animation(animation),
+                                                                          playerSpriteScale(scale),
+                                                                          playerSpriteOffset(offset),
+                                                                          objectSpriteOffset(
+                                                                                  objectSpriteDisplacement) {
 }
