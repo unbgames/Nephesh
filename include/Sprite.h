@@ -39,6 +39,9 @@ public:
     void SetFrameCount(int frameCount);
     void SetFrameTime(float frameTime);
     void SetFlip(bool f);
+
+    int getFrameCount();
+    int getCurrentFrame();
     void LockFrame();
     void UnlockFrame();
     int GetFrame();

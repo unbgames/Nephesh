@@ -6,8 +6,8 @@
 #include "State.h"
 
 #define GAME_NAME "Nephesh"
-#define WIDTH 1920
-#define HEIGHT 1000
+#define WIDTH 1366
+#define HEIGHT 768
 
 #define ASSETS_PATH "assets/"
 

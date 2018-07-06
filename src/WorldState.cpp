@@ -13,6 +13,7 @@
 #include <Npc.h>
 #include <Sound.h>
 #include <FadeEffect.h>
+#include <Boss.h>
 #include "WorldState.h"
 #include "Text.h"
 
@@ -36,6 +37,13 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
     auto fadeInObj = new GameObject(2);
     fadeInObj->AddComponent(new FadeEffect(*fadeInObj, WORLD_FADE_IN_DURATION, 2, [] { Player::player->Unfreeze(); }));
     AddObject(fadeInObj);
+
+    auto bossObj = new GameObject();
+    bossObj->box.x = WIDTH/2;      
+    bossObj->box.y = HEIGHT/4;
+    bossObj->AddComponent(new Boss(*bossObj));
+    bossObj->AddComponent(new Collidable(*bossObj));
+    AddObject(bossObj);
 }
 
 WorldState::~WorldState() = default;

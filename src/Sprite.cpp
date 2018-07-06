@@ -167,6 +167,14 @@ void Sprite::SetFlip(bool f) {
     flip = f;
 }
 
+int Sprite::getFrameCount() {
+    return frameCount;
+}
+
+int Sprite::getCurrentFrame() {
+    return currentFrame;
+}
+
 void Sprite::LockFrame() {
     lockFrame = true;
 }
@@ -175,12 +183,7 @@ void Sprite::UnlockFrame() {
     lockFrame = false;
 }
 
-int Sprite::GetFrame() {
-    return currentFrame;
-}
 
 void Sprite::SetAlpha(Uint8 a) {
     SDL_SetTextureAlphaMod(texture.get(), a);
 }
-
-

@@ -5,7 +5,7 @@
 #ifndef NEPHESH_MELEEATACK_H
 #define NEPHESH_MELEEATACK_H
 
-
+#include <Player.h>
 #include "Component.h"
 #include "Timer.h"
 
@@ -13,7 +13,7 @@
 
 class MeleeAttack : public Component {
 public:
-    MeleeAttack(GameObject &associated);
+    MeleeAttack(GameObject &associated, double attackDuration = PLAYER_ATTACK_DURATION);
 
     void Update(float dt) override;
 
@@ -29,6 +29,7 @@ private:
     Timer collisionTimer;
     Timer durationTimer;
     bool colliderCreated;
+    double attackDuration;
     bool attackHit;
 };
 

@@ -9,24 +9,36 @@
 #include "Vec2.h"
 #include "Timer.h"
 
+#define PLAYER_TYPE "Player"
+
 using namespace std;
 
+//#define PLAYER_MAGIC_SPRITE_COUNT 6
+//#define PLAYER_WALK_SPRITE_COUNT 6
+//#define PLAYER_IDLE_SPRITE_COUNT 6
+//#define PLAYER_ATTACK_SPRITE_COUNT 6
+//#define PLAYER_ATTACK_DURATION 0.3
+//#define PLAYER_ATTACK_RANGE 35
+//#define PLAYER_ATTACK_WIDTH 60
+//#define PLAYER_SPEED 100
+//#define PLAYER_SPR_TIME 0.1
 
-#define DASH_DURATION 0.35
-#define DASH_SPRITE_COUNT 4
-#define DASH_SPEED 1000
-#define MAGIC_SPRITE_COUNT 6
-#define MAGIC_SPRITE_DURATION 0.3
-#define WALK_SPRITE_COUNT 6
-#define WALK_SPRITE_DURATION 0.6
-#define IDLE_SPRITE_COUNT 6
-#define IDLE_SPRITE_DURATION 1.2
-#define ATTACK_ANIMATION_COUNT 6
-#define ATTACK_DURATION 0.3
+#define PLAYER_DASH_DURATION 0.35
+#define PLAYER_DASH_SPRITE_COUNT 4
+#define PLAYER_DASH_SPEED 1000
+#define PLAYER_MAGIC_SPRITE_COUNT 6
+#define PLAYER_MAGIC_SPRITE_DURATION 0.3
+#define PLAYER_WALK_SPRITE_COUNT 6
+#define PLAYER_WALK_SPRITE_DURATION 0.6
+#define PLAYER_IDLE_SPRITE_COUNT 6
+#define PLAYER_IDLE_SPRITE_DURATION 1.2
+#define PLAYER_ATTACK_SPRITE_COUNT 6
+#define PLAYER_ATTACK_DURATION 0.3
 #define PLAYER_STEP_INTERVAL 0.33
-#define ATTACK_RANGE 70
-#define ATTACK_WIDTH 120
-#define IDLE_SPRITE "img/idle_up.png"
+#define PLAYER_ATTACK_ANIMATION_COUNT 5
+#define PLAYER_ATTACK_RANGE 70
+#define PLAYER_ATTACK_WIDTH 120
+#define PLAYER_IDLE_SPRITE "img/idle_up.png"
 
 class Player : public Component {
 public:
@@ -55,7 +67,11 @@ public:
     static Player* player;
 
     void NotifyCollision(GameObject& other) override;
+
+    Vec2 GetCenter();
+    
     void Freeze();
+    
     void Unfreeze();
 private:
     enum PlayerState {

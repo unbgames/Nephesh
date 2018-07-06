@@ -24,7 +24,7 @@ Player *Player::player = nullptr;
 
 Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), state(STARTING), hp(100) {
     associated.AddComponent(new Sound(associated));
-    Sprite *spr = new Sprite(associated, IDLE_SPRITE, IDLE_SPRITE_COUNT, 0.1, 0, true);
+    Sprite *spr = new Sprite(associated, PLAYER_IDLE_SPRITE, PLAYER_IDLE_SPRITE_COUNT, 0.1, 0, true);
 
     associated.AddComponent(spr);
 
@@ -167,16 +167,15 @@ void Player::Update(float dt) {
             } else {
                 timer.Update(dt);
 
-                if (timer.Get() > DASH_DURATION) {
-                    collider->SetCanCollide([&](GameObject &other) -> bool {
-                        return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) ||
-                               other.HasComponent(COLLISION_MAP_TYPE);
+                if (timer.Get() > PLAYER_DASH_DURATION) {
+                    collider->SetCanCollide([&] (GameObject &other) -> bool {
+                        return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) || other.HasComponent(COLLISION_MAP_TYPE);
                     });
                     //Melee attack has finished, return player to IDLE state
                     newState = IDLE;
                 } else {
                     auto d = target - collider->box.Center();
-                    speed = Vec2(DASH_SPEED, 0).RotateDeg(d.XAngleDeg()) * dt;
+                    speed = Vec2(PLAYER_DASH_SPEED, 0).RotateDeg(d.XAngleDeg())*dt;
                 }
             }
 
@@ -191,7 +190,7 @@ void Player::Update(float dt) {
                 timer.Restart();
             } else {
                 timer.Update(dt);
-                if (preparing && timer.Get() > MAGIC_SPRITE_DURATION) {
+                if (preparing && timer.Get() > PLAYER_MAGIC_SPRITE_DURATION) {
                     //Player has finished preparing, lock the animation in the last frame and cast the magic.
                     Shoot();
                     preparing = false;
@@ -224,7 +223,7 @@ void Player::Update(float dt) {
                     }
                 }
 
-                if (timer.Get() > ATTACK_DURATION) {
+                if (timer.Get() > PLAYER_ATTACK_DURATION) {
                     //Melee attack has finished, return player to IDLE state
                     newState = IDLE;
                 }
@@ -297,7 +296,7 @@ void Player::Render() {
 }
 
 bool Player::Is(string type) {
-    return type == "Player";
+    return type == PLAYER_TYPE;
 }
 
 void Player::Start() {
@@ -395,7 +394,7 @@ void Player::Attack() {
     auto playerBoxCenter = associated.box.Center();
     auto attackObject = new GameObject(associated.GetLayer());
 
-    attackObject->box = currentDirection == LEFT || currentDirection == RIGHT ? Rect(ATTACK_WIDTH, ATTACK_RANGE) : Rect(ATTACK_RANGE, ATTACK_WIDTH);
+    attackObject->box = currentDirection == LEFT || currentDirection == RIGHT ? Rect(PLAYER_ATTACK_WIDTH, PLAYER_ATTACK_RANGE) : Rect(PLAYER_ATTACK_RANGE, PLAYER_ATTACK_WIDTH);
     attackObject->box.PlaceCenterAt(playerBoxCenter + GetStateData(attackingData).objectSpriteOffset);
     attackObject->AddComponent(new MeleeAttack(*attackObject));
 
@@ -432,8 +431,8 @@ Player::PlayerStateData Player::GetStateData(vector<PlayerStateData> data) {
 
 Player::PlayerStateData Player::ChangeDirection() {
     auto playerData = PlayerStateData(LEFT, "", Vec2(), Vec2());
-    auto frameCount = WALK_SPRITE_COUNT;
-    auto animationDuration = WALK_SPRITE_DURATION;
+    auto frameCount = PLAYER_WALK_SPRITE_COUNT;
+    auto animationDuration = PLAYER_WALK_SPRITE_DURATION;
     auto shouldFlip = false;
     switch (state) {
         case MOVING:
@@ -442,26 +441,26 @@ Player::PlayerStateData Player::ChangeDirection() {
             break;
         case ATTACKING:
             playerData = GetStateData(attackingData);
-            frameCount = ATTACK_ANIMATION_COUNT;
-            animationDuration = ATTACK_DURATION;
+            frameCount = PLAYER_ATTACK_SPRITE_COUNT;
+            animationDuration = PLAYER_ATTACK_DURATION;
             shouldFlip = currentDirection == LEFT;
             break;
         case DASHING:
             playerData = GetStateData(dashingData);
-            frameCount = DASH_SPRITE_COUNT;
-            animationDuration = DASH_DURATION;
+            frameCount = PLAYER_DASH_SPRITE_COUNT;
+            animationDuration = PLAYER_DASH_DURATION;
             shouldFlip = currentDirection == LEFT;
             break;
         case SHOOTING:
             playerData = GetStateData(shootingData);
-            frameCount = MAGIC_SPRITE_COUNT;
-            animationDuration = MAGIC_SPRITE_DURATION;
+            frameCount = PLAYER_MAGIC_SPRITE_COUNT;
+            animationDuration = PLAYER_MAGIC_SPRITE_DURATION;
             shouldFlip = currentDirection == LEFT;
             break;
         default:
             playerData = GetStateData(idleData);
-            frameCount = IDLE_SPRITE_COUNT;
-            animationDuration = IDLE_SPRITE_DURATION;
+            frameCount = PLAYER_IDLE_SPRITE_COUNT;
+            animationDuration = PLAYER_IDLE_SPRITE_DURATION;
     }
     auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
     collider->SetOffset(playerData.playerSpriteOffset);
@@ -477,9 +476,12 @@ void Player::Dash() {
 
     currentDirection = GetNewDirection(mousePos);
 
-    target = associated.box.Center() + Vec2(DASH_SPEED*DASH_DURATION, 0).RotateDeg((mousePos - associated.box.Center()).XAngleDeg());
-
+    target = associated.box.Center() + Vec2(PLAYER_DASH_SPEED*PLAYER_DASH_DURATION, 0).RotateDeg((mousePos - associated.box.Center()).XAngleDeg());
     PlaySound(dashSounds[rand()%dashSounds.size()]);
+}
+
+Vec2 Player::GetCenter() {
+    return associated.box.Center();
 }
 
 void Player::PlaySound(string file) {
