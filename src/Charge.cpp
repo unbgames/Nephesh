@@ -5,7 +5,7 @@
 #include <Game.h>
 #include "Charge.h"
 
-Charge::Charge(GameObject &associated, GameObject *next, float duration) : Component(associated), next(next), chargeTimer() {
+Charge::Charge(GameObject &associated, GameObject *next, float duration) : Component(associated), next(next), chargeTimer(), duration(duration) {
 }
 
 void Charge::Update(float dt) {
