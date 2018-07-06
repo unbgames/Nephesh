@@ -84,3 +84,10 @@ bool Collider::CanCollide(GameObject &collidable) {
 Vec2 Collider::GetOffset() {
     return offset;
 }
+
+void Collider::UpdateGameObject() {
+    auto newBox = Rect(associated.box.h, associated.box.w);
+    newBox.PlaceCenterAt(box.Center() - offset);
+    //TODO: Add rotation if needed
+    associated.box = newBox;
+}

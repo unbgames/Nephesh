@@ -154,6 +154,7 @@ private:
     bool frozen;
 
     Vec2 speed;
+    Rect lastBox;
     int hp;
 
     Vec2 target;

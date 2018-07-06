@@ -111,6 +111,7 @@ void Player::Update(float dt) {
         auto inputManager = InputManager::GetInstance();
         auto newState = state;
         auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
+        lastBox = collider->box;
 
         if (state != SHOOTING && state != ATTACKING && state != DASHING) {
             if (state == TALKING && !shouldStopTalking) {
@@ -326,8 +327,87 @@ void Player::NotifyCollision(GameObject &other) {
         }
     } else {
         auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
-        associated.box -= speed;
-        collider->Update(0);
+        auto collidable = (Collidable *)other.GetComponent(COLLIDABLE_TYPE);
+        auto intersections = collidable->GetIntersections(*collider);
+        auto boxCorners = collider->box.GetCorners(associated.angleDeg, associated.rotationCenter);
+        auto u = LineSegment(boxCorners[0], boxCorners[1]);
+        auto l = LineSegment(boxCorners[1], boxCorners[2]);
+        auto d = LineSegment(boxCorners[2], boxCorners[3]);
+        auto r = LineSegment(boxCorners[3], boxCorners[0]);
+
+        auto lCount = 0;
+        auto rCount = 0;
+        auto uCount = 0;
+        auto dCount = 0;
+
+        auto minX = std::numeric_limits<float>::infinity();
+        auto minY = std::numeric_limits<float>::infinity();
+        auto maxX = -std::numeric_limits<float>::infinity();
+        auto maxY = -std::numeric_limits<float>::infinity();
+
+        for (auto &intersection : intersections) {
+            auto line = intersection.first;
+            if (intersection.second.x < minX) {
+                minX = intersection.second.x;
+            }
+            if (intersection.second.x > maxX) {
+                maxX = intersection.second.x;
+            }
+            if (intersection.second.y < minY) {
+                minY = intersection.second.y;
+            }
+            if (intersection.second.y > maxY) {
+                maxY = intersection.second.y;
+            }
+
+            if (line == r) {
+                rCount++;
+            }
+            if (line == l) {
+                lCount++;
+            }
+            if (line == u) {
+                uCount++;
+            }
+            if (line == d) {
+                dCount++;
+            }
+
+        }
+
+        auto playerMinX = lastBox.x;
+        auto playerMaxX = lastBox.x + lastBox.w;
+        auto playerMinY = lastBox.y;
+        auto playerMaxY = lastBox.y + lastBox.h;
+
+#ifdef DEBUG
+        cout << "maxX " << maxX << endl;
+        cout << "minX " << minX << endl;
+        cout << "maxY " << maxY << endl;
+        cout << "minY " << minY << endl;
+
+        cout << "rCount " << rCount << endl;
+        cout << "lCount " << lCount << endl;
+        cout << "uCount " << uCount << endl;
+        cout << "dCount " << dCount << endl;
+#endif
+        auto detectedDirection = false;
+        if (playerMinX > maxX || playerMaxX < minX || rCount > 1 || lCount > 1 || (uCount >= 1 && dCount >=1)) {
+            collider->box.x = lastBox.x;
+            detectedDirection = true;
+        }
+        
+        if (playerMinY > maxY || playerMaxY < minY || uCount > 1 || dCount > 1 || (lCount >= 1 && rCount >=1)) {
+            collider->box.y = lastBox.y;
+            detectedDirection = true;
+        }
+
+        if (!detectedDirection) {
+            collider->box.x = lastBox.x;
+            collider->box.y = lastBox.y;
+        }
+
+        collider->UpdateGameObject();
     }
 }
 
