@@ -15,6 +15,7 @@
 #include <Sound.h>
 #include <IntervalTimer.h>
 #include <TerrainMap.h>
+#include <Charge.h>
 #include "Player.h"
 
 #define SPEED 200
@@ -348,13 +349,38 @@ void Player::SetSprite(string file, int frameCount, float frameTime, bool flip) 
 
 void Player::Shoot() {
     auto playerBoxCenter = associated.box.Center();
+    string spriteName = "";
+    Vec2 offset;
+
+    switch (currentDirection) {
+        case RIGHT:
+        case LEFT:
+            spriteName = "img/pre_magic_side.png";
+            break;
+        case UP:
+            offset = Vec2(-24, 0);
+            spriteName = "img/pre_magic_up.png";
+            break;
+        case DOWN:
+            offset = Vec2(-17, 0);
+            spriteName = "img/pre_magic_down.png";
+            break;
+    }
+
     auto beamObj = new GameObject(associated.GetLayer());
-
     beamObj->box = Rect() + playerBoxCenter + GetStateData(shootingData).objectSpriteOffset;
-
+    beamObj->box += offset;
     auto beamCpt = new BeamSkill(*beamObj, target, currentDirection);
     beamObj->AddComponent(beamCpt);
-    Game::GetInstance().GetCurrentState().AddObject(beamObj);
+
+
+    auto chargeObj = new GameObject(associated.GetLayer());
+    chargeObj->AddComponent(new Charge(*chargeObj, beamObj, CHARGING_DURATION));
+    auto raySprite = new Sprite(*chargeObj, spriteName, 4, CHARGING_DURATION/4, 0, false, currentDirection == LEFT);
+    chargeObj->AddComponent(raySprite);
+    chargeObj->box = Rect() + playerBoxCenter + GetStateData(shootingData).objectSpriteOffset;
+    chargeObj->box += offset;
+    Game::GetInstance().GetCurrentState().AddObject(chargeObj);
     PlaySound("audio/magic_attack.wav");
 }
 
