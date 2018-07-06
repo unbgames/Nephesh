@@ -10,7 +10,7 @@
 #include "Component.h"
 #include "Player.h"
 
-namespace std;
+using namespace std;
 
 class RollingRocks : public Component {
 public:
