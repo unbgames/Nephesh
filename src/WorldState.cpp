@@ -23,8 +23,7 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
     bgObj->AddComponent(new CameraFollower(*bgObj));
 
     auto playerObj = new GameObject();
-    playerObj->box.x = 1024;
-    playerObj->box.y = 1024;
+    playerObj->box += WORLD_PLAYER_INITIAL_POSITION;
     playerObj->AddComponent(new Player(*playerObj));
     AddObject(playerObj);
 
@@ -33,14 +32,6 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
     bgMusic = new Music("audio/mundo.ogg");
     Mix_VolumeMusic(32);
 
-    auto npcObj = new GameObject();
-    npcObj->box.x = WIDTH/2;
-    npcObj->box.y = HEIGHT/2;
-    npcObj->AddComponent(new Sprite(*npcObj, "img/criatura.png", 6, 0.1));
-    npcObj->AddComponent(new Npc(*npcObj, "npcs/npcTest.txt"));
-    npcObj->AddComponent(new Sound(*npcObj, "audio/npcs/criatura_magica_1.wav"));
-
-    AddObject(npcObj);
     Player::player->Freeze();
     auto fadeInObj = new GameObject(2);
     fadeInObj->AddComponent(new FadeEffect(*fadeInObj, WORLD_FADE_IN_DURATION, 2, [] { Player::player->Unfreeze(); }));
@@ -138,12 +129,22 @@ void WorldState::Render() {
 
 void WorldState::Start() {
     vector<string> m1 = { "map/1/ground.png", "map/1/rocks.png" };
+    vector<string> m2 = { "map/2/ground.png", "map/2/rocks.png" };
+    vector<string> m3 = { "map/3/ground.png", "map/3/rocks.png" };
+    vector<string> m4 = { "map/4/ground.png", "map/4/rocks.png" };
+    vector<string> m5 = { "map/5/ground.png", "map/5/rocks.png" };
+    vector<string> m8 = { "map/8/ground.png", "map/8/rocks.png" };
     maps.emplace_back(m1, Map::MapDirection::DOWN, "map/1/collisionMap.txt", "map/1/terrainMap.txt");
-//    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::DOWN, "map/collisionMap.txt", "map/terrainMap.txt");
+    maps.emplace_back(m2, Map::MapDirection::DOWN, "map/2/collisionMap.txt", "map/2/terrainMap.txt");
+    maps.emplace_back(m3, Map::MapDirection::RIGHT, "map/3/collisionMap.txt", "map/3/terrainMap.txt");
+    maps.emplace_back(m4, Map::MapDirection::UP, "map/4/collisionMap.txt", "map/4/terrainMap.txt");
+    maps.emplace_back(m5, Map::MapDirection::RIGHT, "map/5/collisionMap.txt", "map/5/terrainMap.txt");
+    maps.emplace_back(m8, Map::MapDirection::RIGHT, "map/8/collisionMap.txt", "map/8/terrainMap.txt");
 
     StartArray();
 
     LoadMaps();
+    LoadNpcs();
     bgMusic->Play();
 
 }
@@ -258,9 +259,27 @@ void WorldState::LoadMaps() {
                 nextMap.GetTileMap()->box.x = currentBox.x + currentBox.w;
                 nextMap.GetTileMap()->box.y = currentBox.y;
         }
+
+        if (nextMap.GetTileMap()->box.Contains(Player::player->GetGameObject().box.Center())) {
+            currentMapIndex = i;
+        }
     }
 }
 
 Map &WorldState::GetCurrentMap() {
     return maps[currentMapIndex];
+}
+
+void WorldState::LoadNpcs() {
+    auto creatureObj1 = new GameObject();
+    creatureObj1->AddComponent(new Sprite(*creatureObj1, "img/criatura.png", 6, 0.2));
+    creatureObj1->AddComponent(new Npc(*creatureObj1, "npcs/criatura_magica1.txt"));
+    creatureObj1->AddComponent(new Sound(*creatureObj1, "audio/npcs/criatura_magica_1.wav"));
+    AddObject(creatureObj1);
+
+    auto creatureObj2 = new GameObject();
+    creatureObj2->AddComponent(new Sprite(*creatureObj2, "img/criatura.png", 6, 0.2));
+    creatureObj2->AddComponent(new Npc(*creatureObj2, "npcs/criatura_magica2.txt", true));
+    creatureObj2->AddComponent(new Sound(*creatureObj2, "audio/npcs/criatura_magica_1.wav"));
+    AddObject(creatureObj2);
 }

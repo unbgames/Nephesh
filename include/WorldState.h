@@ -11,8 +11,9 @@
 
 using namespace std;
 
-#define WORLD_FADE_IN_DURATION 11.5
+#define WORLD_FADE_IN_DURATION 1
 #define WORLD_FADE_OUT_DURATION 1
+#define WORLD_PLAYER_INITIAL_POSITION Vec2(8776, 1316)
 
 class WorldState : public State {
     public:
@@ -56,6 +57,7 @@ private:
 
         void UpdateLoadedMaps();
         void LoadMaps();
+        void LoadNpcs();
 };
 
 
