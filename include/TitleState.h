@@ -1,54 +1,39 @@
-#ifndef T1_TITLESTATE_H
-#define T1_TITLESTATE_H
+//
+// Created by ftfnunes on 30/06/18.
+//
+
+#ifndef NEPHESH_TITLESTATE_H
+#define NEPHESH_TITLESTATE_H
 
 
-#include "State.h"
-#include "TileMap.h"
-#include "Map.h"
-#include <vector>
-#include <memory>
+#include <State.h>
+#include <Music.h>
 
-using namespace std;
+#define TITLE_FADE_IN_DURATION 3
+#define TITLE_START_FADE_OUT_DURATION 2
+#define TITLE_QUIT_FADE_OUT_DURATION 1
 
 class TitleState : public State {
-    public:
+public:
+    TitleState();
+    ~TitleState();
 
-        TitleState();
-        ~TitleState();
+    void LoadAssets();
 
-        void LoadAssets();
+    void Update(float dt) override;
 
-        void Update(float dt) override;
+    void Render() override;
 
-        void Render() override;
+    void Start() override;
 
-        void Start() override;
+    void Pause() override;
 
-        void Pause() override;
-
-        void Resume() override;
-
-        void CheckCollisions();
-
-        weak_ptr<GameObject> AddObject(shared_ptr<GameObject> object) override;
-        weak_ptr<GameObject> AddObject(GameObject *object) override;
-
-        weak_ptr<GameObject> AddCollidable(shared_ptr<GameObject> object);
-
-        weak_ptr<GameObject> AddCollider(shared_ptr<GameObject> object);
+    void Resume() override;
 
 private:
-        vector<weak_ptr<GameObject>> collidables;
-        vector<weak_ptr<GameObject>> colliders;
-
-        shared_ptr<GameObject> bgObj;
-
-        int currentMapIndex;
-        vector<Map> maps;
-
-        void UpdateLoadedMaps();
-        void LoadMaps();
+    Music *bgMusic;
+    bool frozen;
 };
 
 
-#endif //T1_TITLESTATE_H
+#endif //NEPHESH_TITLESTATE_H

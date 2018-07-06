@@ -7,7 +7,7 @@
 
 #define GAME_NAME "Nephesh"
 #define WIDTH 1920
-#define HEIGHT 1080
+#define HEIGHT 1000
 
 #define ASSETS_PATH "assets/"
 

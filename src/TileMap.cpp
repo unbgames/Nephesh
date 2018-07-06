@@ -5,9 +5,15 @@
 #include <TileMap.h>
 
 TileMap::TileMap(GameObject &associated, string file, TileSet *tileSet) : Component(associated),
-                                                                          tileSet(tileSet){
+                                                                          tileSet(tileSet),
+                                                                          useImages(false) {
     Load(file);
 }
+
+
+TileMap::TileMap(GameObject &associated, vector<string> files, int tileWidth, int tileHeight) : Component(associated), useImages(true) {
+    LoadImages(files, tileWidth, tileHeight);
+};
 
 void TileMap::SetTileSet(TileSet *tileSet) {
     this->tileSet = tileSet;
@@ -23,11 +29,17 @@ void TileMap::RenderLayer(int layer, int cameraX, int cameraY) {
 }
 
 void TileMap::RenderLayer(int layer) {
-    for (int i = 0; i < mapWidth; i++) {
-        for (int j = 0; j < mapHeight; ++j) {
-            auto x = associated.box.x + i*tileSet->GetTileWidth();
-            auto y = associated.box.y + j*tileSet->GetTileHeight();
-            tileSet->RenderTile(At(i, j, layer), x, y, layer);
+    if (useImages) {
+        if (layer >= 0 && layer < layers.size()) {
+            layers[layer].Render();
+        }
+    } else {
+        for (int i = 0; i < mapWidth; i++) {
+            for (int j = 0; j < mapHeight; ++j) {
+                auto x = associated.box.x + i*tileSet->GetTileWidth();
+                auto y = associated.box.y + j*tileSet->GetTileHeight();
+                tileSet->RenderTile(At(i, j, layer), x, y, layer);
+            }
         }
     }
 }
@@ -107,4 +119,14 @@ void TileMap::Load(string file) {
     } else {
         throw "Erro ao abrir o arquivo " + file;
     }
+}
+
+void TileMap::LoadImages(vector<string> files, int tileWidth, int tileHeight) {
+    for (auto &file : files) {
+        layers.emplace_back(associated, file);
+    }
+
+    mapDepth = (int) files.size();
+    mapWidth = ((int) associated.box.w)/tileWidth;
+    mapHeight = ((int) associated.box.h)/tileHeight;
 }

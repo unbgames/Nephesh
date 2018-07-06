@@ -23,7 +23,7 @@ public:
     void Update(float dt);
     bool Is(string type);
 
-    void Open(string file);
+    void Open(string file, bool shouldRecenter = true);
     void SetClip(int x, int y, int w, int h);
     void SetClip(int x, int y);
     void Render() override;
@@ -39,6 +39,11 @@ public:
     void SetFrameCount(int frameCount);
     void SetFrameTime(float frameTime);
     void SetFlip(bool f);
+    void LockFrame();
+    void UnlockFrame();
+    int GetFrame();
+    void SetAlpha(Uint8 a);
+
 private:
     shared_ptr<SDL_Texture> texture;
     SDL_Rect clipRect;
@@ -53,6 +58,7 @@ private:
     float secondsToSelfDestruct;
     bool scaleSpriteForLayer;
     bool flip;
+    bool lockFrame;
 
 
     int getFrameWidth();
