@@ -138,7 +138,7 @@ void WorldState::Render() {
 
 void WorldState::Start() {
     vector<string> m1 = { "map/1/ground.png", "map/1/rocks.png" };
-    maps.emplace_back(m1, Map::MapDirection::DOWN, "map/1/collisionMap.txt");
+    maps.emplace_back(m1, Map::MapDirection::DOWN, "map/1/collisionMap.txt", "map/1/terrainMap.txt");
 //    maps.emplace_back("map/tileMap1.txt", "img/tileset1.png", Map::MapDirection::DOWN, "map/collisionMap.txt", "map/terrainMap.txt");
 
     StartArray();

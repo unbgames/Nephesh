@@ -62,8 +62,11 @@ void TitleState::Update(float dt) {
         frozen = true;
         function<void()> callback;
 
-        auto sound = new Sound(*new GameObject(), isStart ? "audio/menu/select.wav" : "audio/menu/return.wav");
+        auto soundObject = new GameObject();
+        auto sound = new Sound(*soundObject, isStart ? "audio/menu/select.wav" : "audio/menu/return.wav");
+        soundObject->AddComponent(sound);
         sound->Play();
+        delete soundObject;
 
         if (isStart) {
             callback = [] {

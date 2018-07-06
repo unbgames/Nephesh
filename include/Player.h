@@ -21,9 +21,9 @@ using namespace std;
 #define WALK_SPRITE_DURATION 0.6
 #define IDLE_SPRITE_COUNT 6
 #define IDLE_SPRITE_DURATION 1.2
-#define ATTACK_SPRITE_COUNT 6
+#define ATTACK_ANIMATION_COUNT 6
 #define ATTACK_DURATION 0.3
-#define STEP_INTERVAL 0.33
+#define PLAYER_STEP_INTERVAL 0.33
 #define ATTACK_RANGE 70
 #define ATTACK_WIDTH 120
 #define IDLE_SPRITE "img/idle_up.png"

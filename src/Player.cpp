@@ -137,9 +137,11 @@ void Player::Update(float dt) {
             });
         }
 
-        if (state == MOVING && newState != MOVING) {
+        if (newState != MOVING) {
             auto intervalTimer = (IntervalTimer *) associated.GetComponent(EVENT_TIMER_TYPE);
-            associated.RemoveComponent(intervalTimer);
+            if (intervalTimer != nullptr) {
+                associated.RemoveComponent(intervalTimer);
+            }
         }
 
         if (newState == TALKING && !closestNpc.expired()) {
@@ -230,7 +232,7 @@ void Player::Update(float dt) {
         } else if (newState == MOVING) {
 
             if (state != MOVING) {
-                associated.AddComponent(new IntervalTimer(associated, STEP_INTERVAL, [&]() -> void {
+                associated.AddComponent(new IntervalTimer(associated, PLAYER_STEP_INTERVAL, [&]() -> void {
                     PlaySound(GetRandomStepSound());
                 }));
             }
@@ -320,6 +322,7 @@ void Player::NotifyCollision(GameObject &other) {
             closestNpcDistance = distance;
             closestNpc = Game::GetInstance().GetCurrentState().GetObjectPtr(&other);
             state = TALKING;
+            ChangeDirection();
         }
     } else {
         auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
@@ -413,7 +416,7 @@ Player::PlayerStateData Player::ChangeDirection() {
             break;
         case ATTACKING:
             playerData = GetStateData(attackingData);
-            frameCount = ATTACK_SPRITE_COUNT;
+            frameCount = ATTACK_ANIMATION_COUNT;
             animationDuration = ATTACK_DURATION;
             shouldFlip = currentDirection == LEFT;
             break;
