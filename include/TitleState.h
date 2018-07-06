@@ -9,6 +9,10 @@
 #include <State.h>
 #include <Music.h>
 
+#define TITLE_FADE_IN_DURATION 3
+#define TITLE_START_FADE_OUT_DURATION 2
+#define TITLE_QUIT_FADE_OUT_DURATION 1
+
 class TitleState : public State {
 public:
     TitleState();

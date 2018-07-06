@@ -43,7 +43,7 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
     AddObject(npcObj);
     Player::player->Freeze();
     auto fadeInObj = new GameObject(2);
-    fadeInObj->AddComponent(new FadeEffect(*fadeInObj, 11.5, 2, [] { Player::player->Unfreeze(); }));
+    fadeInObj->AddComponent(new FadeEffect(*fadeInObj, WORLD_FADE_IN_DURATION, 2, [] { Player::player->Unfreeze(); }));
     AddObject(fadeInObj);
 }
 
@@ -73,7 +73,7 @@ void WorldState::Update(float dt) {
             popRequested = true;
         };
 
-        fadeObj->AddComponent(new FadeEffect(*fadeObj, 1, 0, callback, FadeEffect::FadeType::OUT));
+        fadeObj->AddComponent(new FadeEffect(*fadeObj, WORLD_FADE_OUT_DURATION, 0, callback, FadeEffect::FadeType::OUT));
         AddObject(fadeObj);
     }
 

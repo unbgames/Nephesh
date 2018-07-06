@@ -46,7 +46,7 @@ TitleState::TitleState() : State(), frozen(false) {
 
     auto fadeInObj = new GameObject(2);
     this->frozen = true;
-    fadeInObj->AddComponent(new FadeEffect(*fadeInObj, 3, 1, [this] { this->frozen = false; }));
+    fadeInObj->AddComponent(new FadeEffect(*fadeInObj, TITLE_FADE_IN_DURATION, 1, [this] { this->frozen = false; }));
     AddObject(fadeInObj);
 }
 
@@ -78,7 +78,7 @@ void TitleState::Update(float dt) {
             };
         }
 
-        fadeObj->AddComponent(new FadeEffect(*fadeObj, isStart ? 2 : 1, 0, callback, FadeEffect::FadeType::OUT));
+        fadeObj->AddComponent(new FadeEffect(*fadeObj, isStart ? TITLE_START_FADE_OUT_DURATION : TITLE_QUIT_FADE_OUT_DURATION, 0, callback, FadeEffect::FadeType::OUT));
         AddObject(fadeObj);
     }
 

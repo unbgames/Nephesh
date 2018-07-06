@@ -11,6 +11,9 @@
 
 using namespace std;
 
+#define WORLD_FADE_IN_DURATION 11.5
+#define WORLD_FADE_OUT_DURATION 1
+
 class WorldState : public State {
     public:
 
