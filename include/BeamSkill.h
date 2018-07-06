@@ -34,14 +34,12 @@ public:
 private:
     weak_ptr<GameObject> initObject;
     weak_ptr<GameObject> endObject;
-    weak_ptr<GameObject> chargeObject;
     Player::PlayerDirection direction;
 
     Vec2 target;
     Timer timer;
     float cutoffPoint;
     bool lockBeam;
-    bool charged;
 };
 
 

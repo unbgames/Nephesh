@@ -50,3 +50,9 @@ void Rect::PlaceCenterAt(Vec2 pos) {
     y = pos.y - h/2;
 }
 
+Rect& Rect::operator=(Vec2 vec) {
+    this->x = vec.x;
+    this->y = vec.y;
+    return *this;
+}
+

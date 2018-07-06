@@ -9,9 +9,11 @@
 #include <Collidable.h>
 #include "BeamSkill.h"
 
-BeamSkill::BeamSkill(GameObject &associated, Vec2 target, Player::PlayerDirection direction) : Component(associated), target(target), direction(direction), lockBeam(false), charged(false) {
+BeamSkill::BeamSkill(GameObject &associated, Vec2 target, Player::PlayerDirection direction) : Component(associated), target(target), direction(direction), lockBeam(false) {
     auto collider = new Collider(associated);
     associated.AddComponent(collider);
+    auto raySprite = new Sprite(associated, "img/magic_effect_side2.png", 5, BEAM_LIFETIME/5, 0, false, false);
+    associated.AddComponent(raySprite);
     collider->SetCanCollide([] (GameObject &other) -> bool {
         return false;
     });
@@ -22,18 +24,7 @@ BeamSkill::~BeamSkill() {
 
 void BeamSkill::Update(float dt) {
     timer.Update(dt);
-    
-    if (!charged) {
-        if (timer.Get() > CHARGING_DURATION) {
-            charged = true;
-            timer.Restart();
-            if (!chargeObject.expired()) {
-                chargeObject.lock()->RequestDelete();
-            }
-
-            Fire();
-        }
-    } else if (timer.Get() > BEAM_LIFETIME) {
+    if (timer.Get() > BEAM_LIFETIME) {
         timer.Restart();
         initObject.lock()->RequestDelete();
         endObject.lock()->RequestDelete();
@@ -42,9 +33,7 @@ void BeamSkill::Update(float dt) {
 }
 
 void BeamSkill::Render() {
-    if (charged) {
-        lockBeam = true;
-    }
+    lockBeam = true;
 }
 
 bool BeamSkill::Is(string type) {
@@ -89,41 +78,13 @@ void BeamSkill::NotifyCollision(GameObject &other) {
 }
 
 void BeamSkill::Start() {
-    string spriteName = "";
-
-    switch (direction) {
-        case Player::PlayerDirection::RIGHT:
-        case Player::PlayerDirection::LEFT:
-            spriteName = "img/pre_magic_side.png";
-            break;
-        case Player::PlayerDirection::UP:
-            associated.box -= Vec2(24, 0);
-            spriteName = "img/pre_magic_up.png";
-            break;
-        case Player::PlayerDirection::DOWN:
-            associated.box -= Vec2(17, 0);
-            spriteName = "img/pre_magic_down.png";
-            break;
-    }
-
-    auto raySprite = new Sprite(associated, spriteName, 4, CHARGING_DURATION/4, 0, false, direction == Player::PlayerDirection::LEFT);
-    associated.AddComponent(raySprite);
-}
-
-void BeamSkill::Fire() {
     auto sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
-    
+
     if (direction == Player::PlayerDirection::UP) {
         associated.box += Vec2(24, 0);
     } else if (direction == Player::PlayerDirection::DOWN) {
         associated.box += Vec2(17, 0);
     }
-    
-    sprite->SetFlip(false);
-    sprite->SetFrameCount(5);
-    sprite->SetFrameTime(BEAM_LIFETIME/5);
-    sprite->Open("img/magic_effect_side2.png", false);
-    sprite->SetFrame(0);
 
     auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
     collider->SetCanCollide([] (GameObject &other) -> bool {
@@ -150,4 +111,8 @@ void BeamSkill::Fire() {
     endObj->AddComponent(s);
     endObj->SetCenter(Vec2(associated.box.x, associated.box.y) + Vec2(associated.box.w, 0).RotateDeg(associated.angleDeg));
     endObject = Game::GetInstance().GetCurrentState().AddObject(endObj);
+}
+
+void BeamSkill::Fire() {
+
 }
