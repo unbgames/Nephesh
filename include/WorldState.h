@@ -13,7 +13,7 @@ using namespace std;
 
 #define WORLD_FADE_IN_DURATION 1
 #define WORLD_FADE_OUT_DURATION 1
-#define WORLD_PLAYER_INITIAL_POSITION Vec2(8776, 1316)
+#define WORLD_PLAYER_INITIAL_POSITION Vec2(1024, 1024)
 
 class WorldState : public State {
     public:

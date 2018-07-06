@@ -22,6 +22,7 @@
 Player *Player::player = nullptr;
 
 Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), state(STARTING), hp(100) {
+    associated.AddComponent(new Sound(associated));
     Sprite *spr = new Sprite(associated, PLAYER_IDLE_SPRITE, PLAYER_IDLE_SPRITE_COUNT, 0.1, 0, true);
 
     associated.AddComponent(spr);
