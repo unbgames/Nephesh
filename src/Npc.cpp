@@ -26,6 +26,11 @@ void Npc::Update(float dt) {
             textBox.lock()->RequestDelete();
             isTalking = false;
         } else {
+            auto sound = (Sound *)associated.GetComponent(SOUND_TYPE);
+            if (sound != nullptr) {
+                sound->Play();
+            }
+
             boxCpt->SetText(speechQueue.front());
             speechQueue.pop();
         }
@@ -76,11 +81,6 @@ void Npc::Talk() {
 
     box->SetText(speechLines.front());
     speechQueue.pop();
-
-    auto sound = (Sound *)associated.GetComponent(SOUND_TYPE);
-    if (sound != nullptr) {
-        sound->Play();
-    }
 
     Player::player->closestNpc = weak_ptr<GameObject>();
 }

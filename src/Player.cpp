@@ -12,6 +12,9 @@
 #include <Camera.h>
 #include <CollisionMap.h>
 #include <WorldState.h>
+#include <Sound.h>
+#include <IntervalTimer.h>
+#include <TerrainMap.h>
 #include "Player.h"
 
 #define SPEED 200
@@ -19,6 +22,7 @@
 Player *Player::player = nullptr;
 
 Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), state(STARTING), hp(100) {
+    associated.AddComponent(new Sound(associated));
     Sprite *spr = new Sprite(associated, IDLE_SPRITE, IDLE_SPRITE_COUNT, 0.1, 0, true);
 
     associated.AddComponent(spr);
@@ -34,11 +38,33 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     movingData.emplace_back(LEFT, "img/walk_side.png", Vec2(0.5, 0.92), Vec2(-15, 0));
     movingData.emplace_back(UP, "img/walk_up.png", Vec2(0.4, 0.92), Vec2(0, 0));
     movingData.emplace_back(DOWN, "img/walk_down.png", Vec2(0.4, 0.92), Vec2(0, 0));
+    grassStepSounds.emplace_back("audio/steps/grass/grass_1.wav");
+    grassStepSounds.emplace_back("audio/steps/grass/grass_2.wav");
+    grassStepSounds.emplace_back("audio/steps/grass/grass_3.wav");
+    grassStepSounds.emplace_back("audio/steps/grass/grass_4.wav");
+    grassStepSounds.emplace_back("audio/steps/grass/grass_5.wav");
+    grassStepSounds.emplace_back("audio/steps/grass/grass_6.wav");
+    stoneStepSounds.emplace_back("audio/steps/stone/stone_1.wav");
+    stoneStepSounds.emplace_back("audio/steps/stone/stone_2.wav");
+    stoneStepSounds.emplace_back("audio/steps/stone/stone_3.wav");
+    stoneStepSounds.emplace_back("audio/steps/stone/stone_4.wav");
+    stoneStepSounds.emplace_back("audio/steps/stone/stone_5.wav");
+    stoneStepSounds.emplace_back("audio/steps/stone/stone_6.wav");
+    dirtStepSounds.emplace_back("audio/steps/dirt/dirt_1.wav");
+    dirtStepSounds.emplace_back("audio/steps/dirt/dirt_2.wav");
+    dirtStepSounds.emplace_back("audio/steps/dirt/dirt_3.wav");
+    dirtStepSounds.emplace_back("audio/steps/dirt/dirt_4.wav");
+    dirtStepSounds.emplace_back("audio/steps/dirt/dirt_5.wav");
+    dirtStepSounds.emplace_back("audio/steps/dirt/dirt_6.wav");
+
 
     dashingData.emplace_back(RIGHT, "img/dash_side.png", Vec2(0.5, 0.92), Vec2(20, 0));
     dashingData.emplace_back(LEFT, "img/dash_side.png", Vec2(0.5, 0.92), Vec2(-15, 0));
     dashingData.emplace_back(UP, "img/dash_up.png", Vec2(0.4, 0.92), Vec2(0, 0));
     dashingData.emplace_back(DOWN, "img/dash_down.png", Vec2(0.4, 0.92), Vec2(0, 0));
+    dashSounds.emplace_back("audio/dash/dash_1.wav");
+    dashSounds.emplace_back("audio/dash/dash_2.wav");
+    dashSounds.emplace_back("audio/dash/dash_3.wav");
 
     shootingData.emplace_back(RIGHT, "img/magic_side.png", Vec2(0.5, 0.92), Vec2(20, 0), Vec2(65, -40));
     shootingData.emplace_back(LEFT, "img/magic_side.png", Vec2(0.5, 0.92), Vec2(-15, 0), Vec2(-60, -40));
@@ -49,7 +75,12 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     attackingData.emplace_back(LEFT, "img/attack_side.png", Vec2(0.3, 0.92), Vec2(10, 0), Vec2(-60, 0));
     attackingData.emplace_back(UP, "img/attack_up.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(0, -40));
     attackingData.emplace_back(DOWN, "img/attack_down.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(0, 30));
-
+    attackMissSounds.emplace_back("audio/sword/attack_miss_1.wav");
+    attackMissSounds.emplace_back("audio/sword/attack_miss_2.wav");
+    attackMissSounds.emplace_back("audio/sword/attack_miss_3.wav");
+    attackHitSounds.emplace_back("audio/sword/attack_hit_1.wav");
+    attackHitSounds.emplace_back("audio/sword/attack_hit_2.wav");
+    attackHitSounds.emplace_back("audio/sword/attack_hit_3.wav");
 
     idleData.emplace_back(RIGHT, "img/idle_down.png", Vec2(0.5, 0.92), Vec2(25, 0));
     idleData.emplace_back(LEFT, "img/idle_up.png", Vec2(0.5, 0.92), Vec2(25, 0));
@@ -75,9 +106,10 @@ Player::PlayerDirection Player::GetNewDirection(vector<PlayerDirection> directio
 }
 
 void Player::Update(float dt) {
+    if (!frozen) {
         auto inputManager = InputManager::GetInstance();
         auto newState = state;
-        auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
+        auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
 
         if (state != SHOOTING && state != ATTACKING && state != DASHING) {
             if (state == TALKING && !shouldStopTalking) {
@@ -88,27 +120,36 @@ void Player::Update(float dt) {
                 newState = ATTACKING;
             } else if (inputManager.KeyPress(SHIFT_KEY) || state == DASHING) {
                 newState = DASHING;
-            } else if (inputManager.IsKeyDown('a') || inputManager.IsKeyDown('d') || inputManager.IsKeyDown('s') || inputManager.IsKeyDown('w')) {
+            } else if (inputManager.IsKeyDown('a') || inputManager.IsKeyDown('d') || inputManager.IsKeyDown('s') ||
+                       inputManager.IsKeyDown('w')) {
                 newState = MOVING;
             } else {
                 newState = IDLE;
             }
         }
-        
+
         if (shouldStopTalking && state != TALKING) {
             shouldStopTalking = false;
-            auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
-            collider->SetCanCollide([&] (GameObject &other) -> bool {
-                return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) || other.HasComponent(COLLISION_MAP_TYPE);
+            auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
+            collider->SetCanCollide([&](GameObject &other) -> bool {
+                return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) ||
+                       other.HasComponent(COLLISION_MAP_TYPE);
             });
         }
 
+        if (newState != MOVING) {
+            auto intervalTimer = (IntervalTimer *) associated.GetComponent(EVENT_TIMER_TYPE);
+            if (intervalTimer != nullptr) {
+                associated.RemoveComponent(intervalTimer);
+            }
+        }
+
         if (newState == TALKING && !closestNpc.expired()) {
-            auto npc = (Npc *)closestNpc.lock()->GetComponent(NPC_TYPE);
+            auto npc = (Npc *) closestNpc.lock()->GetComponent(NPC_TYPE);
             npc->Talk();
-            
+
             speed = Vec2();
-            collider->SetCanCollide([&] (GameObject &other) -> bool {
+            collider->SetCanCollide([&](GameObject &other) -> bool {
                 return false;
             });
             closestNpcDistance = numeric_limits<float>::infinity();
@@ -118,7 +159,7 @@ void Player::Update(float dt) {
             if (state != DASHING) {
                 //Start player dash animation
                 timer.Restart();
-                collider->SetCanCollide([&] (GameObject &other) -> bool {
+                collider->SetCanCollide([&](GameObject &other) -> bool {
                     return other.HasComponent(COLLISION_MAP_TYPE);
                 });
                 Dash();
@@ -126,14 +167,15 @@ void Player::Update(float dt) {
                 timer.Update(dt);
 
                 if (timer.Get() > DASH_DURATION) {
-                    collider->SetCanCollide([&] (GameObject &other) -> bool {
-                        return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) || other.HasComponent(COLLISION_MAP_TYPE);
+                    collider->SetCanCollide([&](GameObject &other) -> bool {
+                        return (other.HasComponent(NPC_TYPE) && InputManager::GetInstance().KeyPress(SPACE_KEY)) ||
+                               other.HasComponent(COLLISION_MAP_TYPE);
                     });
                     //Melee attack has finished, return player to IDLE state
                     newState = IDLE;
                 } else {
                     auto d = target - collider->box.Center();
-                    speed = Vec2(DASH_SPEED, 0).RotateDeg(d.XAngleDeg())*dt;
+                    speed = Vec2(DASH_SPEED, 0).RotateDeg(d.XAngleDeg()) * dt;
                 }
             }
 
@@ -142,7 +184,8 @@ void Player::Update(float dt) {
             if (state != SHOOTING) {
                 //Start the shooting animation
                 preparing = true;
-                target = Camera::GetAbsolutePosition(associated.GetLayer(), Vec2(inputManager.GetMouseX(), inputManager.GetMouseY()));
+                target = Camera::GetAbsolutePosition(associated.GetLayer(),
+                                                     Vec2(inputManager.GetMouseX(), inputManager.GetMouseY()));
                 currentDirection = GetNewDirection(target);
                 timer.Restart();
             } else {
@@ -166,17 +209,34 @@ void Player::Update(float dt) {
             if (state != ATTACKING) {
                 //Start player attacking animation and create MeleeAttack object
                 timer.Restart();
+                attacked = false;
                 Attack();
             } else {
                 timer.Update(dt);
+                if (!attacked) {
+                    auto attack = (MeleeAttack *) meleeAttack.lock()->GetComponent(MELEE_ATTACK_TYPE);
+                    attacked = true;
+                    if (!attack->AttackHit()) {
+                        PlaySound(attackMissSounds[rand() % attackMissSounds.size()]);
+                    } else {
+                        PlaySound(attackHitSounds[rand() % attackHitSounds.size()]);
+                    }
+                }
+
                 if (timer.Get() > ATTACK_DURATION) {
                     //Melee attack has finished, return player to IDLE state
                     newState = IDLE;
                 }
             }
-        } else if (newState == MOVING) {
-            vector<PlayerDirection> directionsPressed;
 
+        } else if (newState == MOVING) {
+
+            if (state != MOVING) {
+                associated.AddComponent(new IntervalTimer(associated, PLAYER_STEP_INTERVAL, [&]() -> void {
+                    PlaySound(GetRandomStepSound());
+                }));
+            }
+            vector<PlayerDirection> directionsPressed;
             speed = Vec2();
 
             //Add movement vectors according to the pressed keys, also, store which keys were pressed
@@ -203,8 +263,8 @@ void Player::Update(float dt) {
             auto oldDirection = currentDirection;
 
             //Get new direction based on keys pressed, the selection is as follow
-                // if the key corresponding to the current direction was pressed, keep the current direction
-                // else choose the direction of the first key pressed
+            // if the key corresponding to the current direction was pressed, keep the current direction
+            // else choose the direction of the first key pressed
 
             currentDirection = GetNewDirection(directionsPressed);
 
@@ -213,7 +273,7 @@ void Player::Update(float dt) {
                 ChangeDirection();
             }
         } else if (newState == IDLE) {
-            speed = Vec2(0,0);
+            speed = Vec2(0, 0);
         }
 
         auto oldState = state;
@@ -224,6 +284,11 @@ void Player::Update(float dt) {
         }
 
         associated.box += speed;
+    } else {
+        state = IDLE;
+
+        ChangeDirection();
+    }
 }
 
 void Player::Render() {
@@ -257,6 +322,7 @@ void Player::NotifyCollision(GameObject &other) {
             closestNpcDistance = distance;
             closestNpc = Game::GetInstance().GetCurrentState().GetObjectPtr(&other);
             state = TALKING;
+            ChangeDirection();
         }
     } else {
         auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
@@ -290,6 +356,7 @@ void Player::Shoot() {
     auto beamCpt = new BeamSkill(*beamObj, target, currentDirection);
     beamObj->AddComponent(beamCpt);
     Game::GetInstance().GetCurrentState().AddObject(beamObj);
+    PlaySound("audio/magic_attack.wav");
 }
 
 void Player::Attack() {
@@ -306,7 +373,7 @@ void Player::Attack() {
     attackObject->box.PlaceCenterAt(playerBoxCenter + GetStateData(attackingData).objectSpriteOffset);
     attackObject->AddComponent(new MeleeAttack(*attackObject));
 
-    Game::GetInstance().GetCurrentState().AddObject(attackObject);
+    meleeAttack = Game::GetInstance().GetCurrentState().AddObject(attackObject);
 }
 
 Player::PlayerDirection Player::GetNewDirection(Vec2 target) {
@@ -349,7 +416,7 @@ Player::PlayerStateData Player::ChangeDirection() {
             break;
         case ATTACKING:
             playerData = GetStateData(attackingData);
-            frameCount = ATTACK_SPRITE_COUNT;
+            frameCount = ATTACK_ANIMATION_COUNT;
             animationDuration = ATTACK_DURATION;
             shouldFlip = currentDirection == LEFT;
             break;
@@ -385,6 +452,42 @@ void Player::Dash() {
     currentDirection = GetNewDirection(mousePos);
 
     target = associated.box.Center() + Vec2(DASH_SPEED*DASH_DURATION, 0).RotateDeg((mousePos - associated.box.Center()).XAngleDeg());
+
+    PlaySound(dashSounds[rand()%dashSounds.size()]);
+}
+
+void Player::PlaySound(string file) {
+    auto sound = (Sound *) associated.GetComponent(SOUND_TYPE);
+    sound->Open(file);
+    sound->Play();
+}
+
+string Player::GetRandomStepSound() {
+    auto &map = ((WorldState &)Game::GetInstance().GetCurrentState()).GetCurrentMap();
+
+    auto terrainMap = (TerrainMap *) map.GetTileMap()->GetComponent(TERRAIN_MAP_TYPE);
+    if (terrainMap != nullptr) {
+        auto terrain = terrainMap->GetCurrentTerrain(associated.box.Center() + Vec2(0, associated.box.h/2), associated.GetLayer());
+
+        switch (terrain) {
+            case TerrainMap::TerrainType::DIRT:
+                return dirtStepSounds[rand()%dirtStepSounds.size()];
+            case TerrainMap::TerrainType::STONE:
+                return stoneStepSounds[rand()%stoneStepSounds.size()];
+            case TerrainMap::TerrainType::GRASS:
+                return grassStepSounds[rand()%grassStepSounds.size()];
+        }
+    }
+
+    return dirtStepSounds[rand()%dirtStepSounds.size()];
+}
+
+void Player::Freeze() {
+    frozen = true;
+}
+
+void Player::Unfreeze() {
+    frozen = false;
 }
 
 Player::PlayerStateData::PlayerStateData(PlayerDirection direction,
