@@ -184,3 +184,6 @@ void Sprite::UnlockFrame() {
 }
 
 
+void Sprite::SetAlpha(Uint8 a) {
+    SDL_SetTextureAlphaMod(texture.get(), a);
+}

@@ -91,4 +91,5 @@ add_executable(Nephesh src/Main.cpp
         src/Map.cpp
         include/Map.h
         src/TitleState.cpp
-        src/TitleState.h)
+        include/TitleState.h
+        src/MeleeAttack.cpp include/MeleeAttack.h src/Npc.cpp include/Npc.h src/TextBox.cpp include/TextBox.h src/Map.cpp include/Map.h src/TerrainMap.cpp include/TerrainMap.h src/FadeEffect.cpp include/FadeEffect.h)

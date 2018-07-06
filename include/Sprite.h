@@ -44,6 +44,9 @@ public:
     int getCurrentFrame();
     void LockFrame();
     void UnlockFrame();
+    int GetFrame();
+    void SetAlpha(Uint8 a);
+
 private:
     shared_ptr<SDL_Texture> texture;
     SDL_Rect clipRect;

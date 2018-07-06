@@ -34,6 +34,7 @@ using namespace std;
 #define PLAYER_IDLE_SPRITE_DURATION 1.2
 #define PLAYER_ATTACK_SPRITE_COUNT 6
 #define PLAYER_ATTACK_DURATION 0.3
+#define PLAYER_STEP_INTERVAL 0.33
 #define PLAYER_ATTACK_ANIMATION_COUNT 5
 #define PLAYER_ATTACK_RANGE 70
 #define PLAYER_ATTACK_WIDTH 120
@@ -68,6 +69,10 @@ public:
     void NotifyCollision(GameObject& other) override;
 
     Vec2 GetCenter();
+    
+    void Freeze();
+    
+    void Unfreeze();
 private:
     enum PlayerState {
         //Starting state of player
@@ -116,6 +121,13 @@ private:
     //Collection of state information relative to the DASHING state
     vector<PlayerStateData> dashingData;
 
+    vector<string> grassStepSounds;
+    vector<string> stoneStepSounds;
+    vector<string> dirtStepSounds;
+    vector<string> dashSounds;
+    vector<string> attackMissSounds;
+    vector<string> attackHitSounds;
+
     //Get a direction for the player based on the pressed directions in this tick
     PlayerDirection GetNewDirection(vector<PlayerDirection> directions);
     //Get a direction for the player based on a position in this tick
@@ -138,6 +150,8 @@ private:
 
     //Indicates if the player is in the middle of the magic animation
     bool preparing;
+    bool attacked;
+    bool frozen;
 
     Vec2 speed;
     int hp;
@@ -146,8 +160,12 @@ private:
 
     Timer timer;
 
+    weak_ptr<GameObject> meleeAttack;
+
     PlayerStateData GetStateData(vector<PlayerStateData> data);
     void SetSprite(string file, int frameCount, float frameTime, bool flip = false);
+    void PlaySound(string file);
+    string GetRandomStepSound();
 };
 
 

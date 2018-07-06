@@ -10,9 +10,11 @@
 #include <CameraFollower.h>
 #include <Game.h>
 #include <WorldState.h>
+#include <FadeEffect.h>
+#include <Sound.h>
 #include "TitleState.h"
 
-TitleState::TitleState() : State() {
+TitleState::TitleState() : State(), frozen(false) {
     auto bgObj = new GameObject();
     bgObj->AddComponent(new Sprite(*bgObj, "img/bg.png"));
     bgObj->AddComponent(new CameraFollower(*bgObj));
@@ -41,20 +43,57 @@ TitleState::TitleState() : State() {
     intrObj->box.x = WIDTH/2 - intrObj->box.w/2;
     intrObj->box.y = HEIGHT/2 + 400;
     AddObject(intrObj);
+
+    auto fadeInObj = new GameObject(2);
+    this->frozen = true;
+    fadeInObj->AddComponent(new FadeEffect(*fadeInObj, TITLE_FADE_IN_DURATION, 1, [this] { this->frozen = false; }));
+    AddObject(fadeInObj);
 }
 
 TitleState::~TitleState() = default;
 
 void TitleState::Update(float dt) {
     auto inputManager = InputManager::GetInstance();
-    
-    if (inputManager.KeyPress(SPACE_KEY)) {
-        Game::GetInstance().Push(new WorldState());
+
+    auto isStart = inputManager.KeyPress(SPACE_KEY);
+    if (!frozen && (isStart || inputManager.QuitRequested() || inputManager.KeyPress(ESCAPE_KEY))) {
+        auto fadeObj = new GameObject(2);
+        bgMusic->Stop();
+        frozen = true;
+        function<void()> callback;
+
+        auto soundObject = new GameObject();
+        auto sound = new Sound(*soundObject, isStart ? "audio/menu/select.wav" : "audio/menu/return.wav");
+        soundObject->AddComponent(sound);
+        sound->Play();
+        delete soundObject;
+
+        if (isStart) {
+            callback = [] {
+                Game::GetInstance().Push(new WorldState());
+            };
+        } else {
+            callback = [&] {
+                quitRequested = true;
+            };
+        }
+
+        fadeObj->AddComponent(new FadeEffect(*fadeObj, isStart ? TITLE_START_FADE_OUT_DURATION : TITLE_QUIT_FADE_OUT_DURATION, 0, callback, FadeEffect::FadeType::OUT));
+        AddObject(fadeObj);
     }
-    
+
     UpdateArray(dt);
 
-    quitRequested = inputManager.QuitRequested() || inputManager.KeyPress(ESCAPE_KEY);
+    for (auto &it: objectLayers) {
+        auto &objects = it.second;
+
+        for(int i = 0; i < objects.size(); i++) {
+            if (objects[i]->IsDead()) {
+                objects.erase(objects.begin() + i);
+                i--;
+            }
+        }
+    }
 }
 
 void TitleState::Render() {
@@ -66,10 +105,14 @@ void TitleState::Start() {
 }
 
 void TitleState::Pause() {
-    bgMusic->Stop();
+
 }
 
 void TitleState::Resume() {
+    auto fadeInObj = new GameObject(2);
+    this->frozen = true;
+    fadeInObj->AddComponent(new FadeEffect(*fadeInObj, 3, 1, [this] { this->frozen = false; }));
+    AddObject(fadeInObj);
     Camera::pos = Vec2(0, 0);
     bgMusic->Play();
 }

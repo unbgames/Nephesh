@@ -8,8 +8,9 @@
 #include <CollisionMap.h>
 #include <Game.h>
 #include <WorldState.h>
+#include <TerrainMap.h>
 
-Map::Map(string mapName, string tileSetFile, Map::MapDirection direction, string collisionMapFile) : direction(direction) {
+Map::Map(string mapName, string tileSetFile, Map::MapDirection direction, string collisionMapFile, string terrainMapFile) : direction(direction) {
     auto obj = new GameObject();
     auto tileSet = new TileSet(TILE_DIMENSIONS, TILE_DIMENSIONS, tileSetFile);
     auto map = new TileMap(*obj, mapName, tileSet);
@@ -17,12 +18,17 @@ Map::Map(string mapName, string tileSetFile, Map::MapDirection direction, string
 
     tileMap = shared_ptr<GameObject>(obj);
 
-    if (!collisionMapFile.empty()) {
-        tileMap->AddComponent(new CollisionMap(*tileMap, collisionMapFile, TILE_DIMENSIONS, TILE_DIMENSIONS));
-        auto &state = (WorldState &) Game::GetInstance().GetCurrentState();
-        state.AddCollidable(tileMap);
-        //cout << "added collisionMap" << endl;
-    }
+    LoadAuxiliaryMaps(move(collisionMapFile), move(terrainMapFile));
+}
+
+
+Map::Map(vector<string> layersFiles, Map::MapDirection direction, string collisionMapFile, string terrainMapFile) : direction(direction) {
+    auto obj = new GameObject();
+    auto map = new TileMap(*obj, layersFiles, TILE_DIMENSIONS, TILE_DIMENSIONS);
+    obj->AddComponent(map);
+
+    tileMap = shared_ptr<GameObject>(obj);
+    LoadAuxiliaryMaps(move(collisionMapFile), move(terrainMapFile));
 }
 
 shared_ptr<GameObject> Map::GetTileMap() {
@@ -36,4 +42,16 @@ void Map::SetPosition(Vec2 position) {
 
 Map::MapDirection Map::GetDirection() {
     return direction;
+}
+
+void Map::LoadAuxiliaryMaps(string collisionMapFile, string terrainMapFile) {
+    if (!collisionMapFile.empty()) {
+        tileMap->AddComponent(new CollisionMap(*tileMap, collisionMapFile, TILE_DIMENSIONS, TILE_DIMENSIONS));
+        auto &state = (WorldState &) Game::GetInstance().GetCurrentState();
+        state.AddCollidable(tileMap);
+    }
+
+    if (!terrainMapFile.empty()) {
+        tileMap->AddComponent(new TerrainMap(*tileMap, terrainMapFile, TILE_DIMENSIONS, TILE_DIMENSIONS));
+    }
 }

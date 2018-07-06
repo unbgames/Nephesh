@@ -9,6 +9,8 @@
 #include "Component.h"
 #include "Timer.h"
 
+#define MELEE_ATTACK_TYPE "MeleeAttack"
+
 class MeleeAttack : public Component {
 public:
     MeleeAttack(GameObject &associated, double attackDuration = PLAYER_ATTACK_DURATION);
@@ -21,11 +23,14 @@ public:
 
     void NotifyCollision(GameObject &other) override;
 
+    bool AttackHit();
+
 private:
     Timer collisionTimer;
     Timer durationTimer;
     bool colliderCreated;
     double attackDuration;
+    bool attackHit;
 };
 
 

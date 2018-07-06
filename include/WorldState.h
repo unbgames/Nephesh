@@ -11,6 +11,9 @@
 
 using namespace std;
 
+#define WORLD_FADE_IN_DURATION 11.5
+#define WORLD_FADE_OUT_DURATION 1
+
 class WorldState : public State {
     public:
 
@@ -37,6 +40,8 @@ class WorldState : public State {
         weak_ptr<GameObject> AddCollidable(shared_ptr<GameObject> object);
 
         weak_ptr<GameObject> AddCollider(shared_ptr<GameObject> object);
+
+        Map &GetCurrentMap();
 
 private:
         vector<weak_ptr<GameObject>> collidables;

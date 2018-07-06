@@ -9,7 +9,8 @@ MeleeAttack::MeleeAttack(GameObject &associated, double attackDuration) :
         Component(associated),
         collisionTimer(),
         colliderCreated(false),
-        attackDuration(attackDuration) {
+        attackDuration(attackDuration),
+        attackHit(false){
     auto collider = new Collider(associated);
     collider->SetCanCollide([](GameObject& collidable) -> bool {
         return false;
@@ -37,9 +38,14 @@ void MeleeAttack::Render() {
 }
 
 bool MeleeAttack::Is(string type) {
-    return false;
+    return type == MELEE_ATTACK_TYPE;
 }
 
 void MeleeAttack::NotifyCollision(GameObject &other) {
-//    other.RequestDelete();
+    other.RequestDelete();
+    attackHit = true;
+}
+
+bool MeleeAttack::AttackHit() {
+    return attackHit;
 }
