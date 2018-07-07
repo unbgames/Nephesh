@@ -13,7 +13,7 @@
 
 class Npc : public Component {
 public:
-    Npc(GameObject &associated, string file, bool debug = false);
+    Npc(GameObject &associated, string file, vector<string> sounds, bool debug = false);
 
     void Update(float dt) override;
 
@@ -28,6 +28,8 @@ private:
     vector<string> speechLines;
     queue<string> speechQueue;
     weak_ptr<GameObject> textBox;
+    vector<string> sounds;
+    int currentSound;
 
     string openedFile;
 

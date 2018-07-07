@@ -20,7 +20,7 @@ void CollisionMap::Update(float dt) {
 }
 
 void CollisionMap::Render() {
-#ifdef DEBUG
+#ifdef COLLISION_MAP_DEBUG
     //Showing always the first layer (just for testing)
     for (int i = 0; i < mapHeight; ++i) {
         for (int j = 0; j < mapWidth; ++j) {
@@ -50,9 +50,10 @@ void CollisionMap::Render() {
 
             SDL_SetRenderDrawColor(Game::GetInstance().GetRenderer(), 255, 0, 0, SDL_ALPHA_OPAQUE);
             SDL_RenderDrawLines(Game::GetInstance().GetRenderer(), points, 5);
-            #endif
+
         }
     }
+#endif
 }
 
 bool CollisionMap::Is(string type) {
