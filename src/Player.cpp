@@ -330,81 +330,98 @@ void Player::NotifyCollision(GameObject &other) {
         auto collidable = (Collidable *)other.GetComponent(COLLIDABLE_TYPE);
         auto intersections = collidable->GetIntersections(*collider);
         auto boxCorners = collider->box.GetCorners(associated.angleDeg, associated.rotationCenter);
+
         auto u = LineSegment(boxCorners[0], boxCorners[1]);
-        auto l = LineSegment(boxCorners[1], boxCorners[2]);
+        auto r = LineSegment(boxCorners[1], boxCorners[2]);
         auto d = LineSegment(boxCorners[2], boxCorners[3]);
-        auto r = LineSegment(boxCorners[3], boxCorners[0]);
+        auto l = LineSegment(boxCorners[3], boxCorners[0]);
 
         auto lCount = 0;
         auto rCount = 0;
         auto uCount = 0;
         auto dCount = 0;
 
-        auto minX = std::numeric_limits<float>::infinity();
-        auto minY = std::numeric_limits<float>::infinity();
-        auto maxX = -std::numeric_limits<float>::infinity();
-        auto maxY = -std::numeric_limits<float>::infinity();
+        auto sMinX = std::numeric_limits<float>::infinity();
+        auto sMinY = std::numeric_limits<float>::infinity();
+        auto sMaxX = -std::numeric_limits<float>::infinity();
+        auto sMaxY = -std::numeric_limits<float>::infinity();
+        auto fMinX = std::numeric_limits<float>::infinity();
+        auto fMinY = std::numeric_limits<float>::infinity();
+        auto fMaxX = -std::numeric_limits<float>::infinity();
+        auto fMaxY = -std::numeric_limits<float>::infinity();
+        auto currentMinX = collider->box.x;
+        auto currentMaxX = collider->box.x + collider->box.w;
+        auto currentMinY = collider->box.y;
+        auto currentMaxY = collider->box.y + collider->box.h;
 
         for (auto &intersection : intersections) {
-            auto line = intersection.first;
-            if (intersection.second.x < minX) {
-                minX = intersection.second.x;
-            }
-            if (intersection.second.x > maxX) {
-                maxX = intersection.second.x;
-            }
-            if (intersection.second.y < minY) {
-                minY = intersection.second.y;
-            }
-            if (intersection.second.y > maxY) {
-                maxY = intersection.second.y;
-            }
+            auto colliderLine = intersection.first.first;
+            auto collidableLine = intersection.first.second;
+            vector<Vec2> dots { collidableLine.dot1, collidableLine.dot2 };
+            float *minX = &sMinX;
+            float *maxX = &sMaxX;
+            float *minY = &sMinY;
+            float *maxY = &sMaxY;
 
-            if (line == r) {
-                rCount++;
+            if (colliderLine == u || colliderLine == d) {
+                minX = &fMinX;
+                maxX = &fMaxX;
+                minY = &fMinY;
+                maxY = &fMaxY;
             }
-            if (line == l) {
-                lCount++;
-            }
-            if (line == u) {
-                uCount++;
-            }
-            if (line == d) {
-                dCount++;
-            }
+            
+            if (colliderLine == u) { uCount++; }
+            if (colliderLine == d) { dCount++; }
+            if (colliderLine == l) { lCount++; }
+            if (colliderLine == r) { rCount++; }
 
+            for (auto &dot : dots) {
+                if (dot.x > currentMinX && dot.x < currentMaxX && dot.x < *minX) {
+                    *minX = dot.x;
+                }
+                if (dot.x > currentMinX && dot.x < currentMaxX && dot.x > *maxX) {
+                    *maxX = dot.x;
+                }
+                if (dot.y > currentMinY && dot.y < currentMaxY && dot.y < *minY) {
+                    *minY = dot.y;
+                }
+                if (dot.y > currentMinY && dot.y < currentMaxY &&  dot.y > *maxY) {
+                    *maxY = dot.y;
+                }
+            }
         }
-
+        
         auto playerMinX = lastBox.x;
         auto playerMaxX = lastBox.x + lastBox.w;
         auto playerMinY = lastBox.y;
         auto playerMaxY = lastBox.y + lastBox.h;
 
-#ifdef DEBUG
-        cout << "maxX " << maxX << endl;
-        cout << "minX " << minX << endl;
-        cout << "maxY " << maxY << endl;
-        cout << "minY " << minY << endl;
-
-        cout << "rCount " << rCount << endl;
-        cout << "lCount " << lCount << endl;
-        cout << "uCount " << uCount << endl;
-        cout << "dCount " << dCount << endl;
-#endif
-        auto detectedDirection = false;
-        if (playerMinX > maxX || playerMaxX < minX || rCount > 1 || lCount > 1 || (uCount >= 1 && dCount >=1)) {
-            collider->box.x = lastBox.x;
-            detectedDirection = true;
+        if (dCount >= 1 && uCount >= 1) {
+            if (speed.x > 0) {
+                collider->box.x = fMaxX - collider->box.w - 1;
+            } else if (speed.x < 0) {
+                collider->box.x = fMinX + 1;
+            }
+        } else if (rCount > 1 || lCount > 1 || (((rCount > 0 && lCount == 0 )  || (lCount > 0 && rCount == 0)) && (playerMinX > sMaxX || playerMaxX < sMinX))) {
+            if (speed.x > 0) {
+                collider->box.x = sMinX - collider->box.w - 1;
+            } else if (speed.x < 0){
+                collider->box.x = sMaxX + 1;
+            }
         }
         
-        if (playerMinY > maxY || playerMaxY < minY || uCount > 1 || dCount > 1 || (lCount >= 1 && rCount >=1)) {
-            collider->box.y = lastBox.y;
-            detectedDirection = true;
-        }
-
-        if (!detectedDirection) {
-            collider->box.x = lastBox.x;
-            collider->box.y = lastBox.y;
+        if (rCount >= 1 && lCount >= 1) {
+            if (speed.y > 0) {
+                collider->box.y = sMaxY - collider->box.h - 1;
+            } else if (speed.y < 0) {
+                collider->box.y = sMinY + 1;
+            }
+        } else if (uCount > 1 || dCount > 1 || (((dCount > 0 && uCount == 0 )  || (uCount > 0 && dCount == 0)) && (playerMinY > fMaxY || playerMaxY < fMinY))) {
+            if (speed.y > 0) {
+                collider->box.y = fMinY - collider->box.h - 1;
+            } else if (speed.y < 0){
+                collider->box.y = fMaxY + 1;
+            }
         }
 
         collider->UpdateGameObject();

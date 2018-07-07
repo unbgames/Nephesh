@@ -242,8 +242,8 @@ int CollisionMap::GetMapDepth() {
     return mapDepth;
 }
 
-vector<pair<LineSegment, Vec2>> CollisionMap::GetIntersections(Collider &collider) {
-    vector<pair<LineSegment, Vec2>> intersections;
+vector<pair<pair<LineSegment, LineSegment>, Vec2>> CollisionMap::GetIntersections(Collider &collider) {
+    vector<pair<pair<LineSegment, LineSegment>, Vec2>> intersections;
     auto &colliderObject = collider.GetGameObject();
     auto layer = colliderObject.GetLayer();
     // get the rotated vertices of the collider box (the vertices from the Rect itself)
@@ -310,11 +310,11 @@ vector<pair<LineSegment, Vec2>> CollisionMap::GetIntersections(Collider &collide
             for (auto &colliderLine : colliderLines) {
                 for (auto &collidableLine : collidableLines) {
                     if (colliderLine == collidableLine) {
-                        intersections.push_back(make_pair(colliderLine, (colliderLine.dot1 - colliderLine.dot2)*0.5));
+                        intersections.push_back(make_pair(make_pair(colliderLine, collidableLine), (colliderLine.dot1 - colliderLine.dot2)*0.5));
                     } else {
                         auto intersection = colliderLine.GetIntersection(collidableLine);
                         if (collidableLine.Contains(intersection) && colliderLine.Contains(intersection)) {
-                            intersections.push_back(make_pair(colliderLine, intersection));
+                            intersections.push_back(make_pair(make_pair(colliderLine, collidableLine), intersection));
                         }
                     }
                 }

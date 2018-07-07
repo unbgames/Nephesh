@@ -30,7 +30,7 @@ public:
     int GetMapHeight();
     int GetMapDepth();
 
-    vector<pair<LineSegment, Vec2>> GetIntersections(Collider &collider) override;
+    vector<pair<pair<LineSegment, LineSegment>, Vec2>> GetIntersections(Collider &collider) override;
 
 private:
     vector<int> collisionTilesMatrix;
