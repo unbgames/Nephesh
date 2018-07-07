@@ -8,9 +8,8 @@
 
 #include "GameObject.h"
 
-#define PADDING_TOP 40
-#define PADDING_LEFT 70
-#define MAX_CHAR_PER_LINE 70
+#define PADDING_TOP 70
+#define PADDING_LEFT 140
 #define TEXT_BOX_TYPE "TextBox"
 
 class TextBox : public Component {

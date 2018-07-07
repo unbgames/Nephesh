@@ -107,7 +107,6 @@ void StageState::Start() {
 }
 
 void StageState::Pause() {
-
 }
 
 void StageState::Resume() {

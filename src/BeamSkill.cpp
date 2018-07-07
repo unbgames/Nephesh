@@ -9,23 +9,23 @@
 #include <Collidable.h>
 #include "BeamSkill.h"
 
-BeamSkill::BeamSkill(GameObject &associated, Vec2 target) : Component(associated), target(target), lockBeam(false) {
-    auto raySprite = new Sprite(associated, "img/ray.png");
-    associated.AddComponent(raySprite);
+BeamSkill::BeamSkill(GameObject &associated, Vec2 target, Player::PlayerDirection direction) : Component(associated), target(target), direction(direction), lockBeam(false) {
     auto collider = new Collider(associated);
     associated.AddComponent(collider);
-
-
-    associated.box.y -= associated.box.h/2;
+    auto raySprite = new Sprite(associated, "img/magic_effect_side2.png", 5, BEAM_LIFETIME/5, 0, false, false);
+    associated.AddComponent(raySprite);
+    collider->SetCanCollide([] (GameObject &other) -> bool {
+        return false;
+    });
 }
 
 BeamSkill::~BeamSkill() {
 }
 
 void BeamSkill::Update(float dt) {
-    lifeTimer.Update(dt);
-    if (lifeTimer.Get() > BEAM_LIFETIME) {
-        lifeTimer.Restart();
+    timer.Update(dt);
+    if (timer.Get() > BEAM_LIFETIME) {
+        timer.Restart();
         initObject.lock()->RequestDelete();
         endObject.lock()->RequestDelete();
         associated.RequestDelete();
@@ -51,8 +51,8 @@ void BeamSkill::NotifyCollision(GameObject &other) {
         auto l1 = LineSegment(boxCorners[0], boxCorners[1]);
         auto l2 = LineSegment(boxCorners[2], boxCorners[3]);
         for (auto &intersection : intersections) {
-            auto intersectionDot = intersection.second;
-            auto intersectionLine = intersection.first;
+            auto intersectionDot = intersection.intersectionPoint;
+            auto intersectionLine = intersection.colliderLine;
 
             if (intersectionLine == l1) {
                 auto d = (intersectionDot - l1.dot1).Module();
@@ -78,27 +78,41 @@ void BeamSkill::NotifyCollision(GameObject &other) {
 }
 
 void BeamSkill::Start() {
-    auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
     auto sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
+
+    if (direction == Player::PlayerDirection::UP) {
+        associated.box += Vec2(24, 0);
+    } else if (direction == Player::PlayerDirection::DOWN) {
+        associated.box += Vec2(17, 0);
+    }
+
+    auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
+    collider->SetCanCollide([] (GameObject &other) -> bool {
+        return true;
+    });
+    collider->Update(0);
 
     auto d = target - Vec2(associated.box.x, associated.box.y + associated.box.h/2);
     associated.rotationCenter = Vec2(0, associated.box.h/2);
     associated.angleDeg = d.XAngleDeg();
-    cutoffPoint = d.Module();
-    collider->box.w = cutoffPoint;
-    associated.box.w = cutoffPoint;
+    cutoffPoint = associated.box.w;
     auto clip = sprite->GetClip();
     sprite->SetClip(clip.x, clip.y, cutoffPoint, clip.h);
 
     auto initObj = new GameObject(associated.GetLayer());
     initObj->angleDeg = associated.angleDeg;
-    initObj->AddComponent(new Sprite(*initObj, "img/init.png"));
+    initObj->AddComponent(new Sprite(*initObj, "img/magic_effect_side1.png", 5, BEAM_LIFETIME/5));
     initObj->SetCenter(Vec2(associated.box.x, associated.box.y + associated.box.h/2));
     initObject = Game::GetInstance().GetCurrentState().AddObject(initObj);
 
     auto endObj = new GameObject(associated.GetLayer());
     endObj->angleDeg = associated.angleDeg;
-    endObj->AddComponent(new Sprite(*endObj, "img/end.png"));
-    endObj->SetCenter(target);
+    auto s = new Sprite(*endObj, "img/magic_effect_side3.png", 5, BEAM_LIFETIME/5);
+    endObj->AddComponent(s);
+    endObj->SetCenter(Vec2(associated.box.x, associated.box.y) + Vec2(associated.box.w, 0).RotateDeg(associated.angleDeg));
     endObject = Game::GetInstance().GetCurrentState().AddObject(endObj);
+}
+
+void BeamSkill::Fire() {
+
 }

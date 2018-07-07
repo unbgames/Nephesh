@@ -60,8 +60,8 @@ add_executable(Nephesh src/Main.cpp
         include/Text.h
         src/IntervalTimer.cpp
         include/IntervalTimer.h
-        include/TitleState.h
-        src/TitleState.cpp
+        include/WorldState.h
+        src/WorldState.cpp
         src/CollisionMap.cpp
         include/CollisionMap.h
         src/Collidable.cpp
@@ -79,4 +79,18 @@ add_executable(Nephesh src/Main.cpp
         src/LineSegment.cpp
         include/LineSegment.h
         src/Player.cpp
-        include/Player.h src/MeleeAttack.cpp include/MeleeAttack.h src/Npc.cpp include/Npc.h src/TextBox.cpp include/TextBox.h)
+        include/Player.h
+        src/Boss.cpp
+        include/Boss.h
+        src/MeleeAttack.cpp
+        include/MeleeAttack.h
+        src/Npc.cpp
+        include/Npc.h
+        src/TextBox.cpp
+        include/TextBox.h
+        src/Map.cpp
+        include/Map.h
+        src/TitleState.cpp
+        include/TitleState.h
+        src/MeleeAttack.cpp include/MeleeAttack.h src/Npc.cpp include/Npc.h src/TextBox.cpp include/TextBox.h src/Map.cpp include/Map.h src/TerrainMap.cpp include/TerrainMap.h src/FadeEffect.cpp include/FadeEffect.h src/RollingRocks.cpp include/RollingRocks.h
+        src/Charge.cpp include/Charge.h src/Intersection.cpp include/Intersection.h)

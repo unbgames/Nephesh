@@ -4,6 +4,7 @@
 
 #include <InputManager.h>
 #include <Game.h>
+#include <Collider.h>
 #include "Camera.h"
 
 Vec2 Camera::pos = Vec2();
@@ -23,7 +24,14 @@ void Camera::Unfollow() {
 
 void Camera::Update(float dt) {
     if (focus != nullptr) {
-        auto center = focus->box.Center();
+        auto collider = (Collider *) focus->GetComponent(COLLIDER_TYPE);
+        Vec2 center;
+        if (collider != nullptr) {
+            center = collider->box.Center();
+        } else {
+            center = focus->box.Center();
+        }
+
         pos = Vec2(center.x - WIDTH/2, center.y - HEIGHT/2);
     } else {
         auto inputManager = InputManager::GetInstance();

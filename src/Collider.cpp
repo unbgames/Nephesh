@@ -26,12 +26,9 @@ Collider::Collider(GameObject &associated, Vec2 scale, Vec2 offset) : Component(
 }
 
 void Collider::Update(float dt) {
-    auto center = Vec2(associated.box.x, associated.box.y);
     auto newBox = Rect();
     newBox.w = associated.box.w*scale.x;
     newBox.h = associated.box.h*scale.y;
-//    newBox.x = center.x;
-//    newBox.y = center.y;
     newBox.PlaceCenterAt(associated.box.Center());
 
     box = newBox + offset.RotateDeg(associated.angleDeg);
@@ -82,4 +79,15 @@ void Collider::SetCanCollide(function<bool(GameObject &collidable)> canCollide) 
 
 bool Collider::CanCollide(GameObject &collidable) {
     return canCollide(collidable);
+}
+
+Vec2 Collider::GetOffset() {
+    return offset;
+}
+
+void Collider::UpdateGameObject() {
+    auto newBox = Rect(associated.box.h, associated.box.w);
+    newBox.PlaceCenterAt(box.Center() - offset);
+    //TODO: Add rotation if needed
+    associated.box = newBox;
 }

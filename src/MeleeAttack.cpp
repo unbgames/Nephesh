@@ -2,11 +2,15 @@
 // Created by ftfnunes on 13/06/18.
 //
 
-#include <Player.h>
 #include <Collider.h>
 #include "MeleeAttack.h"
 
-MeleeAttack::MeleeAttack(GameObject &associated) : Component(associated), collisionTimer(), colliderCreated(false) {
+MeleeAttack::MeleeAttack(GameObject &associated, double attackDuration) :
+        Component(associated),
+        collisionTimer(),
+        colliderCreated(false),
+        attackDuration(attackDuration),
+        attackHit(false){
     auto collider = new Collider(associated);
     collider->SetCanCollide([](GameObject& collidable) -> bool {
         return false;
@@ -17,7 +21,7 @@ MeleeAttack::MeleeAttack(GameObject &associated) : Component(associated), collis
 void MeleeAttack::Update(float dt) {
     durationTimer.Update(dt);
     
-    if (durationTimer.Get() > ATTACK_DURATION) {
+    if (durationTimer.Get() > attackDuration) {
         associated.RequestDelete();
     }
     auto created = colliderCreated;
@@ -34,9 +38,14 @@ void MeleeAttack::Render() {
 }
 
 bool MeleeAttack::Is(string type) {
-    return false;
+    return type == MELEE_ATTACK_TYPE;
 }
 
 void MeleeAttack::NotifyCollision(GameObject &other) {
     other.RequestDelete();
+    attackHit = true;
+}
+
+bool MeleeAttack::AttackHit() {
+    return attackHit;
 }
