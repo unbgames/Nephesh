@@ -14,6 +14,7 @@
 #include <Sound.h>
 #include <FadeEffect.h>
 #include <Boss.h>
+#include <CollisionMap.h>
 #include "WorldState.h"
 #include "Text.h"
 
@@ -106,8 +107,12 @@ void WorldState::Render() {
         
         if (maps.size() > 0) {
             auto tileMap = (TileMap *)maps[currentMapIndex].GetTileMap()->GetComponent(TILE_MAP_TYPE);
+            auto collisionMap = (CollisionMap *)maps[currentMapIndex].GetTileMap()->GetComponent(COLLISION_MAP_TYPE);
             if (i < tileMap->GetDepth()) {
                 tileMap->RenderLayer(i);
+            }
+            if (i < collisionMap->GetMapDepth()) {
+                collisionMap->Render();
             }
             auto prevIndex = currentMapIndex - 1;
             if (prevIndex >= 0) {

@@ -5,6 +5,7 @@
 #include <Game.h>
 #include <fstream>
 #include <algorithm>
+#include <Camera.h>
 #include "CollisionMap.h"
 
 CollisionMap::CollisionMap(GameObject &associated, string file, int tileWidth, int tileHeight) :
@@ -19,7 +20,39 @@ void CollisionMap::Update(float dt) {
 }
 
 void CollisionMap::Render() {
+#ifdef DEBUG
+    //Showing always the first layer (just for testing)
+    for (int i = 0; i < mapHeight; ++i) {
+        for (int j = 0; j < mapWidth; ++j) {
+            if (At(i, j) == 1) {
+                continue;
+            }
+            auto box = Rect(i*GetTileHeight(), j*GetTileWidth(), GetTileHeight(), GetTileHeight());
+            Vec2 center( box.Center() );
+            SDL_Point points[5];
 
+            Vec2 point = (Vec2(box.x, box.y) - box.Center()).RotateDeg(associated.angleDeg) + box.Center();
+            point = Camera::GetRenderPosition(associated.GetLayer(), point);
+            points[0] = {(int)point.x, (int)point.y};
+            points[4] = {(int)point.x, (int)point.y};
+
+            point = (Vec2(box.x + box.w, box.y) - box.Center()).RotateDeg(associated.angleDeg) + box.Center();
+            point = Camera::GetRenderPosition(associated.GetLayer(), point);
+            points[1] = {(int)point.x, (int)point.y};
+
+            point = (Vec2(box.x + box.w, box.y + box.h) - box.Center()).RotateDeg(associated.angleDeg) + box.Center();
+            point = Camera::GetRenderPosition(associated.GetLayer(), point);
+            points[2] = {(int)point.x, (int)point.y};
+
+            point = (Vec2(box.x, box.y + box.h) - box.Center()).RotateDeg(associated.angleDeg) + box.Center();
+            point = Camera::GetRenderPosition(associated.GetLayer(), point);
+            points[3] = {(int)point.x, (int)point.y};
+
+            SDL_SetRenderDrawColor(Game::GetInstance().GetRenderer(), 255, 0, 0, SDL_ALPHA_OPAQUE);
+            SDL_RenderDrawLines(Game::GetInstance().GetRenderer(), points, 5);
+            #endif
+        }
+    }
 }
 
 bool CollisionMap::Is(string type) {

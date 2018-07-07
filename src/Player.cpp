@@ -361,10 +361,26 @@ void Player::NotifyCollision(GameObject &other) {
         auto currentMaxX = collider->box.x + collider->box.w;
         auto currentMinY = collider->box.y;
         auto currentMaxY = collider->box.y + collider->box.h;
+        vector<pair<LineSegment, LineSegment>> verifyiedLines;
 
         for (auto &intersection : intersections) {
             auto colliderLine = intersection.first.first;
             auto collidableLine = intersection.first.second;
+            if (intersection.second.x == -numeric_limits<float>::infinity()) {
+                continue;
+            }
+            auto isVerifyied = false;
+            for (auto &lines : verifyiedLines) {
+                if (colliderLine == lines.first && collidableLine == lines.second) {
+                    isVerifyied = true;
+                }
+            }
+            if (isVerifyied) {
+                continue;
+            } else {
+                verifyiedLines.push_back(intersection.first);
+            }
+
             vector<Vec2> dots { collidableLine.dot1, collidableLine.dot2 };
             float *minX = &sMinX;
             float *maxX = &sMaxX;
