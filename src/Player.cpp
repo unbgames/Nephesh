@@ -111,6 +111,7 @@ void Player::Update(float dt) {
         auto inputManager = InputManager::GetInstance();
         auto newState = state;
         auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
+        lastBox = collider->box;
 
         if (state != SHOOTING && state != ATTACKING && state != DASHING) {
             if (state == TALKING && !shouldStopTalking) {
@@ -326,8 +327,136 @@ void Player::NotifyCollision(GameObject &other) {
         }
     } else {
         auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
-        associated.box -= speed;
-        collider->Update(0);
+        auto collidable = (Collidable *)other.GetComponent(COLLIDABLE_TYPE);
+        auto intersections = collidable->GetIntersections(*collider);
+        auto boxCorners = collider->box.GetCorners(associated.angleDeg, associated.rotationCenter);
+
+        auto u = LineSegment(boxCorners[0], boxCorners[1]);
+        auto r = LineSegment(boxCorners[1], boxCorners[2]);
+        auto d = LineSegment(boxCorners[2], boxCorners[3]);
+        auto l = LineSegment(boxCorners[3], boxCorners[0]);
+
+        auto lCount = 0;
+        auto rCount = 0;
+        auto uCount = 0;
+        auto dCount = 0;
+
+        auto sMinX = std::numeric_limits<float>::infinity();
+        auto sMinY = std::numeric_limits<float>::infinity();
+        auto sMaxX = -std::numeric_limits<float>::infinity();
+        auto sMaxY = -std::numeric_limits<float>::infinity();
+        auto fMinX = std::numeric_limits<float>::infinity();
+        auto fMinY = std::numeric_limits<float>::infinity();
+        auto fMaxX = -std::numeric_limits<float>::infinity();
+        auto fMaxY = -std::numeric_limits<float>::infinity();
+        auto absoluteMinX = std::numeric_limits<float>::infinity();
+        auto absoluteMinY = std::numeric_limits<float>::infinity();
+        auto absoluteMaxX = -std::numeric_limits<float>::infinity();
+        auto absoluteMaxY = -std::numeric_limits<float>::infinity();
+        auto currentMinX = collider->box.x;
+        auto currentMaxX = collider->box.x + collider->box.w;
+        auto currentMinY = collider->box.y;
+        auto currentMaxY = collider->box.y + collider->box.h;
+        vector<Intersection> verifyiedLines;
+
+        for (auto &intersection : intersections) {
+            auto colliderLine = intersection.colliderLine;
+            auto collidableLine = intersection.collidableLine;
+            if (intersection.intersectionPoint.x == -numeric_limits<float>::infinity()) {
+                continue;
+            }
+            auto isVerifyied = false;
+            for (auto &lines : verifyiedLines) {
+                if (colliderLine == lines.colliderLine && collidableLine == lines.collidableLine) {
+                    isVerifyied = true;
+                }
+            }
+            if (isVerifyied) {
+                continue;
+            } else {
+                verifyiedLines.push_back(intersection);
+            }
+
+            vector<Vec2> dots { collidableLine.dot1, collidableLine.dot2 };
+            float *minX = &sMinX;
+            float *maxX = &sMaxX;
+            float *minY = &sMinY;
+            float *maxY = &sMaxY;
+
+            if (colliderLine == u || colliderLine == d) {
+                minX = &fMinX;
+                maxX = &fMaxX;
+                minY = &fMinY;
+                maxY = &fMaxY;
+            }
+            
+            if (colliderLine == u) { uCount++; }
+            if (colliderLine == d) { dCount++; }
+            if (colliderLine == l) { lCount++; }
+            if (colliderLine == r) { rCount++; }
+
+            for (auto &dot : dots) {
+                if (dot.x < absoluteMinX) {
+                    absoluteMinX = dot.x;
+                }
+                if (dot.x > currentMinX && dot.x < currentMaxX && dot.x < *minX) {
+                    *minX = dot.x;
+                }
+                if (dot.x > absoluteMaxX) {
+                    absoluteMaxX = dot.x;
+                }
+                if (dot.x > currentMinX && dot.x < currentMaxX && dot.x > *maxX) {
+                    *maxX = dot.x;
+                }
+                if (dot.y > absoluteMaxY) {
+                    absoluteMaxY = dot.y;
+                }
+                if (dot.y > currentMinY && dot.y < currentMaxY && dot.y < *minY) {
+                    *minY = dot.y;
+                }
+                if (dot.y < absoluteMinY) {
+                    absoluteMinY = dot.y;
+                }
+                if (dot.y > currentMinY && dot.y < currentMaxY && dot.y > *maxY) {
+                    *maxY = dot.y;
+                }
+            }
+        }
+
+        auto playerMinX = lastBox.x;
+        auto playerMaxX = lastBox.x + lastBox.w;
+        auto playerMinY = lastBox.y;
+        auto playerMaxY = lastBox.y + lastBox.h;
+
+        if (dCount >= 1 && uCount >= 1) {
+            if (speed.x > 0) {
+                collider->box.x = fMaxX - collider->box.w - 1;
+            } else if (speed.x < 0) {
+                collider->box.x = fMinX + 1;
+            }
+        } else if (rCount > 1 || lCount > 1 || (((rCount > 0 && lCount == 0 )  || (lCount > 0 && rCount == 0)) && (playerMinX > absoluteMaxX || playerMaxX < absoluteMinX))) {
+            if (speed.x > 0) {
+                collider->box.x = sMinX - collider->box.w - 1;
+            } else if (speed.x < 0){
+                collider->box.x = sMaxX + 1;
+            }
+        }
+        
+        if (rCount >= 1 && lCount >= 1) {
+            if (speed.y > 0) {
+                collider->box.y = sMaxY - collider->box.h - 1;
+            } else if (speed.y < 0) {
+                collider->box.y = sMinY + 1;
+            }
+        } else if (uCount > 1 || dCount > 1 || (((dCount > 0 && uCount == 0 )  || (uCount > 0 && dCount == 0)) && (playerMinY > absoluteMaxY || playerMaxY < absoluteMinY))) {
+            if (speed.y > 0) {
+                collider->box.y = fMinY - collider->box.h - 1;
+            } else if (speed.y < 0){
+                collider->box.y = fMaxY + 1;
+            }
+        }
+
+        collider->UpdateGameObject();
     }
 }
 
@@ -341,10 +470,10 @@ void Player::SetSprite(string file, int frameCount, float frameTime, bool flip) 
     sprite->SetFlip(flip);
     sprite->SetFrameCount(frameCount);
     sprite->SetFrameTime(frameTime);
-    sprite->Open(file);
+    sprite->Open(file, false);
     sprite->SetFrame(0);
 
-    associated.SetCenter(associated.box.Center());
+    //associated.SetCenter(associated.box.Center());
 }
 
 void Player::Shoot() {
@@ -372,7 +501,6 @@ void Player::Shoot() {
     beamObj->box += offset;
     auto beamCpt = new BeamSkill(*beamObj, target, currentDirection);
     beamObj->AddComponent(beamCpt);
-
 
     auto chargeObj = new GameObject(associated.GetLayer());
     chargeObj->AddComponent(new Charge(*chargeObj, beamObj, CHARGING_DURATION));
@@ -466,6 +594,9 @@ Player::PlayerStateData Player::ChangeDirection() {
     collider->SetOffset(playerData.playerSpriteOffset);
     collider->SetScale(playerData.playerSpriteScale);
     SetSprite(playerData.animation, frameCount, animationDuration/frameCount, shouldFlip);
+    if (collider->box.w != 0) {
+        collider->UpdateGameObject();
+    }
 
     return playerData;
 }

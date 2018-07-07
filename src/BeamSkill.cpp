@@ -51,8 +51,8 @@ void BeamSkill::NotifyCollision(GameObject &other) {
         auto l1 = LineSegment(boxCorners[0], boxCorners[1]);
         auto l2 = LineSegment(boxCorners[2], boxCorners[3]);
         for (auto &intersection : intersections) {
-            auto intersectionDot = intersection.second;
-            auto intersectionLine = intersection.first;
+            auto intersectionDot = intersection.intersectionPoint;
+            auto intersectionLine = intersection.colliderLine;
 
             if (intersectionLine == l1) {
                 auto d = (intersectionDot - l1.dot1).Module();
