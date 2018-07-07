@@ -11,9 +11,13 @@
 #include <Sound.h>
 #include "Npc.h"
 
-Npc::Npc(GameObject &associated, string file, bool debug) : Component(associated), isTalking(false), debug(debug) {
+Npc::Npc(GameObject &associated, string file, vector<string> sounds, bool debug) : Component(associated),
+                                                                                   isTalking(false),
+                                                                                   sounds(sounds),
+                                                                                   debug(debug),
+                                                                                   currentSound(0) {
     associated.AddComponent(new Collidable(associated, Vec2(1, 1)*2));
-
+    associated.AddComponent(new Sound(associated));
     ReadSpeeches(file);
 }
 
@@ -48,10 +52,11 @@ void Npc::Update(float dt) {
             isTalking = false;
         } else {
             auto sound = (Sound *)associated.GetComponent(SOUND_TYPE);
-            if (sound != nullptr) {
+            if (sound != nullptr && sounds.size() > 0 && currentSound%2 == 0) {
+                sound->Open(sounds[(currentSound/2) % sounds.size()]);
                 sound->Play();
             }
-
+            currentSound++;
             boxCpt->SetText(speechQueue.front());
             speechQueue.pop();
         }
