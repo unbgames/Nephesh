@@ -24,10 +24,10 @@ void CollisionMap::Render() {
     //Showing always the first layer (just for testing)
     for (int i = 0; i < mapHeight; ++i) {
         for (int j = 0; j < mapWidth; ++j) {
-            if (At(i, j) == 1) {
+            if (At(j, i) == 1) {
                 continue;
             }
-            auto box = Rect(i*GetTileHeight(), j*GetTileWidth(), GetTileHeight(), GetTileHeight());
+            auto box = Rect(associated.box.x + j*GetTileWidth(), associated.box.y + i*GetTileHeight(), GetTileHeight(), GetTileHeight());
             Vec2 center( box.Center() );
             SDL_Point points[5];
 
@@ -275,8 +275,8 @@ int CollisionMap::GetMapDepth() {
     return mapDepth;
 }
 
-vector<pair<pair<LineSegment, LineSegment>, Vec2>> CollisionMap::GetIntersections(Collider &collider) {
-    vector<pair<pair<LineSegment, LineSegment>, Vec2>> intersections;
+vector<Intersection> CollisionMap::GetIntersections(Collider &collider) {
+    vector<Intersection> intersections;
     auto &colliderObject = collider.GetGameObject();
     auto layer = colliderObject.GetLayer();
     // get the rotated vertices of the collider box (the vertices from the Rect itself)
@@ -343,11 +343,11 @@ vector<pair<pair<LineSegment, LineSegment>, Vec2>> CollisionMap::GetIntersection
             for (auto &colliderLine : colliderLines) {
                 for (auto &collidableLine : collidableLines) {
                     if (colliderLine == collidableLine) {
-                        intersections.push_back(make_pair(make_pair(colliderLine, collidableLine), (colliderLine.dot1 - colliderLine.dot2)*0.5));
+                        intersections.emplace_back(colliderLine, collidableLine, (colliderLine.dot1 - colliderLine.dot2)*0.5);
                     } else {
                         auto intersection = colliderLine.GetIntersection(collidableLine);
                         if (collidableLine.Contains(intersection) && colliderLine.Contains(intersection)) {
-                            intersections.push_back(make_pair(make_pair(colliderLine, collidableLine), intersection));
+                            intersections.emplace_back(colliderLine, collidableLine, intersection);
                         }
                     }
                 }
