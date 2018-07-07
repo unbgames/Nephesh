@@ -349,6 +349,14 @@ void Player::NotifyCollision(GameObject &other) {
         auto fMinY = std::numeric_limits<float>::infinity();
         auto fMaxX = -std::numeric_limits<float>::infinity();
         auto fMaxY = -std::numeric_limits<float>::infinity();
+        auto sAbsoluteMinX = std::numeric_limits<float>::infinity();
+        auto sAbsoluteMinY = std::numeric_limits<float>::infinity();
+        auto sAbsoluteMaxX = -std::numeric_limits<float>::infinity();
+        auto sAbsoluteMaxY = -std::numeric_limits<float>::infinity();
+        auto fAbsoluteMinX = std::numeric_limits<float>::infinity();
+        auto fAbsoluteMinY = std::numeric_limits<float>::infinity();
+        auto fAbsoluteMaxX = -std::numeric_limits<float>::infinity();
+        auto fAbsoluteMaxY = -std::numeric_limits<float>::infinity();
         auto currentMinX = collider->box.x;
         auto currentMaxX = collider->box.x + collider->box.w;
         auto currentMinY = collider->box.y;
@@ -362,12 +370,20 @@ void Player::NotifyCollision(GameObject &other) {
             float *maxX = &sMaxX;
             float *minY = &sMinY;
             float *maxY = &sMaxY;
+            float *absoluteMinX = &sAbsoluteMinX;
+            float *absoluteMaxX = &sAbsoluteMaxX;
+            float *absoluteMinY = &sAbsoluteMinY;
+            float *absoluteMaxY = &sAbsoluteMaxY;
 
             if (colliderLine == u || colliderLine == d) {
                 minX = &fMinX;
                 maxX = &fMaxX;
                 minY = &fMinY;
                 maxY = &fMaxY;
+                absoluteMinX = &fAbsoluteMinX;
+                absoluteMaxX = &fAbsoluteMaxX;
+                absoluteMinY = &fAbsoluteMinY;
+                absoluteMaxY = &fAbsoluteMaxY;
             }
             
             if (colliderLine == u) { uCount++; }
@@ -376,21 +392,33 @@ void Player::NotifyCollision(GameObject &other) {
             if (colliderLine == r) { rCount++; }
 
             for (auto &dot : dots) {
+                if (dot.x < *absoluteMinX) {
+                    *absoluteMinX = dot.x;
+                }
                 if (dot.x > currentMinX && dot.x < currentMaxX && dot.x < *minX) {
                     *minX = dot.x;
+                }
+                if (dot.x > *absoluteMaxX) {
+                    *absoluteMaxX = dot.x;
                 }
                 if (dot.x > currentMinX && dot.x < currentMaxX && dot.x > *maxX) {
                     *maxX = dot.x;
                 }
+                if (dot.y > *absoluteMaxY) {
+                    *absoluteMaxY = dot.y;
+                }
                 if (dot.y > currentMinY && dot.y < currentMaxY && dot.y < *minY) {
                     *minY = dot.y;
                 }
-                if (dot.y > currentMinY && dot.y < currentMaxY &&  dot.y > *maxY) {
+                if (dot.y < *absoluteMinY) {
+                    *absoluteMinY = dot.y;
+                }
+                if (dot.y > currentMinY && dot.y < currentMaxY && dot.y > *maxY) {
                     *maxY = dot.y;
                 }
             }
         }
-        
+
         auto playerMinX = lastBox.x;
         auto playerMaxX = lastBox.x + lastBox.w;
         auto playerMinY = lastBox.y;
@@ -402,7 +430,7 @@ void Player::NotifyCollision(GameObject &other) {
             } else if (speed.x < 0) {
                 collider->box.x = fMinX + 1;
             }
-        } else if (rCount > 1 || lCount > 1 || (((rCount > 0 && lCount == 0 )  || (lCount > 0 && rCount == 0)) && (playerMinX > sMaxX || playerMaxX < sMinX))) {
+        } else if (rCount > 1 || lCount > 1 || (((rCount > 0 && lCount == 0 )  || (lCount > 0 && rCount == 0)) && (playerMinX > sAbsoluteMaxX || playerMaxX < sAbsoluteMinX))) {
             if (speed.x > 0) {
                 collider->box.x = sMinX - collider->box.w - 1;
             } else if (speed.x < 0){
@@ -416,7 +444,7 @@ void Player::NotifyCollision(GameObject &other) {
             } else if (speed.y < 0) {
                 collider->box.y = sMinY + 1;
             }
-        } else if (uCount > 1 || dCount > 1 || (((dCount > 0 && uCount == 0 )  || (uCount > 0 && dCount == 0)) && (playerMinY > fMaxY || playerMaxY < fMinY))) {
+        } else if (uCount > 1 || dCount > 1 || (((dCount > 0 && uCount == 0 )  || (uCount > 0 && dCount == 0)) && (playerMinY > fAbsoluteMaxY || playerMaxY < fAbsoluteMinY))) {
             if (speed.y > 0) {
                 collider->box.y = fMinY - collider->box.h - 1;
             } else if (speed.y < 0){
@@ -438,10 +466,10 @@ void Player::SetSprite(string file, int frameCount, float frameTime, bool flip) 
     sprite->SetFlip(flip);
     sprite->SetFrameCount(frameCount);
     sprite->SetFrameTime(frameTime);
-    sprite->Open(file);
+    sprite->Open(file, false);
     sprite->SetFrame(0);
 
-    associated.SetCenter(associated.box.Center());
+    //associated.SetCenter(associated.box.Center());
 }
 
 void Player::Shoot() {
@@ -469,7 +497,6 @@ void Player::Shoot() {
     beamObj->box += offset;
     auto beamCpt = new BeamSkill(*beamObj, target, currentDirection);
     beamObj->AddComponent(beamCpt);
-
 
     auto chargeObj = new GameObject(associated.GetLayer());
     chargeObj->AddComponent(new Charge(*chargeObj, beamObj, CHARGING_DURATION));
@@ -563,6 +590,9 @@ Player::PlayerStateData Player::ChangeDirection() {
     collider->SetOffset(playerData.playerSpriteOffset);
     collider->SetScale(playerData.playerSpriteScale);
     SetSprite(playerData.animation, frameCount, animationDuration/frameCount, shouldFlip);
+    if (collider->box.w != 0) {
+        collider->UpdateGameObject();
+    }
 
     return playerData;
 }
