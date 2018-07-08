@@ -9,8 +9,9 @@
 #include <GameObject.h>
 
 class Debug : public Component {
+    Vec2 offset;
 public:
-    explicit Debug(GameObject &associated);
+    explicit Debug(GameObject &associated, Vec2 offset = {0, 0});
 
     void Update(float dt) override;
 

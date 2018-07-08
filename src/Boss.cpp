@@ -10,6 +10,8 @@
 #include <FallingRock.h>
 #include <InputManager.h>
 #include <BossMeleeAttack.h>
+#include <Debug.h>
+#include <Collidable.h>
 #include <Camera.h>
 #include <WorldState.h>
 #include <Bar.h>
@@ -38,21 +40,23 @@ Boss::Boss(GameObject &associated) :
     //Sprite *spr = new Sprite(associated, "img/boss_clap.png", 10, 0.2, 0, true);
 
 //    associated.SetCenter({associated.box.x, associated.box.y});
+
+
 }
 
 void Boss::Update(float dt) {
     auto center = associated.box.Center();
     auto& inputManager = InputManager::GetInstance();
 
-    if(inputManager.KeyPress(SDLK_q)){
+    if (inputManager.KeyPress(SDLK_q)) {
         camShaker->KeepShaking(3);
 //        camShaker->SingleShake();
     }
-    if(inputManager.KeyPress(SDLK_e)){
+    if (inputManager.KeyPress(SDLK_e)) {
         camShaker->KeepShaking(3, true);
     }
 
-    if(hp <= 0){
+    if (hp <= 0) {
         associated.RequestDelete();
 
         auto explosionGO = new GameObject();
@@ -108,7 +112,7 @@ void Boss::Update(float dt) {
                 if(previousState != IDLE){
                     SetSprite(BOSS_IDLE_SPRITE);
                     timer.Restart();
-                } else if(timer.Get() < BOSS_IDLE_TIME){
+                } else if (timer.Get() < BOSS_IDLE_TIME) {
                     timer.Update(dt);
                 } else {
                     newState = ATTACKING;
@@ -121,7 +125,7 @@ void Boss::Update(float dt) {
                                    BOSS_MIN_NUM_OF_ATTACKS;
                     Attack();
                     timer.Restart();
-                } else if( timer.Get() < BOSS_ATTACK_TIME){
+                } else if (timer.Get() < BOSS_ATTACK_TIME) {
                     timer.Update(dt);
                     if( colliderToLoad != nullptr && timeToLoadCollider >= 0 && colliderTimer.Get() >=
                                                                                 timeToLoadCollider){
@@ -135,9 +139,10 @@ void Boss::Update(float dt) {
                     timer.Restart(0);
                     attacksPerformed++;
 
-                    if (attacksPerformed == numOfAttacks) {
+                    if (attacksPerformed > 0 || attacksPerformed == numOfAttacks) {
                         attacksPerformed = 0;
                         newState = IDLE;
+                        work = false;
                     } else {
                         Attack();
                     }
@@ -167,20 +172,19 @@ bool Boss::Is(string type) {
 }
 
 void Boss::SetSprite(string file, bool flip) {
-    auto sprite = (Sprite*)associated.GetComponent("Sprite");
+    auto sprite = (Sprite *) associated.GetComponent("Sprite");
 
     auto lastCenter = associated.box.Center();
     if(!sprite){
         throw("Sprite component not found on Boss's GameObject.");
     }
 
-    if(file == BOSS_IDLE_SPRITE){
+    if (file == BOSS_IDLE_SPRITE) {
         sprite->SetFrameCount(10);
         sprite->SetFrameTime(0.1);
-    }
-    else{ // ATTACKS
+    } else { // ATTACKS
         sprite->SetFrameCount(10);
-        sprite->SetFrameTime(BOSS_ATTACK_TIME/10);
+        sprite->SetFrameTime(BOSS_ATTACK_TIME / 10);
     }
 
     sprite->SetFlip(flip);
@@ -200,20 +204,19 @@ void Boss::Attack() {
 
     vector<int> attackProbabilityWeights(numOfAttacks);
 
-    if(dist <= BOSS_SLAP_DISTANCE){
-        attackProbabilityWeights[SLAP] = 100;
+    if (dist <= BOSS_SLAP_DISTANCE) {
+        attackProbabilityWeights[SLAP] = 0;
         attackProbabilityWeights[SLAM] = 0;
-        attackProbabilityWeights[CLAP] = 0;
-    }
-    else{
-        attackProbabilityWeights[SLAP] = 33;
-        attackProbabilityWeights[SLAM] = 33;
-        attackProbabilityWeights[CLAP] = 34;
+        attackProbabilityWeights[CLAP] = 100;
+    } else {
+        attackProbabilityWeights[SLAP] = 0;
+        attackProbabilityWeights[SLAM] = 0;
+        attackProbabilityWeights[CLAP] = 100;
     }
 
     attackState = (BossAttack) WeightedDraft(attackProbabilityWeights);
 
-    switch(attackState){
+    switch (attackState) {
         case SLAP:
             SlapAttack();
             break;
@@ -237,22 +240,47 @@ void Boss::SlapAttack() {
     Vec2 bossBoxPos;
 
     auto attackObject = new GameObject(associated.GetLayer());
-    attackObject->AddComponent(new BossMeleeAttack(*attackObject, "", BOSS_ATTACK_TIME));
+    attackObject->AddComponent(new BossMeleeAttack(*attackObject, "", 0, BOSS_ATTACK_TIME));
 
-    if(playerCenter.x <= bossCenter.x) { //LEFT
+    auto airWaveMeleeObject = new GameObject(associated.GetLayer());
+
+    if (playerCenter.x <= bossCenter.x) { //LEFT
         SetSprite(BOSS_SLAP_LEFT_SPRITE);
         bossBoxPos = Vec2(associated.box.x, associated.box.y);
-        attackObject->box = Rect(associated.box.h/2, associated.box.w);
-        attackObject->box = bossBoxPos + Vec2(associated.box.w/12, associated.box.h/5);
+        attackObject->box = Rect(associated.box.h / 2, associated.box.w);
+        attackObject->box = bossBoxPos + Vec2(associated.box.w / 12, associated.box.h / 5);
         attackObject->angleDeg = 45;
-    }
-    else{ //RIGHT
+
+        colliderTimer.Restart();
+
+        auto secondsToEndAttack = 0.5;
+        timeToLoadCollider = BOSS_ATTACK_TIME - secondsToEndAttack;
+        auto attackCenter = attackObject->box.Center();
+        airWaveMeleeObject->box.PlaceCenterAt({attackCenter.x - 270, attackCenter.y + 270});
+        airWaveMeleeObject->angleDeg = -50;
+        airWaveMeleeObject->AddComponent(new BossMeleeAttack(*airWaveMeleeObject, "img/slash_boss.png", 4,
+                                                             secondsToEndAttack));
+        colliderToLoad = airWaveMeleeObject;
+    } else { //RIGHT
         SetSprite(BOSS_SLAP_RIGHT_SPRITE);
         bossBoxPos = Vec2(associated.box.x, associated.box.y);
-        attackObject->box = Rect(associated.box.h/2, associated.box.w);
-        attackObject->box = bossBoxPos + Vec2(-associated.box.w/12, associated.box.h/5);
+        attackObject->box = Rect(associated.box.h / 2, associated.box.w);
+        attackObject->box = bossBoxPos + Vec2(-associated.box.w / 12, associated.box.h / 5);
         attackObject->rotationCenter = Vec2(associated.box.w, 0);
         attackObject->angleDeg = -45;
+
+        colliderTimer.Restart();
+
+        auto secondsToEndAttack = 0.5;
+        timeToLoadCollider = BOSS_ATTACK_TIME - secondsToEndAttack;
+        auto attackCenter = attackObject->box.Center();
+        airWaveMeleeObject->box.PlaceCenterAt({attackCenter.x + 270, attackCenter.y + 270});
+        airWaveMeleeObject->angleDeg = 50;
+        airWaveMeleeObject->AddComponent(
+                new BossMeleeAttack(*airWaveMeleeObject, "img/slash_boss.png", 4, secondsToEndAttack, true));
+        colliderToLoad = airWaveMeleeObject;
+        //airWaveMeleeObject->AddComponent(new Debug(*airWaveMeleeObject));
+        //Game::GetInstance().GetCurrentState().AddObject(airWaveMeleeObject);
     }
 
     Game::GetInstance().GetCurrentState().AddObject(attackObject);
@@ -261,26 +289,40 @@ void Boss::SlapAttack() {
 void Boss::SlamAttack() {
     SetSprite(BOSS_SLAM_SPRITE);
 
-    const int ATTACK_RANGE = 0.6*associated.box.h;
-    const int ATTACK_WIDTH = 0.7*associated.box.w;
+    const int ATTACK_RANGE = 0.6 * associated.box.h;
+    const int ATTACK_WIDTH = 0.7 * associated.box.w;
 
 //    auto playerCenter = Player::player->GetCenter();
 //    auto bossCenter = associated.box.Center();
     auto bossBoxPos = Vec2(associated.box.x, associated.box.y);
 
     auto attackObject = new GameObject(associated.GetLayer());
-    attackObject->AddComponent(new BossMeleeAttack(*attackObject, "", BOSS_ATTACK_TIME));
+    attackObject->AddComponent(new BossMeleeAttack(*attackObject, "", 0, BOSS_ATTACK_TIME));
     attackObject->box = Rect(ATTACK_RANGE, ATTACK_WIDTH);
-    attackObject->box = bossBoxPos + Vec2(0.15*associated.box.w, 0.55*associated.box.h);
+    attackObject->box = bossBoxPos + Vec2(0.15 * associated.box.w, 0.55 * associated.box.h);
+
+    colliderTimer.Restart();
+
+    auto secondsToEndAttack = 0.4;
+    timeToLoadCollider = BOSS_ATTACK_TIME - secondsToEndAttack;
+    colliderToLoad = new GameObject(associated.GetLayer());
+
+    auto playerBoxCenter = associated.box.Center();
+
+    colliderToLoad->SetCenter(playerBoxCenter);
+    colliderToLoad->AddComponent(new BossMeleeAttack(*colliderToLoad, "img/slash_boss_down.png", 4,
+                                                     secondsToEndAttack, true, {0, 0}, {1.2, 0.7}));
+
+    colliderToLoad->box.y += associated.box.h / 2 + 40;
 
     Game::GetInstance().GetCurrentState().AddObject(attackObject);
 
-    RockSlide();
+    //RockSlide();
 }
 
 void Boss::PrintBossState() {
     cout << "Current Boss State: ";
-    switch (currentState){
+    switch (currentState) {
         case ATTACKING:
             cout << "ATTACKING" << endl;
             break;
@@ -292,7 +334,7 @@ void Boss::PrintBossState() {
 
 void Boss::PrintBossAttack() {
     cout << "Current Boss Attack State: ";
-    switch (attackState){
+    switch (attackState) {
         case SLAM:
             cout << "SLAM ATTACK" << endl;
             break;
@@ -312,12 +354,12 @@ void Boss::RockSlide() {
 
     int numOfRocks = (rand() % (MAX_NUM_OF_ROCKS - MIN_NUM_OF_ROCKS + 1)) + MIN_NUM_OF_ROCKS;
 
-    for(int i = 0; i < numOfRocks; i++){
+    for (int i = 0; i < numOfRocks; i++) {
         auto rockGO = new GameObject(associated.GetLayer());
         rockGO->AddComponent(new FallingRock(*rockGO));
 
         auto rockCastGO = new GameObject(associated.GetLayer());
-        rockCastGO->AddComponent(new Charge(*rockCastGO, rockGO, BOSS_ATTACK_TIME + i*TIME_BETWEEN_ROCKS));
+        rockCastGO->AddComponent(new Charge(*rockCastGO, rockGO, BOSS_ATTACK_TIME + i * TIME_BETWEEN_ROCKS));
 
         Game::GetInstance().GetCurrentState().AddObject(rockCastGO);
     }
@@ -331,19 +373,52 @@ void Boss::PlaySound(string file) {
 
 
 void Boss::RollingStoneAttack() {
-    auto heightOffset = rand()%400;
+    auto offWid = 800;
+    auto offHeig = 1000;
+    auto bossCenter = associated.box.Center();
+    auto playerCenter = Player::player->GetCenter();
+
     auto rs = new GameObject();
-    rs->box.x = associated.box.Center().x + 300;
-    rs->box.y = associated.box.y + heightOffset;
-    rs->AddComponent(new RollingStones(*rs, 20, 300, 500));
+
+    auto heightOffset = rand() % offHeig;
+    auto widthOffset = (rand() % offWid) - offWid / 2;
+
+    Vec2 blockPos = {bossCenter.x + widthOffset, bossCenter.y + (associated.box.h / 2) + 10 + heightOffset};
     
+    if (blockPos.Distance(playerCenter) < BOSS_MIN_SLIDING_ROCK_DIST) {
+        Vec2 topRight = {bossCenter.x + offWid / 2, bossCenter.y + (associated.box.h / 2) + 10};
+        Vec2 topLeft = {bossCenter.x - offWid / 2, bossCenter.y + (associated.box.h / 2) + 10};
+        Vec2 botRight = {bossCenter.x + offWid / 2, bossCenter.y + (associated.box.h / 2) + 10 + offHeig};
+        Vec2 botLeft = {bossCenter.x - offWid / 2, bossCenter.y + (associated.box.h / 2) + 10 + offHeig};
+
+        auto topRightDist = playerCenter.Distance(topRight);
+        auto topLeftDist = playerCenter.Distance(topLeft);
+        auto botRightDist = playerCenter.Distance(botRight);
+        auto botLeftDist = playerCenter.Distance(botLeft);
+        
+        float dist = std::max({topRightDist, topLeftDist, botRightDist, botLeftDist}, cmp);
+
+        if (dist == topRightDist) {
+            blockPos = topRight;
+        } else if (dist == topLeftDist) {
+            blockPos = topLeft;
+        } else if (dist == botRightDist) {
+            blockPos = botRight;
+        } else if (dist == botLeftDist) {
+            blockPos = botLeft;
+        }
+    }
+
+    rs->box = blockPos;
+    rs->AddComponent(new RollingStones(*rs, 20, 300, 5200));
+
     auto chargeTime = 0.7;
     auto chargeObj = new GameObject(associated.GetLayer());
     chargeObj->AddComponent(new Charge(*chargeObj, rs, chargeTime));
     auto rsSprite = new Sprite(*chargeObj, RSTONE_SLIDING_UP_STONE_SPRITE, 6, chargeTime / 6);
     chargeObj->AddComponent(rsSprite);
     chargeObj->box = rs->box;
-    auto *sound = new Sound(associated, "audio/boss/boss_earthbend.wav");
+    auto *sound = new Sound(*chargeObj, "audio/boss/boss_earthbend.wav");
     chargeObj->AddComponent(sound);
     sound->Play();
     Game::GetInstance().GetCurrentState().AddObject(chargeObj);
@@ -367,16 +442,20 @@ void Boss::ClapAttack() {
     colliderToLoad = new GameObject(associated.GetLayer());
 
     auto playerBoxCenter = associated.box.Center();
-    playerBoxCenter.y += associated.box.h/2;
 
-    colliderToLoad->box.w = associated.box.w + 250;
-    colliderToLoad->box.h = associated.box.h - 250;
+    colliderToLoad->SetCenter(playerBoxCenter);
+    colliderToLoad->AddComponent(new BossMeleeAttack(*colliderToLoad, "img/slash_boss_down.png", 4,
+                                                     secondsToEndAttack, true, {0, 0}, {1.2, 0.7}));
 
-    colliderToLoad->SetCenter(playerBoxCenter);    
-    colliderToLoad->AddComponent(new BossMeleeAttack(*colliderToLoad, "", secondsToEndAttack));
-    
+    colliderToLoad->box.y += associated.box.h / 2 + 40;
+
     SetSprite(BOSS_CLAP_SPRITE);
-    RollingStoneAttack();
+    int numOfRollingStones = (rand() % 4) + 1;
+    while (numOfRollingStones > 0) {
+        RollingStoneAttack();
+        --numOfRollingStones;
+    }
+
     PlaySound(BOSS_CLAP_SOUND);
 }
 

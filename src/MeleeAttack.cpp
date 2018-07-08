@@ -7,8 +7,7 @@
 #include <InputManager.h>
 #include "MeleeAttack.h"
 
-MeleeAttack::MeleeAttack(GameObject &associated, string sprite, int frameCount, bool flip, Vec2 offset, Vec2
-colScale, Vec2 colOffset, double attackDuration, bool debug) :
+MeleeAttack::MeleeAttack(GameObject &associated, string sprite, int frameCount, bool flip, Vec2 offset, Vec2 colScale, Vec2 colOffset, double attackDuration, bool debug) :
         Component(associated),
         collisionTimer(),
         colliderCreated(false),

@@ -5,7 +5,7 @@
 #include <InputManager.h>
 #include "Debug.h"
 
-Debug::Debug(GameObject &associated) : Component(associated) {
+Debug::Debug(GameObject &associated, Vec2 offset) : Component(associated), offset(offset) {
 
 }
 
@@ -26,7 +26,7 @@ void Debug::Update(float dt) {
     }
 
     if (inputManager.KeyPress(SDLK_p)) {
-        cout << associated.box.x << ", " << associated.box.y << endl;
+        cout << "X: " << associated.box.x - offset.x << ", Y: " << associated.box.y - offset.y << endl;
     }
 }
 
