@@ -284,15 +284,21 @@ Map &WorldState::GetCurrentMap() {
 }
 
 void WorldState::LoadNpcs() {
+    vector<string> creatureSounds {
+            "audio/npcs/criatura/criatura_magica_1.wav",
+            "audio/npcs/criatura/criatura_magica_2.wav",
+            "audio/npcs/criatura/criatura_magica_3.wav",
+            "audio/npcs/criatura/criatura_magica_4.wav",
+            "audio/npcs/criatura/criatura_magica_5.wav",
+    };
+
     auto creatureObj1 = new GameObject();
     creatureObj1->AddComponent(new Sprite(*creatureObj1, "img/criatura.png", 6, 0.2));
-    creatureObj1->AddComponent(new Npc(*creatureObj1, "npcs/criatura_magica1.txt"));
-    creatureObj1->AddComponent(new Sound(*creatureObj1, "audio/npcs/criatura_magica_1.wav"));
+    creatureObj1->AddComponent(new Npc(*creatureObj1, "npcs/criatura_magica1.txt", creatureSounds));
     AddObject(creatureObj1);
 
     auto creatureObj2 = new GameObject();
     creatureObj2->AddComponent(new Sprite(*creatureObj2, "img/criatura.png", 6, 0.2));
-    creatureObj2->AddComponent(new Npc(*creatureObj2, "npcs/criatura_magica2.txt", true));
-    creatureObj2->AddComponent(new Sound(*creatureObj2, "audio/npcs/criatura_magica_1.wav"));
+    creatureObj2->AddComponent(new Npc(*creatureObj2, "npcs/criatura_magica2.txt", creatureSounds));
     AddObject(creatureObj2);
 }
