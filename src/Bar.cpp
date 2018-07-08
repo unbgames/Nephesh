@@ -32,8 +32,6 @@ bool Bar::Is(string type) {
 
 void Bar::Start() {
     associated.AddComponent(new Sprite(associated, spriteFile));
-    auto position = Vec2(WIDTH/2 - associated.box.w/2, 50);
-    associated.AddComponent(new CameraFollower(associated, position));
 }
 
 void Bar::SetValue(int value) {

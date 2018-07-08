@@ -17,6 +17,7 @@
 #include <TerrainMap.h>
 #include <Charge.h>
 #include <Bar.h>
+#include <CameraFollower.h>
 #include "Player.h"
 
 #define SPEED 200
@@ -109,6 +110,7 @@ Player::PlayerDirection Player::GetNewDirection(vector<PlayerDirection> directio
 
 void Player::Update(float dt) {
     if (!frozen) {
+        UpdateCharge(dt);
         auto inputManager = InputManager::GetInstance();
         auto newState = state;
         auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
@@ -182,14 +184,18 @@ void Player::Update(float dt) {
             }
 
         } else if (newState == SHOOTING) {
-            speed = Vec2();
             if (state != SHOOTING) {
-                //Start the shooting animation
-                preparing = true;
-                target = Camera::GetAbsolutePosition(associated.GetLayer(),
-                                                     Vec2(inputManager.GetMouseX(), inputManager.GetMouseY()));
-                currentDirection = GetNewDirection(target);
-                timer.Restart();
+                if (!charged) {
+                    newState = state;
+                } else {
+                    //Start the shooting animation
+                    preparing = true;
+                    charged = false;
+                    target = Camera::GetAbsolutePosition(associated.GetLayer(),
+                                                         Vec2(inputManager.GetMouseX(), inputManager.GetMouseY()));
+                    currentDirection = GetNewDirection(target);
+                    timer.Restart();
+                }
             } else {
                 timer.Update(dt);
                 if (preparing && timer.Get() > PLAYER_MAGIC_SPRITE_DURATION) {
@@ -313,7 +319,15 @@ void Player::Start() {
 
     auto healthBarObject = new GameObject(8);
     healthBarObject->AddComponent(new Bar(*healthBarObject, "img/health_bar.png", PLAYER_MAX_HP, PLAYER_MAX_HP));
+    auto healthBarPosition = Vec2(50, 50);
+    healthBarObject->AddComponent(new CameraFollower(*healthBarObject, healthBarPosition));
     healthBar = state.AddObject(healthBarObject);
+
+    auto chargingBarObject = new GameObject(8);
+    chargingBarObject->AddComponent(new Bar(*chargingBarObject, "img/health_bar.png", 100, 100));
+    auto chargingBarPosition = Vec2(50, 100);
+    chargingBarObject->AddComponent(new CameraFollower(*chargingBarObject, chargingBarPosition));
+    chargingBar = state.AddObject(chargingBarObject);
 }
 
 Player::~Player() {
@@ -477,8 +491,6 @@ void Player::SetSprite(string file, int frameCount, float frameTime, bool flip) 
     sprite->SetFrameTime(frameTime);
     sprite->Open(file, false);
     sprite->SetFrame(0);
-
-    //associated.SetCenter(associated.box.Center());
 }
 
 void Player::Shoot() {
@@ -664,6 +676,24 @@ void Player::DecreaseHp(int decrement) {
 
     auto bar = (Bar *)healthBar.lock()->GetComponent(BAR_TYPE);
     bar->SetValue(hp);
+}
+
+void Player::UpdateCharge(float dt) {
+    if (!charged) {
+        chargeTimer.Update(dt);
+
+        auto currentDuration = chargeTimer.Get();
+        if (currentDuration > PLAYER_CHARGE_DURATION) {
+            chargeTimer.Restart();
+            PlaySound("audio/lazer_ready.wav");
+            chargeCount = 100;
+            charged = true;
+        } else {
+            chargeCount = (int) (100*(currentDuration/PLAYER_CHARGE_DURATION));
+        }
+        auto chargeBar = (Bar *) chargingBar.lock()->GetComponent(BAR_TYPE);
+        chargeBar->SetValue(chargeCount);
+    }
 }
 
 Player::PlayerStateData::PlayerStateData(PlayerDirection direction,
