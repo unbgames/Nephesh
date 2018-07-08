@@ -63,58 +63,58 @@ void Boss::Update(float dt) {
         colliderTimer.Update(dt);
     }
     
-//    if(Player::player && center.Distance(Player::player->GetCenter()) <= BOSS_IDLE_DISTANCE){
-//        auto newState = currentState;
-//
-//        switch(currentState){
-//            case IDLE:
-//                if(previousState == ATTACKING){
-//                    SetSprite(BOSS_IDLE_SPRITE);
-//                    timer.Restart();
-//                } else if(timer.Get() < BOSS_IDLE_TIME){
-//                    timer.Update(dt);
-//                } else {
-//                    newState = ATTACKING;
-//                }
-//                break;
-//
-//            case ATTACKING:
-//                if(previousState == IDLE){
-//                    numOfAttacks = (rand()%(BOSS_MAX_NUM_OF_ATTACKS - BOSS_MIN_NUM_OF_ATTACKS + 1)) + 
-//                    BOSS_MIN_NUM_OF_ATTACKS;
-//                    Attack();
-//                    timer.Restart();
-//                } else if( timer.Get() < BOSS_ATTACK_TIME){
-//                    timer.Update(dt);
-//                    if( colliderToLoad != nullptr && timeToLoadCollider >= 0 && colliderTimer.Get() >= 
-//                    timeToLoadCollider){
-//                        Game::GetInstance().GetCurrentState().AddObject(colliderToLoad);
-//                        timeToLoadCollider = -1;
-//                        colliderToLoad = nullptr;
-//                        colliderTimer.Restart();
-//                    }
-//                    
-//                } else {
-//                    timer.Restart(0);
-//                    attacksPerformed++;
-//
-//                    if (attacksPerformed == numOfAttacks) {
-//                        attacksPerformed = 0;
-//                        newState = IDLE;
-//                    } else {
-//                        Attack();
-//                    }
-//                }
-//                break;
-//        }
-//
-//        UpdateState(newState);
-//
-//
-//    } else{
-//        UpdateState(IDLE);
-//        SetSprite(BOSS_IDLE_SPRITE);
-//    }
+    if(Player::player && center.Distance(Player::player->GetCenter()) <= BOSS_IDLE_DISTANCE){
+        auto newState = currentState;
+
+        switch(currentState){
+            case IDLE:
+                if(previousState == ATTACKING){
+                    SetSprite(BOSS_IDLE_SPRITE);
+                    timer.Restart();
+                } else if(timer.Get() < BOSS_IDLE_TIME){
+                    timer.Update(dt);
+                } else {
+                    newState = ATTACKING;
+                }
+                break;
+
+            case ATTACKING:
+                if(previousState == IDLE){
+                    numOfAttacks = (rand()%(BOSS_MAX_NUM_OF_ATTACKS - BOSS_MIN_NUM_OF_ATTACKS + 1)) +
+                    BOSS_MIN_NUM_OF_ATTACKS;
+                    Attack();
+                    timer.Restart();
+                } else if( timer.Get() < BOSS_ATTACK_TIME){
+                    timer.Update(dt);
+                    if( colliderToLoad != nullptr && timeToLoadCollider >= 0 && colliderTimer.Get() >=
+                    timeToLoadCollider){
+                        Game::GetInstance().GetCurrentState().AddObject(colliderToLoad);
+                        timeToLoadCollider = -1;
+                        colliderToLoad = nullptr;
+                        colliderTimer.Restart();
+                    }
+
+                } else {
+                    timer.Restart(0);
+                    attacksPerformed++;
+
+                    if (attacksPerformed == numOfAttacks) {
+                        attacksPerformed = 0;
+                        newState = IDLE;
+                    } else {
+                        Attack();
+                    }
+                }
+                break;
+        }
+
+        UpdateState(newState);
+
+
+    } else{
+        UpdateState(IDLE);
+        SetSprite(BOSS_IDLE_SPRITE);
+    }
     
 
 }
@@ -158,14 +158,14 @@ void Boss::Attack() {
     vector<int> attackProbabilityWeights(numOfAttacks);
 
     if(dist <= BOSS_SLAP_DISTANCE){
-        attackProbabilityWeights[SLAP] = 0;
+        attackProbabilityWeights[SLAP] = 100;
         attackProbabilityWeights[SLAM] = 0;
-        attackProbabilityWeights[CLAP] = 100;
+        attackProbabilityWeights[CLAP] = 0;
     }
     else{
-        attackProbabilityWeights[SLAP] = 0;
-        attackProbabilityWeights[SLAM] = 0;
-        attackProbabilityWeights[CLAP] = 100;
+        attackProbabilityWeights[SLAP] = 33;
+        attackProbabilityWeights[SLAM] = 33;
+        attackProbabilityWeights[CLAP] = 34;
     }
 
     attackState = (BossAttack) WeightedDraft(attackProbabilityWeights);
