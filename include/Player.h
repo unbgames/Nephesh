@@ -39,6 +39,8 @@ using namespace std;
 #define PLAYER_ATTACK_RANGE 70
 #define PLAYER_ATTACK_WIDTH 120
 #define PLAYER_IDLE_SPRITE "img/idle_up.png"
+#define PLAYER_MAX_HP 100
+#define PLAYER_CHARGE_DURATION 10
 
 class Player : public Component {
 public:
@@ -73,6 +75,8 @@ public:
     void Freeze();
     
     void Unfreeze();
+
+    void DecreaseHp(int decrement);
 private:
     enum PlayerState {
         //Starting state of player
@@ -156,14 +160,20 @@ private:
     Vec2 speed;
     Rect lastBox;
     int hp;
+    int chargeCount;
+    bool charged;
 
     Vec2 target;
 
     Timer timer;
+    Timer chargeTimer;
 
     weak_ptr<GameObject> meleeAttack;
+    weak_ptr<GameObject> healthBar;
+    weak_ptr<GameObject> chargingBar;
 
     PlayerStateData GetStateData(vector<PlayerStateData> data);
+    void UpdateCharge(float dt);
     void SetSprite(string file, int frameCount, float frameTime, bool flip = false);
     void PlaySound(string file);
     string GetRandomStepSound();

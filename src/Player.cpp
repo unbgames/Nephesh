@@ -16,13 +16,15 @@
 #include <IntervalTimer.h>
 #include <TerrainMap.h>
 #include <Charge.h>
+#include <Bar.h>
+#include <CameraFollower.h>
 #include "Player.h"
 
 #define SPEED 200
 
 Player *Player::player = nullptr;
 
-Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), state(STARTING), hp(100) {
+Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), state(STARTING), hp(PLAYER_MAX_HP) {
     associated.AddComponent(new Sound(associated));
     Sprite *spr = new Sprite(associated, PLAYER_IDLE_SPRITE, PLAYER_IDLE_SPRITE_COUNT, 0.1, 0, true);
 
@@ -108,6 +110,7 @@ Player::PlayerDirection Player::GetNewDirection(vector<PlayerDirection> directio
 
 void Player::Update(float dt) {
     if (!frozen) {
+        UpdateCharge(dt);
         auto inputManager = InputManager::GetInstance();
         auto newState = state;
         auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
@@ -181,14 +184,19 @@ void Player::Update(float dt) {
             }
 
         } else if (newState == SHOOTING) {
-            speed = Vec2();
             if (state != SHOOTING) {
-                //Start the shooting animation
-                preparing = true;
-                target = Camera::GetAbsolutePosition(associated.GetLayer(),
-                                                     Vec2(inputManager.GetMouseX(), inputManager.GetMouseY()));
-                currentDirection = GetNewDirection(target);
-                timer.Restart();
+                if (!charged) {
+                    newState = state;
+                } else {
+                    speed = Vec2();
+                    //Start the shooting animation
+                    preparing = true;
+                    charged = false;
+                    target = Camera::GetAbsolutePosition(associated.GetLayer(),
+                                                         Vec2(inputManager.GetMouseX(), inputManager.GetMouseY()));
+                    currentDirection = GetNewDirection(target);
+                    timer.Restart();
+                }
             } else {
                 timer.Update(dt);
                 if (preparing && timer.Get() > PLAYER_MAGIC_SPRITE_DURATION) {
@@ -309,6 +317,18 @@ void Player::Start() {
     associated.AddComponent(collider);
     auto &state = (WorldState &) Game::GetInstance().GetCurrentState();
     state.AddCollider(state.GetObjectPtr(&associated).lock());
+
+    auto healthBarObject = new GameObject(8);
+    healthBarObject->AddComponent(new Bar(*healthBarObject, "img/health_bar.png", PLAYER_MAX_HP, PLAYER_MAX_HP));
+    auto healthBarPosition = Vec2(50, 50);
+    healthBarObject->AddComponent(new CameraFollower(*healthBarObject, healthBarPosition));
+    healthBar = state.AddObject(healthBarObject);
+
+    auto chargingBarObject = new GameObject(8);
+    chargingBarObject->AddComponent(new Bar(*chargingBarObject, "img/health_bar.png", 100, 100));
+    auto chargingBarPosition = Vec2(50, 100);
+    chargingBarObject->AddComponent(new CameraFollower(*chargingBarObject, chargingBarPosition));
+    chargingBar = state.AddObject(chargingBarObject);
 }
 
 Player::~Player() {
@@ -472,8 +492,6 @@ void Player::SetSprite(string file, int frameCount, float frameTime, bool flip) 
     sprite->SetFrameTime(frameTime);
     sprite->Open(file, false);
     sprite->SetFrame(0);
-
-    //associated.SetCenter(associated.box.Center());
 }
 
 void Player::Shoot() {
@@ -647,6 +665,36 @@ void Player::Freeze() {
 
 void Player::Unfreeze() {
     frozen = false;
+}
+
+void Player::DecreaseHp(int decrement) {
+    hp -= decrement;
+    if (hp <= 0) {
+        hp = 0;
+    } else if (hp > PLAYER_MAX_HP) {
+        hp = PLAYER_MAX_HP;
+    }
+
+    auto bar = (Bar *)healthBar.lock()->GetComponent(BAR_TYPE);
+    bar->SetValue(hp);
+}
+
+void Player::UpdateCharge(float dt) {
+    if (!charged) {
+        chargeTimer.Update(dt);
+
+        auto currentDuration = chargeTimer.Get();
+        if (currentDuration > PLAYER_CHARGE_DURATION) {
+            chargeTimer.Restart();
+            PlaySound("audio/lazer_ready.wav");
+            chargeCount = 100;
+            charged = true;
+        } else {
+            chargeCount = (int) (100*(currentDuration/PLAYER_CHARGE_DURATION));
+        }
+        auto chargeBar = (Bar *) chargingBar.lock()->GetComponent(BAR_TYPE);
+        chargeBar->SetValue(chargeCount);
+    }
 }
 
 Player::PlayerStateData::PlayerStateData(PlayerDirection direction,

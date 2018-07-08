@@ -35,7 +35,7 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
     Mix_VolumeMusic(32);
 
     Player::player->Freeze();
-    auto fadeInObj = new GameObject(2);
+    auto fadeInObj = new GameObject(WORLD_LAST_LAYER);
     fadeInObj->AddComponent(new FadeEffect(*fadeInObj, WORLD_FADE_IN_DURATION, 2, [] { Player::player->Unfreeze(); }));
     AddObject(fadeInObj);
 
@@ -64,9 +64,16 @@ void WorldState::Update(float dt) {
         blockObj->SetCenter(Camera::pos +  mousePos);
         AddObject(blockObj);
     }
+    
+    if (inputManager.KeyPress(SDLK_f)) {
+        Player::player->DecreaseHp(10);
+    }
+    if (inputManager.KeyPress(SDLK_i)) {
+        Player::player->DecreaseHp(-10);
+    }
 
     if (inputManager.KeyPress(ESCAPE_KEY)) {
-        auto fadeObj = new GameObject(2);
+        auto fadeObj = new GameObject(WORLD_LAST_LAYER);
         bgMusic->Stop();
         function<void()> callback;
         callback = [&] {
@@ -147,12 +154,14 @@ void WorldState::Start() {
     vector<string> m4 = { "map/4/ground.png", "map/4/rocks.png" };
     vector<string> m5 = { "map/5/ground.png", "map/5/rocks.png" };
     vector<string> m8 = { "map/8/ground.png", "map/8/rocks.png" };
+    vector<string> m9 = { "map/9/ground.png", "map/9/rocks.png", "map/9/trees.png", "map/9/surroundings.png", "map/9/lighting.png", "map/9/view.png", "map/9/vine.png" };
     maps.emplace_back(m1, Map::MapDirection::DOWN, "map/1/collisionMap.txt", "map/1/terrainMap.txt");
     maps.emplace_back(m2, Map::MapDirection::DOWN, "map/2/collisionMap.txt", "map/2/terrainMap.txt");
     maps.emplace_back(m3, Map::MapDirection::RIGHT, "map/3/collisionMap.txt", "map/3/terrainMap.txt");
     maps.emplace_back(m4, Map::MapDirection::UP, "map/4/collisionMap.txt", "map/4/terrainMap.txt");
     maps.emplace_back(m5, Map::MapDirection::RIGHT, "map/5/collisionMap.txt", "map/5/terrainMap.txt");
     maps.emplace_back(m8, Map::MapDirection::RIGHT, "map/8/collisionMap.txt", "map/8/terrainMap.txt");
+    maps.emplace_back(m9, Map::MapDirection::UP, "map/9/collisionMap.txt", "map/9/terrainMap.txt");
 
     StartArray();
 
