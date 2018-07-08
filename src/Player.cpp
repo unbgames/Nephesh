@@ -35,10 +35,10 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
 
     Player::player = this;
 
-    movingData.emplace_back(RIGHT, "img/walk_side.png", Vec2(0.5, 0.92), Vec2(20, 0));
-    movingData.emplace_back(LEFT, "img/walk_side.png", Vec2(0.5, 0.92), Vec2(-15, 0));
-    movingData.emplace_back(UP, "img/walk_up.png", Vec2(0.4, 0.92), Vec2(0, 0));
-    movingData.emplace_back(DOWN, "img/walk_down.png", Vec2(0.4, 0.92), Vec2(0, 0));
+    movingData.emplace_back(RIGHT, "img/walk_side.png", Vec2(0.421, 1), Vec2(20, 0));
+    movingData.emplace_back(LEFT, "img/walk_side.png", Vec2(0.421, 1), Vec2(-15, 0));
+    movingData.emplace_back(UP, "img/walk_up.png", Vec2(0.353, 1), Vec2(0, 0));
+    movingData.emplace_back(DOWN, "img/walk_down.png", Vec2(0.353, 1), Vec2(0, 0));
     grassStepSounds.emplace_back("audio/steps/grass/grass_1.wav");
     grassStepSounds.emplace_back("audio/steps/grass/grass_2.wav");
     grassStepSounds.emplace_back("audio/steps/grass/grass_3.wav");
@@ -59,10 +59,10 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     dirtStepSounds.emplace_back("audio/steps/dirt/dirt_6.wav");
 
 
-    dashingData.emplace_back(RIGHT, "img/dash_side.png", Vec2(0.5, 0.92), Vec2(20, 0));
-    dashingData.emplace_back(LEFT, "img/dash_side.png", Vec2(0.5, 0.92), Vec2(-15, 0));
-    dashingData.emplace_back(UP, "img/dash_up.png", Vec2(0.4, 0.92), Vec2(0, 0));
-    dashingData.emplace_back(DOWN, "img/dash_down.png", Vec2(0.4, 0.92), Vec2(0, 0));
+    dashingData.emplace_back(RIGHT, "img/dash_side.png", Vec2(0.311, 1.098), Vec2(20, 0));
+    dashingData.emplace_back(LEFT, "img/dash_side.png", Vec2(0.311, 1.098), Vec2(-15, 0));
+    dashingData.emplace_back(UP, "img/dash_up.png", Vec2(0.49, 1.018), Vec2(0, 0));
+    dashingData.emplace_back(DOWN, "img/dash_down.png", Vec2(0.38, 1.018), Vec2(0, 0));
     dashSounds.emplace_back("audio/dash/dash_1.wav");
     dashSounds.emplace_back("audio/dash/dash_2.wav");
     dashSounds.emplace_back("audio/dash/dash_3.wav");
@@ -72,10 +72,10 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     shootingData.emplace_back(UP, "img/magic_up.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(3, -80));
     shootingData.emplace_back(DOWN, "img/magic_down.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(4, 10));
 
-    attackingData.emplace_back(RIGHT, "img/attack_side.png", Vec2(0.3, 0.92), Vec2(-10, 0), Vec2(60, 0));
-    attackingData.emplace_back(LEFT, "img/attack_side.png", Vec2(0.3, 0.92), Vec2(10, 0), Vec2(-60, 0));
-    attackingData.emplace_back(UP, "img/attack_up.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(0, -40));
-    attackingData.emplace_back(DOWN, "img/attack_down.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(0, 30));
+    attackingData.emplace_back(RIGHT, "img/attack_side.png", Vec2(0.247, 0.933), Vec2(-10, 0), Vec2(60, 0));
+    attackingData.emplace_back(LEFT, "img/attack_side.png", Vec2(0.247, 0.933), Vec2(10, 0), Vec2(-60, 0));
+    attackingData.emplace_back(UP, "img/attack_up.png", Vec2(0.342, 0.848), Vec2(0, 0), Vec2(0, -40));
+    attackingData.emplace_back(DOWN, "img/attack_down.png", Vec2(0.375, 0.965), Vec2(0, 0), Vec2(0, 30));
     attackMissSounds.emplace_back("audio/sword/attack_miss_1.wav");
     attackMissSounds.emplace_back("audio/sword/attack_miss_2.wav");
     attackMissSounds.emplace_back("audio/sword/attack_miss_3.wav");
@@ -83,10 +83,10 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     attackHitSounds.emplace_back("audio/sword/attack_hit_2.wav");
     attackHitSounds.emplace_back("audio/sword/attack_hit_3.wav");
 
-    idleData.emplace_back(RIGHT, "img/idle_down.png", Vec2(0.5, 0.92), Vec2(25, 0));
-    idleData.emplace_back(LEFT, "img/idle_up.png", Vec2(0.5, 0.92), Vec2(25, 0));
-    idleData.emplace_back(UP, "img/idle_up.png", Vec2(0.5, 0.92), Vec2(25, 0));
-    idleData.emplace_back(DOWN, "img/idle_down.png", Vec2(0.5, 0.92), Vec2(25, 0));
+    idleData.emplace_back(RIGHT, "img/idle_down.png", Vec2(0.444, 1), Vec2(25, 0));
+    idleData.emplace_back(LEFT, "img/idle_up.png", Vec2(0.444, 1), Vec2(25, 0));
+    idleData.emplace_back(UP, "img/idle_up.png", Vec2(0.444, 1), Vec2(25, 0));
+    idleData.emplace_back(DOWN, "img/idle_down.png", Vec2(0.444, 1), Vec2(25, 0));
 
 
     closestNpcDistance = numeric_limits<float>::infinity();
