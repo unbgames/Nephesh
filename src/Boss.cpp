@@ -5,9 +5,11 @@
 #include <Player.h>
 #include <MeleeAttack.h>
 #include <Collider.h>
+#include <RollingStones.h>
 #include <Charge.h>
 #include <FallingRock.h>
 #include <InputManager.h>
+#include <BossMeleeAttack.h>
 #include "Boss.h"
 #include "Utils.h"
 
@@ -22,8 +24,9 @@ Boss::Boss(GameObject &associated) :
     associated.AddComponent(new Sprite(associated, BOSS_IDLE_SPRITE, 10, 0.1));
     associated.AddComponent(new Sound(associated));
 
-    camShaker = new CameraShaker(associated);
-    associated.AddComponent(camShaker);
+    //camShaker = new CameraShaker(associated);
+    //associated.AddComponent(camShaker);
+    //Sprite *spr = new Sprite(associated, "img/boss_clap.png", 10, 0.2, 0, true);
 
     associated.SetCenter({associated.box.x, associated.box.y});
 }
@@ -56,50 +59,62 @@ void Boss::Update(float dt) {
     auto center = associated.box.Center();
     //cout << "State: " << currentState << " ||| Center: (" << center.x << ", " << center.y << ")" << endl;
     
-    if(Player::player){
-        auto newState = currentState;
-        
-        switch(currentState){
-            case IDLE:
-                if(previousState == ATTACKING){
-                    SetSprite(BOSS_IDLE_SPRITE);
-                    timer.Restart();
-                } else if(timer.Get() < BOSS_IDLE_TIME){
-                    timer.Update(dt);
-                } else {
-                    newState = ATTACKING;
-                }
-                break;
-                
-            case ATTACKING:
-                if(previousState == IDLE){
-                    numOfAttacks = (rand()%(BOSS_MAX_NUM_OF_ATTACKS - BOSS_MIN_NUM_OF_ATTACKS + 1)) + 
-                    BOSS_MIN_NUM_OF_ATTACKS;
-                    Attack();
-                    timer.Restart();
-                } else if( timer.Get() < BOSS_ATTACK_TIME){
-                    timer.Update(dt);
-                } else {
-                    timer.Restart(0);
-                    attacksPerformed++;
-
-                    if (attacksPerformed == numOfAttacks) {
-                        attacksPerformed = 0;
-                        newState = IDLE;
-                    } else {
-                        Attack();
-                    }
-                }
-                break;
-        }
-        
-        UpdateState(newState);
-        
-
-    } else{
-        UpdateState(IDLE);
-        SetSprite(BOSS_IDLE_SPRITE);
+    if(colliderToLoad != nullptr && timeToLoadCollider >= 0){
+        colliderTimer.Update(dt);
     }
+    
+//    if(Player::player && center.Distance(Player::player->GetCenter()) <= BOSS_IDLE_DISTANCE){
+//        auto newState = currentState;
+//
+//        switch(currentState){
+//            case IDLE:
+//                if(previousState == ATTACKING){
+//                    SetSprite(BOSS_IDLE_SPRITE);
+//                    timer.Restart();
+//                } else if(timer.Get() < BOSS_IDLE_TIME){
+//                    timer.Update(dt);
+//                } else {
+//                    newState = ATTACKING;
+//                }
+//                break;
+//
+//            case ATTACKING:
+//                if(previousState == IDLE){
+//                    numOfAttacks = (rand()%(BOSS_MAX_NUM_OF_ATTACKS - BOSS_MIN_NUM_OF_ATTACKS + 1)) + 
+//                    BOSS_MIN_NUM_OF_ATTACKS;
+//                    Attack();
+//                    timer.Restart();
+//                } else if( timer.Get() < BOSS_ATTACK_TIME){
+//                    timer.Update(dt);
+//                    if( colliderToLoad != nullptr && timeToLoadCollider >= 0 && colliderTimer.Get() >= 
+//                    timeToLoadCollider){
+//                        Game::GetInstance().GetCurrentState().AddObject(colliderToLoad);
+//                        timeToLoadCollider = -1;
+//                        colliderToLoad = nullptr;
+//                        colliderTimer.Restart();
+//                    }
+//                    
+//                } else {
+//                    timer.Restart(0);
+//                    attacksPerformed++;
+//
+//                    if (attacksPerformed == numOfAttacks) {
+//                        attacksPerformed = 0;
+//                        newState = IDLE;
+//                    } else {
+//                        Attack();
+//                    }
+//                }
+//                break;
+//        }
+//
+//        UpdateState(newState);
+//
+//
+//    } else{
+//        UpdateState(IDLE);
+//        SetSprite(BOSS_IDLE_SPRITE);
+//    }
     
 
 }
@@ -135,38 +150,37 @@ void Boss::SetSprite(string file, bool flip) {
 
 
 void Boss::Attack() {
-//    auto playerCenter = Player::player->GetCenter();
-//    auto bossCenter = associated.box.Center();
-//    auto dist = bossCenter.Distance(playerCenter);
-//
-//    int numOfAttacks = 3;
-//
-//    vector<int> attackProbabilityWeights(numOfAttacks);
-//
-//    if(dist <= BOSS_SLAP_DISTANCE){
-//        attackProbabilityWeights[SLAP] = 60;
-//        attackProbabilityWeights[SLAM] = 20;
-//        attackProbabilityWeights[CLAP] = 20;
-//    }
-//    else{
-//        attackProbabilityWeights[SLAP] = 0;
-//        attackProbabilityWeights[SLAM] = 50;
-//        attackProbabilityWeights[CLAP] = 50;
-//    }
-//
-//    attackState = (BossAttack) WeightedDraft(attackProbabilityWeights);
-//
-//    switch(attackState){
-//        case SLAP:
-//            SlapAttack();
-//            break;
-//        case SLAM:
-//            SlamAttack();
-//            break;
-//        case CLAP:
-//            ClapAttack();
-//            break;
-//    }
+    auto playerCenter = Player::player->GetCenter();
+    auto bossCenter = associated.box.Center();
+    auto dist = bossCenter.Distance(playerCenter);
+    int numOfAttacks = 3;
+
+    vector<int> attackProbabilityWeights(numOfAttacks);
+
+    if(dist <= BOSS_SLAP_DISTANCE){
+        attackProbabilityWeights[SLAP] = 0;
+        attackProbabilityWeights[SLAM] = 0;
+        attackProbabilityWeights[CLAP] = 100;
+    }
+    else{
+        attackProbabilityWeights[SLAP] = 0;
+        attackProbabilityWeights[SLAM] = 0;
+        attackProbabilityWeights[CLAP] = 100;
+    }
+
+    attackState = (BossAttack) WeightedDraft(attackProbabilityWeights);
+
+    switch(attackState){
+        case SLAP:
+            SlapAttack();
+            break;
+        case SLAM:
+            SlamAttack();
+            break;
+        case CLAP:
+            ClapAttack();
+            break;
+    }
 }
 
 void Boss::UpdateState(Boss::BossState newState) {
@@ -180,7 +194,7 @@ void Boss::SlapAttack() {
     Vec2 bossBoxPos;
 
     auto attackObject = new GameObject(associated.GetLayer());
-    attackObject->AddComponent(new MeleeAttack(*attackObject, BOSS_ATTACK_TIME));
+    attackObject->AddComponent(new BossMeleeAttack(*attackObject, "", BOSS_ATTACK_TIME));
 
     if(playerCenter.x <= bossCenter.x) { //LEFT
         SetSprite(BOSS_SLAP_LEFT_SPRITE);
@@ -212,17 +226,13 @@ void Boss::SlamAttack() {
     auto bossBoxPos = Vec2(associated.box.x, associated.box.y);
 
     auto attackObject = new GameObject(associated.GetLayer());
-    attackObject->AddComponent(new MeleeAttack(*attackObject, BOSS_ATTACK_TIME));
+    attackObject->AddComponent(new BossMeleeAttack(*attackObject, "", BOSS_ATTACK_TIME));
     attackObject->box = Rect(ATTACK_RANGE, ATTACK_WIDTH);
     attackObject->box = bossBoxPos + Vec2(0.15*associated.box.w, 0.55*associated.box.h);
 
     Game::GetInstance().GetCurrentState().AddObject(attackObject);
 
     RockSlide();
-}
-
-void Boss::ClapAttack() {
-
 }
 
 void Boss::PrintBossState() {
@@ -274,4 +284,55 @@ void Boss::PlaySound(string file) {
     auto sound = (Sound *) associated.GetComponent(SOUND_TYPE);
     sound->Open(file);
     sound->Play();
+}
+
+
+void Boss::RollingStoneAttack() {
+    auto heightOffset = rand()%400;
+    auto rs = new GameObject();
+    rs->box.x = associated.box.Center().x + 300;
+    rs->box.y = associated.box.y + heightOffset;
+    rs->AddComponent(new RollingStones(*rs, 20, 300, 500));
+    
+    auto chargeTime = 0.7;
+    auto chargeObj = new GameObject(associated.GetLayer());
+    chargeObj->AddComponent(new Charge(*chargeObj, rs, chargeTime));
+    auto rsSprite = new Sprite(*chargeObj, RSTONE_SLIDING_UP_STONE_SPRITE, 6, chargeTime / 6);
+    chargeObj->AddComponent(rsSprite);
+    chargeObj->box = rs->box;
+    auto *sound = new Sound(associated, "audio/boss/boss_earthbend.wav");
+    chargeObj->AddComponent(sound);
+    sound->Play();
+    Game::GetInstance().GetCurrentState().AddObject(chargeObj);
+
+    auto chargeObj2 = new GameObject(associated.GetLayer());
+    chargeObj2->AddComponent(new Charge(*chargeObj2, nullptr, chargeTime));
+    auto dustSprite = new Sprite(*chargeObj2, "img/poeira.png", 6, chargeTime / 6);
+    chargeObj2->AddComponent(dustSprite);
+    auto dustPos = chargeObj->box.Center();
+    dustPos.y += 60;
+    chargeObj2->SetCenter(dustPos);
+    Game::GetInstance().GetCurrentState().AddObject(chargeObj2);
+}
+
+void Boss::ClapAttack() {
+
+    colliderTimer.Restart();
+
+    auto secondsToEndAttack = 0.4;
+    timeToLoadCollider = BOSS_ATTACK_TIME - secondsToEndAttack;
+    colliderToLoad = new GameObject(associated.GetLayer());
+
+    auto playerBoxCenter = associated.box.Center();
+    playerBoxCenter.y += associated.box.h/2;
+
+    colliderToLoad->box.w = associated.box.w + 250;
+    colliderToLoad->box.h = associated.box.h - 250;
+
+    colliderToLoad->SetCenter(playerBoxCenter);    
+    colliderToLoad->AddComponent(new BossMeleeAttack(*colliderToLoad, "", secondsToEndAttack));
+    
+    SetSprite(BOSS_CLAP_SPRITE);
+    RollingStoneAttack();
+    PlaySound(BOSS_CLAP_SOUND);
 }

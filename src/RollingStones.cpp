@@ -5,18 +5,22 @@
 #include <Sprite.h>
 #include <Collider.h>
 #include <CollisionMap.h>
-#include "RollingStones.h"
+#include <Sound.h>
+#include "RollingStones.h"  
 
 RollingStones::RollingStones(GameObject &associated, int damage, float speed, float maxDist) : 
-Component(associated), damage(damage), maxDist(maxDist), distCovered(0) {
+Component(associated), speed(speed), damage(damage), maxDist(maxDist), distCovered(0) {
 
-    Sprite *spr = new Sprite(associated, ROLLINGROCKS_SPRITE, 10, 0.1);
+    Sprite *spr = new Sprite(associated, RSTONE_SOLO_STONE_SPRITE, 1, 0.1);
 
     associated.AddComponent(spr);
     associated.box.h = spr->GetHeight();
     associated.box.w = spr->GetWidth();
-
     associated.SetCenter({associated.box.x, associated.box.y});
+
+//    auto *sound = new Sound(associated, "audio/boss/moving_rock.wav");
+//    associated.AddComponent(sound);
+    
 
     auto collider = new Collider(associated);
     collider->SetCanCollide([] (GameObject &other) -> bool {
@@ -31,8 +35,8 @@ RollingStones::~RollingStones() {
 }
 
 void RollingStones::Update(float dt) {
-    associated.box += speedVec;
-    distCovered += speed;
+    associated.box += speedVec*dt;
+    distCovered += speed*dt;
     
     if(maxDist > 0 && distCovered >= maxDist){
         associated.RequestDelete();
@@ -53,12 +57,15 @@ void RollingStones::Start() {
     auto d = playerCenter - stoneCenter;
     targetAngleDeg = d.XAngleDeg();
     speedVec = Vec2(speed*cos(M_PI*targetAngleDeg/180.0), speed*sin(M_PI*targetAngleDeg/180.0));
+    //PlaySound();
+    //cout << "Speed: " << speed << " Speed X: " << speedVec.x << " Speed Y: " << speedVec.y << endl;
+}
+
+void RollingStones::PlaySound() {
+    auto sound = (Sound *) associated.GetComponent(SOUND_TYPE);
+    sound->Play(0);
 }
 
 void RollingStones::NotifyCollision(GameObject &other) {
-    if(other.HasComponent(PLAYER_TYPE)){
-        Player::player->DecreaseHp(damage);
-    } else if(other.HasComponent(COLLISION_MAP_TYPE)){
-        associated.RequestDelete();
-    }
+//    
 }

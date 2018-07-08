@@ -5,7 +5,8 @@
 #ifndef NEPHESH_ROLLINGROCKS_H
 #define NEPHESH_ROLLINGROCKS_H
 
-#define ROLLINGROCKS_SPRITE ""
+#define RSTONE_SOLO_STONE_SPRITE "img/solo_rock.png"
+#define RSTONE_SLIDING_UP_STONE_SPRITE "img/rock.png"
 
 #include "Component.h"
 #include "Player.h"
@@ -29,6 +30,8 @@ public:
     void Start() override;
 
     void NotifyCollision(GameObject &other) override;
+    
+    void PlaySound();
 
 private:
     float targetAngleDeg;

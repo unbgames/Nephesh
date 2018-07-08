@@ -12,7 +12,10 @@ void Charge::Update(float dt) {
     chargeTimer.Update(dt);
     if (chargeTimer.Get() > duration) {
         associated.RequestDelete();
-        Game::GetInstance().GetCurrentState().AddObject(next);
+        if(next != nullptr){
+            Game::GetInstance().GetCurrentState().AddObject(next);
+        }
+        
     }
 }
 

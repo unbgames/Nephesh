@@ -15,8 +15,8 @@ public:
     explicit Sound(GameObject &associated);
     Sound(GameObject &associated, string file);
     ~Sound() override = default;
-    void Play(int times = 1);
-    void Stop();
+    void Play(int times = 1, int msToStart = 0);
+    void Stop(int msToStop = 0);
     void Open(string file);
     bool IsOpen();
 

@@ -45,7 +45,7 @@ vector<Vec2> Rect::GetCorners(float angle, Vec2 rotationCenter) {
     return corners;
 }
 
-void Rect::PlaceCenterAt(Vec2 pos) {
+void Rect:: PlaceCenterAt(Vec2 pos) {
     x = pos.x - w/2;
     y = pos.y - h/2;
 }

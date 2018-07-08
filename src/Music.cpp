@@ -17,11 +17,11 @@ Music::Music(string file) {
     Open(file);
 }
 
-void Music::Play(int times) {
+void Music::Play(int times, int msToStart) {
     if (music == nullptr) {
         throw "No backgroundMusic loaded";
     }
-    if (Mix_PlayMusic(music.get(), times) != 0) {
+    if (Mix_FadeInMusic(music.get(), times, msToStart) != 0) {
         throw "There was an error playing the backgroundMusic. Reason: " + string(SDL_GetError());
     }
 }

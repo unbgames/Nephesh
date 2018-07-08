@@ -403,12 +403,49 @@ void Player::Attack() {
     auto playerBoxCenter = associated.box.Center();
     auto attackObject = new GameObject(associated.GetLayer());
 
-    attackObject->box = currentDirection == LEFT || currentDirection == RIGHT ? Rect(PLAYER_ATTACK_WIDTH,
-                                                                                     PLAYER_ATTACK_RANGE)
-                                                                              : Rect(PLAYER_ATTACK_RANGE,
-                                                                                     PLAYER_ATTACK_WIDTH);
-    attackObject->box.PlaceCenterAt(playerBoxCenter + GetStateData(attackingData).objectSpriteOffset);
-    attackObject->AddComponent(new MeleeAttack(*attackObject));
+//    attackObject->box = currentDirection == LEFT || currentDirection == RIGHT ? Rect(PLAYER_ATTACK_WIDTH,
+//                                                                                     PLAYER_ATTACK_RANGE)
+//                                                                              : Rect(PLAYER_ATTACK_RANGE,
+//                                                                                     PLAYER_ATTACK_WIDTH);
+//    attackObject->box.PlaceCenterAt(playerBoxCenter + GetStateData(attackingData).objectSpriteOffset);
+
+    string spriteName = "";
+    attackObject->box = associated.box.Center();
+    
+    Vec2 offset = {0, 0};
+    Vec2 colScale = {1, 1};
+    Vec2 colOffset = {0, 0};
+    int frameCount = 5;
+    switch (currentDirection) {
+        case RIGHT:
+            offset += { associated.box.w/2 +  30, -20};
+            colScale = {1, 2.5};
+            colOffset = {0, 20};
+            spriteName = "img/slash_side_v1.png";
+            break;
+        case LEFT:
+            offset += {-(associated.box.w/2 + 30), -20};
+            colScale = {1, 2.5};
+            colOffset = {0, 20};
+            spriteName = "img/slash_side_v1.png";
+            break;
+        case UP:
+            offset += {0, -60};
+            colScale = {0.7, 0.6};
+            spriteName = "img/slash_up_v1.png";
+            break;
+        case DOWN:
+            offset += {0, associated.box.h/2 };
+            colScale = {0.7, 0.6};
+            spriteName = "img/slash_down_v1.png";
+            frameCount = 6;
+            break;
+    }
+    
+    attackObject->AddComponent(new MeleeAttack(*attackObject, spriteName, frameCount, currentDirection == 
+    LEFT, 
+    offset,
+     colScale, colOffset));
 
     meleeAttack = Game::GetInstance().GetCurrentState().AddObject(attackObject);
 }

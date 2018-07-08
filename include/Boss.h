@@ -15,17 +15,26 @@
 
 #define BOSS_TYPE "Boss"
 #define BOSS_INITIAL_HP 100
-#define BOSS_IDLE_TIME 3 // in seconds
+#define BOSS_IDLE_TIME 4 // in seconds
+#define BOSS_SPEED 300 // in pixels/s
+#define BOSS_MIN_DIST_TO_PLAYER 100 // in pixels
+#define BOSS_SPR_MOV_TIME 0.05 // in seconds
 #define BOSS_ATTACK_TIME 1.0 // in seconds
 #define BOSS_MIN_NUM_OF_ATTACKS 1
-#define BOSS_MAX_NUM_OF_ATTACKS 5
-#define BOSS_SLAP_DISTANCE 250
+#define BOSS_MAX_NUM_OF_ATTACKS 1
+#define BOSS_ATTACK_SPRITE_COUNT 4
+#define BOSS_ATTACK_RANGE 100 // in pixels
+#define BOSS_ATTACK_WIDTH 200 // in pixels
+#define BOSS_SLAP_DISTANCE 400
+#define BOSS_IDLE_DISTANCE 600
 
 #define BOSS_IDLE_SPRITE "img/boss_idle.png"
 #define BOSS_SLAP_RIGHT_SPRITE "img/boss_slap_right.png"
 #define BOSS_SLAP_LEFT_SPRITE "img/boss_slap_left.png"
 #define BOSS_SLAM_SPRITE "img/boss_slam.png"
 #define BOSS_CLAP_SPRITE "img/boss_clap.png"
+
+#define BOSS_CLAP_SOUND "audio/boss/boss_clap.wav"
 
 
 using namespace std;
@@ -53,7 +62,6 @@ public:
     void UpdateState(BossState newState);
 
     void RockSlide();
-
     void SlapAttack();
     void SlamAttack();
     void ClapAttack();
@@ -71,7 +79,12 @@ private:
     CameraShaker* camShaker;
     
     void SetSprite(string file, bool flip = false);
-
+    void RollingStoneAttack();
+    
+    double timeToLoadCollider = -1;
+    GameObject* colliderToLoad = nullptr;
+    Timer colliderTimer;
+    
     void PrintBossState();
     void PrintBossAttack();
 
