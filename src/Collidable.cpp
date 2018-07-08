@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <math.h>
+#include <Intersection.h>
 #include "Collidable.h"
 
 #ifdef DEBUG
@@ -107,7 +108,7 @@ bool Collidable::IsColliding(Collider& collider) {
     return true;
 }
 
-vector<pair<LineSegment, Vec2>> Collidable::GetIntersections(Collider &collider) {
+vector<Intersection> Collidable::GetIntersections(Collider &collider) {
     vector<LineSegment> colliderLines;
     vector<LineSegment> collidableLines;
 
@@ -120,15 +121,15 @@ vector<pair<LineSegment, Vec2>> Collidable::GetIntersections(Collider &collider)
         collidableLines.emplace_back(collidableCorners[i], collidableCorners[next]);
     }
 
-    vector<pair<LineSegment, Vec2>> intersections;
+    vector<Intersection> intersections;
     for (auto &colliderLine : colliderLines) {
         for (auto &collidableLine : collidableLines) {
             if (colliderLine == collidableLine) {
-                intersections.push_back(make_pair(colliderLine, (colliderLine.dot1 - colliderLine.dot2)*0.5));
+                intersections.emplace_back(colliderLine, collidableLine, (colliderLine.dot1 - colliderLine.dot2)*0.5);
             } else {
                 auto intersection = colliderLine.GetIntersection(collidableLine);
                 if (collidableLine.Contains(intersection) && colliderLine.Contains(intersection)) {
-                    intersections.push_back(make_pair(colliderLine, intersection));
+                    intersections.emplace_back(colliderLine, collidableLine, intersection);
                 }
             }
         }

@@ -5,6 +5,7 @@
 #include <Game.h>
 #include <fstream>
 #include <algorithm>
+#include <Camera.h>
 #include "CollisionMap.h"
 
 CollisionMap::CollisionMap(GameObject &associated, string file, int tileWidth, int tileHeight) :
@@ -19,7 +20,40 @@ void CollisionMap::Update(float dt) {
 }
 
 void CollisionMap::Render() {
+#ifdef COLLISION_MAP_DEBUG
+    //Showing always the first layer (just for testing)
+    for (int i = 0; i < mapHeight; ++i) {
+        for (int j = 0; j < mapWidth; ++j) {
+            if (At(j, i) == 1) {
+                continue;
+            }
+            auto box = Rect(associated.box.x + j*GetTileWidth(), associated.box.y + i*GetTileHeight(), GetTileHeight(), GetTileHeight());
+            Vec2 center( box.Center() );
+            SDL_Point points[5];
 
+            Vec2 point = (Vec2(box.x, box.y) - box.Center()).RotateDeg(associated.angleDeg) + box.Center();
+            point = Camera::GetRenderPosition(associated.GetLayer(), point);
+            points[0] = {(int)point.x, (int)point.y};
+            points[4] = {(int)point.x, (int)point.y};
+
+            point = (Vec2(box.x + box.w, box.y) - box.Center()).RotateDeg(associated.angleDeg) + box.Center();
+            point = Camera::GetRenderPosition(associated.GetLayer(), point);
+            points[1] = {(int)point.x, (int)point.y};
+
+            point = (Vec2(box.x + box.w, box.y + box.h) - box.Center()).RotateDeg(associated.angleDeg) + box.Center();
+            point = Camera::GetRenderPosition(associated.GetLayer(), point);
+            points[2] = {(int)point.x, (int)point.y};
+
+            point = (Vec2(box.x, box.y + box.h) - box.Center()).RotateDeg(associated.angleDeg) + box.Center();
+            point = Camera::GetRenderPosition(associated.GetLayer(), point);
+            points[3] = {(int)point.x, (int)point.y};
+
+            SDL_SetRenderDrawColor(Game::GetInstance().GetRenderer(), 255, 0, 0, SDL_ALPHA_OPAQUE);
+            SDL_RenderDrawLines(Game::GetInstance().GetRenderer(), points, 5);
+
+        }
+    }
+#endif
 }
 
 bool CollisionMap::Is(string type) {
@@ -91,25 +125,16 @@ bool CollisionMap::IsColliding(Collider& collider) {
     const int ALGORITHM = 1;
 
     auto& colliderObject = collider.GetGameObject();
-    auto angleOfCollider = (float)(colliderObject.angleDeg * M_PI/180);
-    auto colliderBox = collider.box;
 
     int layer = colliderObject.GetLayer();
 
-    // get the unrotated vertices of the collider box (the vertices from the Rect itself)
-    Vec2 colliderVertices[] = { Vec2( colliderBox.x, colliderBox.y + colliderBox.h ),
-                                Vec2( colliderBox.x + colliderBox.w, colliderBox.y + colliderBox.h ),
-                                Vec2( colliderBox.x + colliderBox.w, colliderBox.y ),
-                                Vec2( colliderBox.x, colliderBox.y )
-    };
+    // get the rotated vertices of the collider box (the vertices from the Rect itself)
+    vector<Vec2> colliderVertices = collider.box.GetCorners(colliderObject.angleDeg, colliderObject.rotationCenter);
 
+    float minX = numeric_limits<float>::infinity(), maxX = -numeric_limits<float>::infinity(), minY = numeric_limits<float>::infinity(), maxY = -numeric_limits<float>::infinity();
 
-    float minX = INFINITY, maxX = -INFINITY, minY = INFINITY, maxY = -INFINITY;
-
-    // get the rotated vertices of the box, according to angleOfCollider (angleDeg)
+    // get the min and max of collider vertices
     for (auto& v : colliderVertices) {
-        v = (v - colliderBox.Center()).Rotate(angleOfCollider) + colliderBox.Center();
-
         // find the minima and the maxima of the coordinates x and y (the vertices of the AABB). This is used on SAT ON TILES ALGORITHM)
         if(v.x > maxX)
             maxX = v.x;
@@ -126,11 +151,20 @@ bool CollisionMap::IsColliding(Collider& collider) {
         // --------------------------------
         // -----SAT ON TILES ALGORITHM-----
         // --------------------------------
+        auto box = associated.box;
 
-        int tilesMinCol = (int)minX/tileWidth;
-        int tilesMaxCol = (int)maxX/tileWidth;
-        int tilesMinRow = (int)minY/tileHeight;
-        int tilesMaxRow = (int)maxY/tileHeight;
+        if (maxY < box.y || minY > box.y + box.h || maxX < box.x || minX > box.x + box.w) {
+            return false;
+        }
+        minX -= box.x;
+        minY -= box.y;
+        maxX -= box.x;
+        maxY -= box.y;
+
+        int tilesMinCol = minX > 0 ? (int)(minX)/tileWidth : 0;
+        int tilesMaxCol = maxX < box.w ? (int)(maxX)/tileWidth : mapWidth-1;
+        int tilesMinRow = minY > 0 ? (int)(minY)/tileHeight : 0;
+        int tilesMaxRow = maxY < box.h ? (int)(maxY)/tileHeight : mapHeight-1;
 
         // the axes [2] and [3] are the same for all the tiles, thats why they are hard-coded
         Vec2 axes[] = { (colliderVertices[0] - colliderVertices[1]).Normalize(),
@@ -154,12 +188,12 @@ bool CollisionMap::IsColliding(Collider& collider) {
         for(int tileRow = tilesMinRow; tileRow <= tilesMaxRow; tileRow++){
             for(int tileCol = tilesMinCol; tileCol <= tilesMaxCol; tileCol++){
 
-                if(At(tileCol, tileRow, layer) == 0)
+                if(At(tileCol, tileRow, layer) == 1)
                     continue; // we just want to check the non-walkable tiles
 
-                int tileMinX = tileCol * tileWidth;
+                int tileMinX = box.x + tileCol * tileWidth;
                 int tileMaxX = tileMinX + tileWidth;
-                int tileMinY = tileRow * tileHeight;
+                int tileMinY = box.y + tileRow * tileHeight;
                 int tileMaxY = tileMinY + tileHeight;
 
                 Vec2 tileVertices[] = { Vec2( tileMinX, tileMaxY ),
@@ -168,6 +202,7 @@ bool CollisionMap::IsColliding(Collider& collider) {
                                         Vec2( tileMinX, tileMinY )
                 };
 
+                auto tileNotColliding = false;
                 for (int axis = 0; axis < 4; axis++) {
                     float P[4];
 
@@ -176,8 +211,14 @@ bool CollisionMap::IsColliding(Collider& collider) {
                     float minTile = *std::min_element(P, P + 4);
                     float maxTile = *std::max_element(P, P + 4);
 
-                    if (maxCollider[axis] < minTile || minCollider[axis] > maxTile)
-                        continue; // not colliding with this tile. Lets try with another one...
+                    if (maxCollider[axis] < minTile || minCollider[axis] > maxTile) {
+                        tileNotColliding = true;
+                        break; // not colliding with this tile. Lets try with another one...
+                    }
+                }
+                
+                if (tileNotColliding) {
+                    continue;
                 }
 
                 return true; // collided with this tile...
@@ -235,3 +276,85 @@ int CollisionMap::GetMapDepth() {
     return mapDepth;
 }
 
+vector<Intersection> CollisionMap::GetIntersections(Collider &collider) {
+    vector<Intersection> intersections;
+    auto &colliderObject = collider.GetGameObject();
+    auto layer = colliderObject.GetLayer();
+    // get the rotated vertices of the collider box (the vertices from the Rect itself)
+    vector<Vec2> colliderVertices = collider.box.GetCorners(colliderObject.angleDeg, colliderObject.rotationCenter);
+
+    float minX = numeric_limits<float>::infinity(), maxX = -numeric_limits<float>::infinity(), minY = numeric_limits<float>::infinity(), maxY = -numeric_limits<float>::infinity();
+
+    // get the min and max of collider vertices
+    for (auto& v : colliderVertices) {
+        // find the minima and the maxima of the coordinates x and y (the vertices of the AABB). This is used on SAT ON TILES ALGORITHM)
+        if(v.x > maxX)
+            maxX = v.x;
+        if(v.x < minX)
+            minX = v.x;
+        if(v.y > maxY)
+            maxY = v.y;
+        if(v.y < minY)
+            minY = v.y;
+    }
+
+    auto box = associated.box;
+
+    if (maxY < box.y || minY > box.y + box.h || maxX < box.x || minX > box.x + box.w) {
+        return intersections;
+    }
+    minX -= box.x;
+    minY -= box.y;
+    maxX -= box.x;
+    maxY -= box.y;
+
+    int tilesMinCol = minX > 0 ? (int)(minX)/tileWidth : 0;
+    int tilesMaxCol = maxX < box.w ? (int)(maxX)/tileWidth : mapWidth-1;
+    int tilesMinRow = minY > 0 ? (int)(minY)/tileHeight : 0;
+    int tilesMaxRow = maxY < box.h ? (int)(maxY)/tileHeight : mapHeight-1;
+
+    for(int tileRow = tilesMinRow; tileRow <= tilesMaxRow; tileRow++){
+        for(int tileCol = tilesMinCol; tileCol <= tilesMaxCol; tileCol++) {
+
+            if (At(tileCol, tileRow, layer) == 1)
+                continue; // we just want to check the non-walkable tiles
+
+            vector<LineSegment> colliderLines;
+            vector<LineSegment> collidableLines;
+
+            auto colliderCorners = collider.box.GetCorners(colliderObject.angleDeg, colliderObject.rotationCenter);
+            int tileMinX = box.x + tileCol * tileWidth;
+            int tileMaxX = tileMinX + tileWidth;
+            int tileMinY = box.y + tileRow * tileHeight;
+            int tileMaxY = tileMinY + tileHeight;
+
+            vector<Vec2> collidableCorners = {
+                Vec2( tileMinX, tileMaxY ),
+                Vec2( tileMaxX, tileMaxY ),
+                Vec2( tileMaxX, tileMinY ),
+                Vec2( tileMinX, tileMinY )
+            };
+
+            for (int i = 0; i < 4; ++i) {
+                auto next = (i+1)%4;
+                colliderLines.emplace_back(colliderCorners[i], colliderCorners[next]);
+                collidableLines.emplace_back(collidableCorners[i], collidableCorners[next]);
+            }
+
+            for (auto &colliderLine : colliderLines) {
+                for (auto &collidableLine : collidableLines) {
+                    if (colliderLine == collidableLine) {
+                        intersections.emplace_back(colliderLine, collidableLine, (colliderLine.dot1 - colliderLine.dot2)*0.5);
+                    } else {
+                        auto intersection = colliderLine.GetIntersection(collidableLine);
+                        if (collidableLine.Contains(intersection) && colliderLine.Contains(intersection)) {
+                            intersections.emplace_back(colliderLine, collidableLine, intersection);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return intersections;
+}

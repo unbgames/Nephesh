@@ -1,22 +1,27 @@
-#include <Sprite.h>
-#include <InputManager.h>
-#include <Game.h>
-#include <CameraFollower.h>
-#include <Camera.h>
-#include <IntervalTimer.h>
-#include <tiff.h>
-#include <TileSet.h>
-#include <BeamSkill.h>
-#include <Collider.h>
-#include <StageState.h>
-#include "TitleState.h"
-#include "Text.h"
+//
+// Created by ftfnunes on 30/06/18.
+//
 
-TitleState::TitleState() : State() {
+#include <Camera.h>
+#include <InputManager.h>
+#include <IntervalTimer.h>
+#include <Text.h>
+#include <Sprite.h>
+#include <CameraFollower.h>
+#include <Game.h>
+#include <WorldState.h>
+#include <FadeEffect.h>
+#include <Sound.h>
+#include "TitleState.h"
+
+TitleState::TitleState() : State(), frozen(false) {
     auto bgObj = new GameObject();
     bgObj->AddComponent(new Sprite(*bgObj, "img/bg.png"));
     bgObj->AddComponent(new CameraFollower(*bgObj));
     AddObject(bgObj);
+
+    bgMusic = new Music("audio/menu.ogg");
+    bgMusic->Play();
 
     auto titleObj = new GameObject(1);
     SDL_Color white = {255, 255, 255, 255};
@@ -30,45 +35,54 @@ TitleState::TitleState() : State() {
     intrObj->AddComponent(instrText);
     auto callback = [instrText] {
         auto color = instrText->GetColor();
-        color.a = (uint8) (color.a == 255 ? 0 : 255);
+        color.a = (Uint8) (color.a == 255 ? 0 : 255);
         instrText->SetColor(color);
         instrText->RemakeTexture();
     };
     intrObj->AddComponent(new IntervalTimer(*intrObj, 0.6, callback));
     intrObj->box.x = WIDTH/2 - intrObj->box.w/2;
-    intrObj->box.y = HEIGHT/2 + 200;
+    intrObj->box.y = HEIGHT/2 + 400;
     AddObject(intrObj);
+
+    auto fadeInObj = new GameObject(2);
+    this->frozen = true;
+    fadeInObj->AddComponent(new FadeEffect(*fadeInObj, TITLE_FADE_IN_DURATION, 1, [this] { this->frozen = false; }));
+    AddObject(fadeInObj);
 }
 
 TitleState::~TitleState() = default;
 
 void TitleState::Update(float dt) {
-    auto& inputManager = InputManager::GetInstance();
+    auto inputManager = InputManager::GetInstance();
 
-    if (inputManager.MousePress(RIGHT_MOUSE_BUTTON)) {
-        auto mousePos = inputManager.GetMouse();
+    auto isStart = inputManager.KeyPress(SPACE_KEY);
+    if (!frozen && (isStart || inputManager.QuitRequested() || inputManager.KeyPress(ESCAPE_KEY))) {
+        auto fadeObj = new GameObject(2);
+        bgMusic->Stop();
+        frozen = true;
+        function<void()> callback;
 
-        auto blockObj = new GameObject(1);
-        blockObj->angleDeg = 45;
-        blockObj->AddComponent(new Sprite(*blockObj, "img/block.png"));
-        blockObj->AddComponent(new Collidable(*blockObj));
-        blockObj->SetCenter(Camera::pos +  mousePos);
-        AddObject(blockObj);
+        auto soundObject = new GameObject();
+        auto sound = new Sound(*soundObject, isStart ? "audio/menu/select.wav" : "audio/menu/return.wav");
+        soundObject->AddComponent(sound);
+        sound->Play();
+        delete soundObject;
+
+        if (isStart) {
+            callback = [] {
+                Game::GetInstance().Push(new WorldState());
+            };
+        } else {
+            callback = [&] {
+                quitRequested = true;
+            };
+        }
+
+        fadeObj->AddComponent(new FadeEffect(*fadeObj, isStart ? TITLE_START_FADE_OUT_DURATION : TITLE_QUIT_FADE_OUT_DURATION, 0, callback, FadeEffect::FadeType::OUT));
+        AddObject(fadeObj);
     }
 
-    if (inputManager.MousePress(LEFT_MOUSE_BUTTON)) {
-        auto target = Vec2(inputManager.GetMouseX(), inputManager.GetMouseY());
-        auto beamObj = new GameObject(1);
-        beamObj->box.x = WIDTH/2;
-        beamObj->box.y = HEIGHT/2;
-        auto beamCpt = new BeamSkill(*beamObj, target);
-        beamObj->AddComponent(beamCpt);
-        this->AddObject(beamObj);
-    }
-    
     UpdateArray(dt);
-
-    CheckCollisions();
 
     for (auto &it: objectLayers) {
         auto &objects = it.second;
@@ -80,8 +94,6 @@ void TitleState::Update(float dt) {
             }
         }
     }
-
-    quitRequested = inputManager.QuitRequested() || inputManager.KeyPress(ESCAPE_KEY);
 }
 
 void TitleState::Render() {
@@ -97,68 +109,14 @@ void TitleState::Pause() {
 }
 
 void TitleState::Resume() {
+    auto fadeInObj = new GameObject(2);
+    this->frozen = true;
+    fadeInObj->AddComponent(new FadeEffect(*fadeInObj, 3, 1, [this] { this->frozen = false; }));
+    AddObject(fadeInObj);
     Camera::pos = Vec2(0, 0);
+    bgMusic->Play();
 }
 
 void TitleState::LoadAssets() {
 
-}
-
-weak_ptr<GameObject> TitleState::AddCollidable(shared_ptr<GameObject> object) {
-    collidables.emplace_back(object);
-    return weak_ptr<GameObject>(object);
-}
-
-weak_ptr<GameObject> TitleState::AddCollider(shared_ptr<GameObject> object) {
-    colliders.emplace_back(object);
-    return weak_ptr<GameObject>(object);
-}
-
-void TitleState::CheckCollisions() {
-    for (int i = 0; i < colliders.size(); i++) {
-        if (auto collider = colliders[i].lock()) {
-            auto colliderCpt = (Collider*)collider->GetComponent(COLLIDER_TYPE);
-
-            for (int j = 0; j < collidables.size(); j++) {
-                auto collidable = collidables[j].lock();
-
-                if( (collidable) && (collider->GetLayer() == collidable->GetLayer()) && (colliderCpt->CanCollide(*collidable)) ){
-                    auto collidableCpt = (Collidable*)collidable->GetComponent(COLLIDABLE_TYPE);
-
-                    if(collidableCpt->IsColliding(*colliderCpt)){
-                        collider->NotifyCollision(*collidable);
-                    }
-                }
-                else if(!collidable){
-                    collidables.erase(collidables.begin() + j);
-                    j--;
-                }
-            }
-        }
-        else{
-            colliders.erase(colliders.begin() + i);
-            i--;
-        }
-    }
-}
-
-weak_ptr<GameObject> TitleState::AddObject(shared_ptr<GameObject> object) {
-    auto collidable = (Collidable*) object->GetComponent(COLLIDABLE_TYPE);
-    auto collider = (Collider*) object->GetComponent(COLLIDER_TYPE);
-
-    if(collidable){
-        AddCollidable(object);
-    }
-
-    if(collider){
-        AddCollider(object);
-    }
-
-    return State::AddObject(object);
-}
-
-weak_ptr<GameObject> TitleState::AddObject(GameObject *object) {
-    auto ptr = shared_ptr<GameObject>(object);
-
-    return AddObject(ptr);
 }

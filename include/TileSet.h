@@ -3,8 +3,11 @@
 
 #include <iostream>
 #include "Sprite.h"
+#include "GameObject.h"
 
 using namespace std;
+
+#define TILE_DIMENSIONS 64
 
 class TileSet {
 public:

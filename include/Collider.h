@@ -25,8 +25,11 @@ public:
     void SetScale(Vec2 scale);
     void SetOffset(Vec2 offset);
 
+    Vec2 GetOffset();
+
     void SetCanCollide(function<bool(GameObject& collidable)> canCollide);
     bool CanCollide(GameObject& collidable);
+    void UpdateGameObject();
 
 private:
     Vec2 scale;
