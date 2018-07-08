@@ -154,8 +154,8 @@ void WorldState::Start() {
     vector<string> m2 = { "map/2/ground.png", "map/2/rocks.png" };
     vector<string> m3 = { "map/3/ground.png", "map/3/rocks.png" };
     vector<string> m4 = { "map/4/ground.png", "map/4/rocks.png" };
-    vector<string> m5 = { "map/5/ground.png", "map/5/rocks.png" };
-    vector<string> m8 = { "map/9/ground.png", "map/8/rocks.png", "map/8/trees.png", "map/8/surroundings.png", "map/8/lighting.png", "map/8/vines.png" };
+    vector<string> m5 = { "map/5/ground.png", "map/5/rocks.png", "map/5/trees.png", "map/5/surroundings.png", "map/5/lighting.png", "map/5/view.png", "map/5/vines.png" };
+    vector<string> m8 = { "map/8/ground.png", "map/8/rocks.png", "map/8/trees.png", "map/8/surroundings.png", "map/8/lighting.png", "map/8/vines.png" };
     vector<string> m9 = { "map/9/ground.png", "map/9/rocks.png", "map/9/trees.png", "map/9/surroundings.png", "map/9/lighting.png", "map/9/view.png", "map/9/vine.png" };
     maps.emplace_back(m1, Map::MapDirection::DOWN, "map/1/collisionMap.txt", "map/1/terrainMap.txt");
     maps.emplace_back(m2, Map::MapDirection::DOWN, "map/2/collisionMap.txt", "map/2/terrainMap.txt");
