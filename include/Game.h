@@ -6,8 +6,8 @@
 #include "State.h"
 
 #define GAME_NAME "Nephesh"
-//#define GAME_WIDTH 1366
-//#define GAME_HEIGHT 768
+//#define GAME_WIDTH 1920
+//#define GAME_HEIGHT 1080
 #define GAME_WIDTH 1366
 #define GAME_HEIGHT 768
 
