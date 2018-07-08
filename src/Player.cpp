@@ -564,24 +564,24 @@ void Player::Attack() {
     int frameCount = 5;
     switch (currentDirection) {
         case RIGHT:
-            offset += { associated.box.w/2 +  30, -20};
-            colScale = {1, 2.5};
+            offset += { associated.box.w/2 + 90, -20};
+            colScale = {1.3, 2.5};
             colOffset = {0, 20};
             spriteName = "img/slash_side_v1.png";
             break;
         case LEFT:
-            offset += {-(associated.box.w/2 + 30), -20};
-            colScale = {1, 2.5};
+            offset += {-(associated.box.w/2 + 40), -20};
+            colScale = {1.3, 2.5};
             colOffset = {0, 20};
             spriteName = "img/slash_side_v1.png";
             break;
         case UP:
-            offset += {0, -60};
+            offset += {10, -60};
             colScale = {0.7, 0.6};
             spriteName = "img/slash_up_v1.png";
             break;
         case DOWN:
-            offset += {0, associated.box.h/2 };
+            offset += {20, associated.box.h/2 };
             colScale = {0.7, 0.6};
             spriteName = "img/slash_down_v1.png";
             frameCount = 6;
