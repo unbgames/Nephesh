@@ -5,6 +5,7 @@
 #ifndef NEPHESH_BOSS_H
 #define NEPHESH_BOSS_H
 
+#include <algorithm>
 #include "Component.h"
 #include "Vec2.h"
 #include "Timer.h"
@@ -27,6 +28,7 @@
 #define BOSS_ATTACK_WIDTH 200 // in pixels
 #define BOSS_SLAP_DISTANCE 400
 #define BOSS_IDLE_DISTANCE 600
+#define BOSS_MIN_SLIDING_ROCK_DIST 250
 
 #define BOSS_IDLE_SPRITE "img/boss_idle.png"
 #define BOSS_SLAP_RIGHT_SPRITE "img/boss_slap_right.png"
@@ -35,7 +37,6 @@
 #define BOSS_CLAP_SPRITE "img/boss_clap.png"
 
 #define BOSS_CLAP_SOUND "audio/boss/boss_clap.wav"
-
 
 using namespace std;
 
@@ -89,6 +90,8 @@ private:
     void PrintBossAttack();
 
     void PlaySound(string file);
+    
+    bool work = true;
 
 };
 

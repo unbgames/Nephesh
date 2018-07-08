@@ -6,6 +6,8 @@
 #include <Collider.h>
 #include <CollisionMap.h>
 #include <Sound.h>
+#include <Boss.h>
+#include <Charge.h>
 #include "RollingStones.h"  
 
 RollingStones::RollingStones(GameObject &associated, int damage, float speed, float maxDist) : 
@@ -24,7 +26,8 @@ Component(associated), speed(speed), damage(damage), maxDist(maxDist), distCover
 
     auto collider = new Collider(associated);
     collider->SetCanCollide([] (GameObject &other) -> bool {
-        return (other.HasComponent(PLAYER_TYPE) || other.HasComponent(COLLISION_MAP_TYPE));
+        return (other.HasComponent(PLAYER_TYPE) || other.HasComponent(COLLISION_MAP_TYPE) || other
+        .HasComponent(BOSS_TYPE));
     });
 
     associated.AddComponent(collider);
@@ -67,5 +70,14 @@ void RollingStones::PlaySound() {
 }
 
 void RollingStones::NotifyCollision(GameObject &other) {
-//    
+    if(other.HasComponent(COLLISION_MAP_TYPE) || other.HasComponent(BOSS_TYPE)) {
+        associated.RequestDelete();
+
+        auto chargeObj = new GameObject(associated.GetLayer());
+        chargeObj->AddComponent(new Charge(*chargeObj, nullptr, 0.3));
+        auto stoneSprite = new Sprite(*chargeObj, "img/solo_stone_out.png", 6, 0.3/6);
+        chargeObj->AddComponent(stoneSprite);
+        chargeObj->SetCenter(associated.box.Center());
+        Game::GetInstance().GetCurrentState().AddObject(chargeObj); 
+    }
 }

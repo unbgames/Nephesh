@@ -25,4 +25,8 @@ int WeightedDraft(vector<int> probabilityWeight){
     }
 }
 
+bool cmp(float a, float b){
+    return (a < b);
+}
+
 #endif //NEPHESH_UTILS_H

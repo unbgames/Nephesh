@@ -13,9 +13,7 @@
 
 class MeleeAttack : public Component {
 public:
-    MeleeAttack(GameObject &associated, string sprite, int frameCount, bool flip = false, Vec2 offset = {0, 
-    0}, Vec2
-    colScale = {1,1}, Vec2 colOffset = {0,0}, double attackDuration = PLAYER_ATTACK_DURATION, bool debug = 
+    MeleeAttack(GameObject &associated, string sprite, int frameCount, bool flip = false, Vec2 offset = {0, 0}, Vec2 colScale = {1,1}, Vec2 colOffset = {0,0}, double attackDuration = PLAYER_ATTACK_DURATION, bool debug = 
     true);
 
     void Update(float dt) override;

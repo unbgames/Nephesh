@@ -47,7 +47,7 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
     bossObj->box += WORLD_BOSS_INITIAL_POSITION;
     bossObj->AddComponent(new Boss(*bossObj));
     bossObj->AddComponent(new Collidable(*bossObj));
-    bossObj->AddComponent(new Debug(*bossObj));
+//  bossObj->AddComponent(new Debug(*bossObj));
     AddObject(bossObj);
 }
 
