@@ -11,6 +11,9 @@
 #include <InputManager.h>
 #include <BossMeleeAttack.h>
 #include <Camera.h>
+#include <WorldState.h>
+#include <Bar.h>
+#include <CameraFollower.h>
 #include "Boss.h"
 #include "Utils.h"
 
@@ -96,10 +99,12 @@ void Boss::Update(float dt) {
                     Camera::Follow(&Player::player->GetGameObject());
                     Player::player->Unfreeze();
                     newState = IDLE;
+                    CreateBars();
                 }
                 break;
 
             case IDLE:
+                ShowBars();
                 if(previousState != IDLE){
                     SetSprite(BOSS_IDLE_SPRITE);
                     timer.Restart();
@@ -146,6 +151,7 @@ void Boss::Update(float dt) {
     } else{
         UpdateState(currentState);
         Camera::offset = Vec2();
+        HideBars();
         if (currentState != IDLE && currentState != STARTING && currentState != AWAKENING) {
             SetSprite(BOSS_IDLE_SPRITE);
         }
@@ -373,3 +379,34 @@ void Boss::ClapAttack() {
     RollingStoneAttack();
     PlaySound(BOSS_CLAP_SOUND);
 }
+
+void Boss::CreateBars() {
+    auto &state = (WorldState &) Game::GetInstance().GetCurrentState();
+
+    auto healthBarObject = new GameObject(HUD_LAYER);
+    healthBarObject->AddComponent(new Bar(*healthBarObject, "img/hp_boss.png", hp, BOSS_INITIAL_HP));
+    auto healthBarPosition = Vec2(GAME_WIDTH/2 - healthBarObject->box.w/2, GAME_HEIGHT - 60);
+    healthBarObject->AddComponent(new CameraFollower(*healthBarObject, healthBarPosition));
+    healthBar = state.AddObject(healthBarObject);
+
+    auto decoration = new GameObject(HUD_LAYER);
+    decoration->AddComponent(new Sprite(*decoration, "img/deco_boss_escuro.png"));
+    auto rPosition = Vec2(GAME_WIDTH/2 - decoration->box.w/2, healthBarPosition.y - healthBarObject->box.h/2 - 20);
+    healthBarObject->AddComponent(new CameraFollower(*decoration, rPosition));
+    barDecoration = state.AddObject(decoration);
+}
+
+void Boss::HideBars() {
+    auto decorationSprite = (Sprite *) barDecoration.lock()->GetComponent(SPRITE_TYPE);
+    decorationSprite->SetAlpha(0);
+    auto barSprite = (Sprite *) healthBar.lock()->GetComponent(SPRITE_TYPE);
+    barSprite->SetAlpha(0);
+}
+
+void Boss::ShowBars() {
+    auto decorationSprite = (Sprite *) barDecoration.lock()->GetComponent(SPRITE_TYPE);
+    decorationSprite->SetAlpha(255);
+    auto barSprite = (Sprite *) healthBar.lock()->GetComponent(SPRITE_TYPE);
+    barSprite->SetAlpha(255);
+}
+

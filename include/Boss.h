@@ -71,6 +71,9 @@ public:
     void SlapAttack();
     void SlamAttack();
     void ClapAttack();
+    void CreateBars();
+    void HideBars();
+    void ShowBars();
 
 private:
 
@@ -92,7 +95,9 @@ private:
     double timeToLoadCollider = -1;
     GameObject* colliderToLoad = nullptr;
     Timer colliderTimer;
-    
+    weak_ptr<GameObject> healthBar;
+    weak_ptr<GameObject> barDecoration;
+
     void PrintBossState();
     void PrintBossAttack();
 
