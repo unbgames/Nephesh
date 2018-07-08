@@ -44,6 +44,8 @@ class WorldState : public State {
         weak_ptr<GameObject> AddCollider(shared_ptr<GameObject> object);
 
         Map &GetCurrentMap();
+        Map &GetNextMap();
+        Map &GetPreviousMap();
 
 private:
         vector<weak_ptr<GameObject>> collidables;

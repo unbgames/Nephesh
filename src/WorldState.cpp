@@ -313,3 +313,18 @@ void WorldState::LoadNpcs() {
     creatureObj2->AddComponent(new Npc(*creatureObj2, "npcs/criatura_magica2.txt", creatureSounds));
     AddObject(creatureObj2);
 }
+
+Map &WorldState::GetNextMap() {
+    if (currentMapIndex + 1 < maps.size()) {
+        return maps[currentMapIndex + 1];
+    }
+    return maps[currentMapIndex];
+}
+
+Map &WorldState::GetPreviousMap() {
+    if (currentMapIndex - 1 >= 0) {
+        return maps[currentMapIndex - 1];
+    }
+
+    return maps[currentMapIndex];
+}
