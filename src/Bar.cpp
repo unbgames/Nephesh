@@ -8,10 +8,10 @@
 #include "Bar.h"
 
 Bar::Bar(GameObject &associated, string spriteFile, int maxValue, int currentValue) : Component(associated),
-                                                                                              spriteFile(std::move(spriteFile)),
+                                                                                              spriteFile(spriteFile),
                                                                                               currentValue(currentValue),
                                                                                               maxValue(maxValue) {
-
+    associated.AddComponent(new Sprite(associated, spriteFile));
 }
 
 void Bar::Update(float dt) {
@@ -31,7 +31,6 @@ bool Bar::Is(string type) {
 }
 
 void Bar::Start() {
-    associated.AddComponent(new Sprite(associated, spriteFile));
 }
 
 void Bar::SetValue(int value) {

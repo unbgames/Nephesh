@@ -85,6 +85,7 @@ void Boss::Update(float dt) {
                     Camera::Follow(&associated);
                     newState = AWAKENING;
                     Player::player->Freeze();
+                    PlaySound("audio/boss/boss_acordando.wav");
                     awoken = true;
                 }
                 break;
