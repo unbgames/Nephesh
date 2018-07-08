@@ -180,6 +180,7 @@ private:
     void SetSprite(string file, int frameCount, float frameTime, bool flip = false);
     void PlaySound(string file);
     string GetRandomStepSound();
+    void RemoveStepSounds();
     
     bool tookDamageRecently;
     Timer recentDamageTimer;

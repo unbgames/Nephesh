@@ -14,7 +14,7 @@ shared_ptr<SDL_Texture> Resources::GetImage(string file) {
     } else {
         auto texture = IMG_LoadTexture(Game::GetInstance().GetRenderer(), (ASSETS_PATH + file).c_str());
         if (texture == nullptr) {
-            throw "Error loading texture from image: " + file;
+            throw "Error loading texture from image: " + file + " reason: " + SDL_GetError();
         }
         auto texturePtr = shared_ptr<SDL_Texture>(texture, [] (SDL_Texture *texture) -> void {
             SDL_DestroyTexture(texture);

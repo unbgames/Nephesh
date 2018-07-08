@@ -10,6 +10,7 @@
 
 Vec2 Camera::pos = Vec2();
 Vec2 Camera::speed = Vec2();
+Vec2 Camera::offset = Vec2();
 GameObject *Camera::focus = nullptr;
 unordered_map<int, float> Camera::layerDepths;
 float Camera::cameraHeight = 0;
@@ -32,7 +33,7 @@ void Camera::Update(float dt) {
         } else {
             center = focus->box.Center();
         }
-        pos = Vec2(center.x - GAME_WIDTH/2, center.y - GAME_HEIGHT/2);
+        pos = Vec2(center.x - GAME_WIDTH/2, center.y - GAME_HEIGHT/2) + offset;
 
         auto &state = (WorldState &) Game::GetInstance().GetCurrentState();
         auto &currentMap = state.GetCurrentMap();
@@ -96,12 +97,12 @@ Vec2 Camera::GetRenderPosition(int layer, Vec2 absolutePosition) {
 }
 
 Vec2 Camera::GetRenderPosition(Vec2 absPosition, float layerScale) {
-    auto center = Vec2(GAME_WIDTH/2, GAME_HEIGHT/2);
+    auto center = Vec2(GAME_WIDTH/2, GAME_HEIGHT/2) + offset;
     return (absPosition - center - pos)*layerScale + center;
 }
 
 Vec2 Camera::GetAbsolutePosition(int layer, Vec2 mouseClick, bool correctCamera) {
-    auto center = Vec2(GAME_WIDTH/2, GAME_HEIGHT/2);
+    auto center = Vec2(GAME_WIDTH/2, GAME_HEIGHT/2) + offset;
     auto height = layerDepths.find(layer);
     auto inverseScale = 1.0;
 
@@ -117,6 +118,6 @@ bool Camera::IsFollowing() {
 }
 
 Vec2 Camera::GetCameraCenter() {
-    return pos + Vec2(GAME_WIDTH, GAME_HEIGHT);
+    return pos + Vec2(GAME_WIDTH, GAME_HEIGHT) + offset;
 }
 

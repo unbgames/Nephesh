@@ -120,17 +120,21 @@ int Sprite::GetWidth() {
     return getFrameWidth()*scale.x;
 }
 
-void Sprite::SetScale(float scaleX, float scaleY) {
+void Sprite::SetScale(float scaleX, float scaleY, bool shouldRecenter) {
     scale.x = scaleX == 0 ? scale.x : scaleX;
     scale.y = scaleY == 0 ? scale.y : scaleY;
     auto &box = associated.box;
-    auto center = box.Center();
     box.w = GetWidth();
     box.h = GetHeight();
-    box.x = center.x - box.w/2;
-    box.y = center.y - box.h/2;
 
-    associated.rotationCenter = associated.box.Center();
+    if (shouldRecenter) {
+        auto center = box.Center();
+
+        box.x = center.x - box.w/2;
+        box.y = center.y - box.h/2;
+
+        associated.rotationCenter = associated.box.Center();
+    }
 }
 
 Vec2 Sprite::GetScale() {

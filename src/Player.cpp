@@ -147,10 +147,7 @@ void Player::Update(float dt) {
         }
 
         if (newState != MOVING) {
-            auto intervalTimer = (IntervalTimer *) associated.GetComponent(EVENT_TIMER_TYPE);
-            if (intervalTimer != nullptr) {
-                associated.RemoveComponent(intervalTimer);
-            }
+           RemoveStepSounds();
         }
 
         if (newState == TALKING && !closestNpc.expired()) {
@@ -327,14 +324,20 @@ void Player::Start() {
     state.AddCollider(state.GetObjectPtr(&associated).lock());
 
     auto healthBarObject = new GameObject(8);
-    healthBarObject->AddComponent(new Bar(*healthBarObject, "img/health_bar.png", PLAYER_MAX_HP, PLAYER_MAX_HP));
-    auto healthBarPosition = Vec2(50, 50);
+    healthBarObject->AddComponent(new Bar(*healthBarObject, "img/hp_mc.png", PLAYER_MAX_HP, PLAYER_MAX_HP));
+    auto healthBarPosition = Vec2(60, 50);
     healthBarObject->AddComponent(new CameraFollower(*healthBarObject, healthBarPosition));
     healthBar = state.AddObject(healthBarObject);
 
+    auto rDecoration = new GameObject(8);
+    rDecoration->AddComponent(new Sprite(*rDecoration, "img/deco_mc_escuro.png"));
+    auto rPosition = Vec2(healthBarPosition.x - rDecoration->box.w/2 - 25, healthBarPosition.y - healthBarObject->box.h/2 - 5);
+    healthBarObject->AddComponent(new CameraFollower(*rDecoration, rPosition));
+    state.AddObject(rDecoration);
+
     auto chargingBarObject = new GameObject(8);
-    chargingBarObject->AddComponent(new Bar(*chargingBarObject, "img/health_bar.png", 100, 100));
-    auto chargingBarPosition = Vec2(50, 100);
+    chargingBarObject->AddComponent(new Bar(*chargingBarObject, "img/mp_mc.png", 100, 100));
+    auto chargingBarPosition = Vec2(62, 70);
     chargingBarObject->AddComponent(new CameraFollower(*chargingBarObject, chargingBarPosition));
     chargingBar = state.AddObject(chargingBarObject);
 }
@@ -711,6 +714,7 @@ string Player::GetRandomStepSound() {
 }
 
 void Player::Freeze() {
+    RemoveStepSounds();
     frozen = true;
 }
 
@@ -747,6 +751,13 @@ void Player::UpdateCharge(float dt) {
         }
         auto chargeBar = (Bar *) chargingBar.lock()->GetComponent(BAR_TYPE);
         chargeBar->SetValue(chargeCount);
+    }
+}
+
+void Player::RemoveStepSounds() {
+    auto intervalTimer = (IntervalTimer *) associated.GetComponent(EVENT_TIMER_TYPE);
+    if (intervalTimer != nullptr) {
+        associated.RemoveComponent(intervalTimer);
     }
 }
 

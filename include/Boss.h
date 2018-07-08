@@ -29,7 +29,11 @@
 #define BOSS_SLAP_DISTANCE 400
 #define BOSS_IDLE_DISTANCE 600
 #define BOSS_MIN_SLIDING_ROCK_DIST 250
+#define BOSS_AWAKENING_DURATION 4
+#define BOSS_AWAKENING_SPRITE_COUNT 40
+#define BOSS_AWAKEN_DISTANCE 350
 
+#define BOSS_CUTSCENE_SPRITE "img/cutscene_intro.png"
 #define BOSS_IDLE_SPRITE "img/boss_idle.png"
 #define BOSS_SLAP_RIGHT_SPRITE "img/boss_slap_right.png"
 #define BOSS_SLAP_LEFT_SPRITE "img/boss_slap_left.png"
@@ -43,7 +47,9 @@ using namespace std;
 class Boss : public Component {
 public:
     enum BossState {
+        STARTING,
         ATTACKING,
+        AWAKENING,
         IDLE
     };
 
@@ -78,6 +84,8 @@ private:
     int attacksPerformed;
     int numOfAttacks;
     CameraShaker* camShaker;
+    Timer cutsceneTimer;
+    bool awoken;
     
     void SetSprite(string file, bool flip = false);
     void RollingStoneAttack();

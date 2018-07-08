@@ -32,7 +32,7 @@ public:
     int GetWidth();
     int GetHeight();
     SDL_Rect GetClip();
-    void SetScale(float scaleX, float scaleY);
+    void SetScale(float scaleX, float scaleY, bool shouldRecenter = true);
     Vec2 GetScale();
     bool IsOpen();
     void SetFrame(int frame);
