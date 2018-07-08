@@ -188,6 +188,7 @@ void Player::Update(float dt) {
                 if (!charged) {
                     newState = state;
                 } else {
+                    speed = Vec2();
                     //Start the shooting animation
                     preparing = true;
                     charged = false;
