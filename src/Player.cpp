@@ -667,18 +667,6 @@ void Player::Unfreeze() {
     frozen = false;
 }
 
-void Player::DecreaseHp(int decrement) {
-    hp -= decrement;
-    if (hp <= 0) {
-        hp = 0;
-    } else if (hp > PLAYER_MAX_HP) {
-        hp = PLAYER_MAX_HP;
-    }
-
-    auto bar = (Bar *)healthBar.lock()->GetComponent(BAR_TYPE);
-    bar->SetValue(hp);
-}
-
 void Player::UpdateCharge(float dt) {
     if (!charged) {
         chargeTimer.Update(dt);

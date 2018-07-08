@@ -75,8 +75,6 @@ public:
     void Freeze();
     
     void Unfreeze();
-
-    void DecreaseHp(int decrement);
 private:
     enum PlayerState {
         //Starting state of player
