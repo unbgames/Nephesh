@@ -11,17 +11,17 @@
 
 TextBox::TextBox(GameObject &associated) : Component(associated), containedText() {
     auto sprite = new Sprite(associated, "img/textBox.png");
-    associated.box.w = WIDTH;
+    associated.box.w = GAME_WIDTH;
     associated.box.h = 300;
-    associated.box.y = HEIGHT - associated.box.h;
+    associated.box.y = GAME_HEIGHT - associated.box.h;
     sprite->SetScale(associated.box.w/sprite->GetWidth(), associated.box.h/sprite->GetHeight());
     associated.AddComponent(sprite);
-    associated.AddComponent(new CameraFollower(associated, Vec2(0, HEIGHT - associated.box.h)));
+    associated.AddComponent(new CameraFollower(associated, Vec2(0, GAME_HEIGHT - associated.box.h)));
     auto sound = new Sound(associated, "audio/popup_chat.wav");
     associated.AddComponent(sound);
     sound->Play();
 
-    associated.box.w = WIDTH;
+    associated.box.w = GAME_WIDTH;
 }
 
 void TextBox::Update(float dt) {

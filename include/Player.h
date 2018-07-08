@@ -41,6 +41,7 @@ using namespace std;
 #define PLAYER_IDLE_SPRITE "img/idle_up.png"
 #define PLAYER_MAX_HP 100
 #define PLAYER_CHARGE_DURATION 10
+#define PLAYER_INVULNERABILITY_DURATION 1.0
 
 class Player : public Component {
 public:
@@ -75,6 +76,10 @@ public:
     void Freeze();
     
     void Unfreeze();
+    
+    void IncreaseHp(int healing);
+    
+    void DecreaseHp(int damage);
 private:
     enum PlayerState {
         //Starting state of player
@@ -175,6 +180,9 @@ private:
     void SetSprite(string file, int frameCount, float frameTime, bool flip = false);
     void PlaySound(string file);
     string GetRandomStepSound();
+    
+    bool tookDamageRecently;
+    Timer recentDamageTimer;
 };
 
 

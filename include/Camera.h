@@ -17,13 +17,13 @@ public:
     static void Update(float dt);
     static bool IsFollowing();
 
-
     static void SetLayerDepth(int layer, float depth);
     static float GetLayerScale(int layer);
     static void SetCameraHeight(float height);
     static Vec2 GetRenderPosition(int layer, Vec2 absolutePosition);
     static Vec2 GetRenderPosition(Vec2 absolutePosition, float layerScale);
     static Vec2 GetAbsolutePosition(int layer, Vec2 mouseClick, bool correctCamera = true);
+    static Vec2 GetCameraCenter();
 
     static Vec2 pos;
     static Vec2 speed;

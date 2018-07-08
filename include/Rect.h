@@ -26,6 +26,7 @@ public:
     Rect operator-(Vec2 v2);
     void operator-=(Vec2 v2);
     Rect& operator=(Vec2 vec);
+    bool operator==(Vec2 v2);
 };
 
 

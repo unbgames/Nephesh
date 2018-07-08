@@ -13,8 +13,9 @@ using namespace std;
 
 #define WORLD_FADE_IN_DURATION 1
 #define WORLD_FADE_OUT_DURATION 1
+#define WORLD_MUSIC_FADE_OUT_TIME 1500
+#define WORLD_PLAYER_INITIAL_POSITION Vec2(1024, 1024)
 #define WORLD_LAST_LAYER 10
-#define WORLD_PLAYER_INITIAL_POSITION Vec2(8875, 1024)
 
 class WorldState : public State {
     public:
@@ -46,6 +47,7 @@ class WorldState : public State {
         Map &GetCurrentMap();
         Map &GetNextMap();
         Map &GetPreviousMap();
+        int GetCurrentMapIndex();
 
 private:
         vector<weak_ptr<GameObject>> collidables;
@@ -61,6 +63,12 @@ private:
         void UpdateLoadedMaps();
         void LoadMaps();
         void LoadNpcs();
+        void UpdateMusic(int prevIndex, int currentMapIndex);
+        int bossMapIndex = 1;
+        
+        string musicToPlay = "";
+        int fadeIn = -1;
+        Timer musicChangeTimer;
 };
 
 

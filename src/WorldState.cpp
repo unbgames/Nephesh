@@ -14,6 +14,7 @@
 #include <Sound.h>
 #include <FadeEffect.h>
 #include <Boss.h>
+#include <Resources.h>
 #include <CollisionMap.h>
 #include "WorldState.h"
 #include "Text.h"
@@ -42,8 +43,8 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
     AddObject(fadeInObj);
 
     auto bossObj = new GameObject();
-    bossObj->box.x = WIDTH/2;      
-    bossObj->box.y = HEIGHT/4;
+    bossObj->box.x = 0.7*GAME_WIDTH;
+    bossObj->box.y = GAME_HEIGHT/2;
     bossObj->AddComponent(new Boss(*bossObj));
     bossObj->AddComponent(new Collidable(*bossObj));
     AddObject(bossObj);
@@ -55,6 +56,17 @@ void WorldState::Update(float dt) {
     bgObj->Update(dt);
     Camera::Update(dt);
     auto& inputManager = InputManager::GetInstance();
+    
+    musicChangeTimer.Update(dt);
+    
+    if(musicToPlay.size() > 0 && fadeIn >= 0 && musicChangeTimer.Get() > WORLD_MUSIC_FADE_OUT_TIME/1000.0){
+        bgMusic->Open(musicToPlay);
+        bgMusic->Play(-1, fadeIn);
+        
+        musicToPlay = "";
+        fadeIn = -1;
+        musicChangeTimer.Restart();
+    }
 
     if (inputManager.KeyPress(SDLK_t)) {
         auto mousePos = inputManager.GetMouse();
@@ -67,12 +79,12 @@ void WorldState::Update(float dt) {
         AddObject(blockObj);
     }
     
-//    if (inputManager.KeyPress(SDLK_f)) {
-//        Player::player->DecreaseHp(10);
-//    }
-//    if (inputManager.KeyPress(SDLK_i)) {
-//        Player::player->DecreaseHp(-10);
-//    }
+    if (inputManager.KeyPress(SDLK_f)) {
+        Player::player->DecreaseHp(10);
+    }
+    if (inputManager.KeyPress(SDLK_i)) {
+        Player::player->IncreaseHp(10);
+    }
 
     if (inputManager.KeyPress(ESCAPE_KEY)) {
         auto fadeObj = new GameObject(WORLD_LAST_LAYER);
@@ -182,7 +194,8 @@ void WorldState::Resume() {
 }
 
 void WorldState::LoadAssets() {
-
+    Resources::GetMusic("audio/first_encounter_loop.mp3");
+    Resources::GetMusic("audio/mundo.ogg");
 }
 
 weak_ptr<GameObject> WorldState::AddCollidable(shared_ptr<GameObject> object) {
@@ -246,7 +259,8 @@ weak_ptr<GameObject> WorldState::AddObject(GameObject *object) {
 
 void WorldState::UpdateLoadedMaps() {
     auto player = Player::player;
-
+    auto prevIndex = currentMapIndex;
+    
     if (!maps[currentMapIndex].GetTileMap()->box.Contains(player->GetGameObject().box.Center())) {
         auto prevMap = currentMapIndex - 1;
         auto nextMap = currentMapIndex + 1;
@@ -258,7 +272,25 @@ void WorldState::UpdateLoadedMaps() {
             throw string("Player out of bounds");
         }
     }
+    
+    //UpdateMusic(prevIndex, currentMapIndex);
 }
+
+void WorldState::UpdateMusic(int prevIndex, int currentMapIndex) {
+    if(prevIndex != currentMapIndex && currentMapIndex == bossMapIndex){
+        bgMusic->Stop(WORLD_MUSIC_FADE_OUT_TIME);
+        musicChangeTimer.Restart();
+        musicToPlay = "audio/first_encounter_loop.mp3";
+        fadeIn = 2000;
+    } else if(prevIndex != currentMapIndex && prevIndex == bossMapIndex){
+        bgMusic->Stop(WORLD_MUSIC_FADE_OUT_TIME);
+        musicChangeTimer.Restart();
+        musicToPlay = "audio/mundo.ogg";
+        fadeIn = 500;
+    }
+}
+
+
 
 void WorldState::LoadMaps() {
     for (int i = 0; i < maps.size()-1; ++i) {
@@ -292,6 +324,10 @@ void WorldState::LoadMaps() {
 
 Map &WorldState::GetCurrentMap() {
     return maps[currentMapIndex];
+}
+
+int WorldState::GetCurrentMapIndex() {
+    return currentMapIndex;
 }
 
 void WorldState::LoadNpcs() {

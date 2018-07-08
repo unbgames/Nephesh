@@ -14,16 +14,16 @@ Sound::Sound(GameObject &associated, string file) : Component(associated), chunk
     Open(file);
 }
 
-void Sound::Play(int times) {
-    channel = Mix_PlayChannel(-1, chunk.get(), times-1);
+void Sound::Play(int times, int msToStart) {
+    channel = Mix_FadeInChannel(-1, chunk.get(), times-1, msToStart);
     if(channel == -1){
         throw "Error playing sound. Reason: " + string(SDL_GetError());
     }
 }
 
-void Sound::Stop() {
+void Sound::Stop(int msToStop) {
     if (chunk != nullptr) {
-        Mix_HaltChannel(channel);
+        Mix_FadeOutChannel(channel, msToStop);
     }
 }
 

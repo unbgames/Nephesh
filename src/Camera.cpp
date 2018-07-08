@@ -32,7 +32,7 @@ void Camera::Update(float dt) {
         } else {
             center = focus->box.Center();
         }
-        pos = Vec2(center.x - WIDTH/2, center.y - HEIGHT/2);
+        pos = Vec2(center.x - GAME_WIDTH/2, center.y - GAME_HEIGHT/2);
 
         auto &state = (WorldState &) Game::GetInstance().GetCurrentState();
         auto &currentMap = state.GetCurrentMap();
@@ -46,16 +46,15 @@ void Camera::Update(float dt) {
 
         if (pos.x < mapMinX && nextMap.GetDirection() != Map::LEFT && (&prevMap == &currentMap || currentMap.GetDirection() != Map::RIGHT)) {
             pos.x = mapMinX;
-        } else if (pos.x+WIDTH > mapMaxX && nextMap.GetDirection() != Map::RIGHT && (&prevMap == &currentMap || currentMap.GetDirection() != Map::LEFT)) {
-            pos.x = mapMaxX-WIDTH;
+        } else if (pos.x+GAME_WIDTH > mapMaxX && nextMap.GetDirection() != Map::RIGHT && (&prevMap == &currentMap || currentMap.GetDirection() != Map::LEFT)) {
+            pos.x = mapMaxX-GAME_WIDTH;
         }
 
         if (pos.y < mapMinY && nextMap.GetDirection() != Map::UP && (&prevMap == &currentMap || currentMap.GetDirection() != Map::DOWN)) {
             pos.y = mapMinY;
-        } else if (pos.y+HEIGHT > mapMaxY && nextMap.GetDirection() != Map::DOWN && (&prevMap == &currentMap || currentMap.GetDirection() != Map::UP)) {
-            pos.y = mapMaxY-HEIGHT;
+        } else if (pos.y+GAME_HEIGHT > mapMaxY && nextMap.GetDirection() != Map::DOWN && (&prevMap == &currentMap || currentMap.GetDirection() != Map::UP)) {
+            pos.y = mapMaxY-GAME_HEIGHT;
         }
-
     } else {
         auto inputManager = InputManager::GetInstance();
 
@@ -97,12 +96,12 @@ Vec2 Camera::GetRenderPosition(int layer, Vec2 absolutePosition) {
 }
 
 Vec2 Camera::GetRenderPosition(Vec2 absPosition, float layerScale) {
-    auto center = Vec2(WIDTH/2, HEIGHT/2);
+    auto center = Vec2(GAME_WIDTH/2, GAME_HEIGHT/2);
     return (absPosition - center - pos)*layerScale + center;
 }
 
 Vec2 Camera::GetAbsolutePosition(int layer, Vec2 mouseClick, bool correctCamera) {
-    auto center = Vec2(WIDTH/2, HEIGHT/2);
+    auto center = Vec2(GAME_WIDTH/2, GAME_HEIGHT/2);
     auto height = layerDepths.find(layer);
     auto inverseScale = 1.0;
 
@@ -115,5 +114,9 @@ Vec2 Camera::GetAbsolutePosition(int layer, Vec2 mouseClick, bool correctCamera)
 
 bool Camera::IsFollowing() {
     return focus != nullptr;
+}
+
+Vec2 Camera::GetCameraCenter() {
+    return pos + Vec2(GAME_WIDTH, GAME_HEIGHT);
 }
 

@@ -45,7 +45,7 @@ vector<Vec2> Rect::GetCorners(float angle, Vec2 rotationCenter) {
     return corners;
 }
 
-void Rect::PlaceCenterAt(Vec2 pos) {
+void Rect:: PlaceCenterAt(Vec2 pos) {
     x = pos.x - w/2;
     y = pos.y - h/2;
 }
@@ -54,5 +54,9 @@ Rect& Rect::operator=(Vec2 vec) {
     this->x = vec.x;
     this->y = vec.y;
     return *this;
+}
+
+bool Rect::operator==(Vec2 v2) {
+    return this->x == v2.x && this->y == v2.y;
 }
 
