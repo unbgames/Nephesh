@@ -39,8 +39,8 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
     AddObject(fadeInObj);
 
     auto bossObj = new GameObject();
-    bossObj->box.x = WIDTH/2;      
-    bossObj->box.y = HEIGHT/4;
+    bossObj->box.x = 0.7*GAME_WIDTH;
+    bossObj->box.y = GAME_HEIGHT/2;
     bossObj->AddComponent(new Boss(*bossObj));
     bossObj->AddComponent(new Collidable(*bossObj));
     AddObject(bossObj);

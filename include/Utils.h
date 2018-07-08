@@ -5,7 +5,7 @@
 #ifndef NEPHESH_UTILS_H
 #define NEPHESH_UTILS_H
 
-#include "GameObject.h"
+#include <vector>
 
 int WeightedDraft(vector<int> probabilityWeight){
     int totalWeights = 0;

@@ -144,7 +144,7 @@ SDL_Renderer* Game::GetRenderer() {
 
 Game& Game::GetInstance() {
     if (instance == nullptr) {
-        return *new Game(GAME_NAME, WIDTH, HEIGHT);
+        return *new Game(GAME_NAME, GAME_WIDTH, GAME_HEIGHT);
     }
 
     return *instance;

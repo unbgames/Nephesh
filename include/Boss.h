@@ -11,19 +11,14 @@
 #include <Sound.h>
 #include <Sprite.h>
 #include <Game.h>
+#include <CameraShaker.h>
 
 #define BOSS_TYPE "Boss"
 #define BOSS_INITIAL_HP 100
 #define BOSS_IDLE_TIME 3 // in seconds
-#define BOSS_SPEED 300 // in pixels/s
-#define BOSS_MIN_DIST_TO_PLAYER 100 // in pixels
-#define BOSS_SPR_MOV_TIME 0.05 // in seconds
 #define BOSS_ATTACK_TIME 1.0 // in seconds
 #define BOSS_MIN_NUM_OF_ATTACKS 1
 #define BOSS_MAX_NUM_OF_ATTACKS 5
-#define BOSS_ATTACK_SPRITE_COUNT 4
-#define BOSS_ATTACK_RANGE 100 // in pixels
-#define BOSS_ATTACK_WIDTH 200 // in pixels
 #define BOSS_SLAP_DISTANCE 250
 
 #define BOSS_IDLE_SPRITE "img/boss_idle.png"
@@ -43,10 +38,9 @@ public:
     };
 
     enum BossAttack{
-        LEFT,
-        RIGHT,
-        SLAM,
-        CLAP
+        SLAP = 0,
+        SLAM = 1,
+        CLAP = 2
     };
 
     explicit Boss(GameObject& associated);
@@ -58,17 +52,30 @@ public:
     void Attack();
     void UpdateState(BossState newState);
 
+    void RockSlide();
+
+    void SlapAttack();
+    void SlamAttack();
+    void ClapAttack();
+
 private:
 
     int hp;
     Vec2 speed;
     BossState currentState;
-    BossState oldState;
+    BossState previousState;
+    BossAttack attackState;
     Timer timer;
     int attacksPerformed;
     int numOfAttacks;
+    CameraShaker* camShaker;
     
-    void SetSprite(string file, int frameCount, float frameTime, bool flip = false);
+    void SetSprite(string file, bool flip = false);
+
+    void PrintBossState();
+    void PrintBossAttack();
+
+    void PlaySound(string file);
 
 };
 

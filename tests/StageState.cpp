@@ -23,8 +23,8 @@ StageState::StageState() :
     bg->AddComponent(new CameraFollower(*bg));
 
     map = shared_ptr<GameObject>(new GameObject());
-    map->box.h = HEIGHT;
-    map->box.w = WIDTH;
+    map->box.h = GAME_HEIGHT;
+    map->box.w = GAME_WIDTH;
 
     auto set = new TileSet(64, 64, "tests/img/tileset.png");
     auto tileMap = new TileMap(*map, "tests/map/tileMap.txt", set);

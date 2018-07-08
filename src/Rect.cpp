@@ -56,3 +56,7 @@ Rect& Rect::operator=(Vec2 vec) {
     return *this;
 }
 
+bool Rect::operator==(Vec2 v2) {
+    return this->x == v2.x && this->y == v2.y;
+}
+
