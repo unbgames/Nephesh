@@ -10,6 +10,7 @@
 #include "Vec2.h"
 #include "Rect.h"
 #include "Collider.h"
+#include "Intersection.h"
 
 #define COLLIDABLE_TYPE "Collidable"
 //#define DEBUG
@@ -26,7 +27,7 @@ public:
 
     virtual bool IsColliding(Collider& collider);
 
-    virtual vector<pair<LineSegment, Vec2>> GetIntersections(Collider &collider);
+    virtual vector<Intersection> GetIntersections(Collider &collider);
 
     void SetScale(Vec2 scale);
     void SetOffset(Vec2 offset);

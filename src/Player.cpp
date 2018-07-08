@@ -16,13 +16,15 @@
 #include <IntervalTimer.h>
 #include <TerrainMap.h>
 #include <Charge.h>
+#include <Bar.h>
+#include <CameraFollower.h>
 #include "Player.h"
 
 #define SPEED 200
 
 Player *Player::player = nullptr;
 
-Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), state(STARTING), hp(100),
+Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), state(STARTING), hp(PLAYER_MAX_HP),
                                          tookDamageRecently(false) {
     associated.AddComponent(new Sound(associated));
 
@@ -32,10 +34,10 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
 
     Player::player = this;
 
-    movingData.emplace_back(RIGHT, "img/walk_side.png", Vec2(0.5, 0.92), Vec2(20, 0));
-    movingData.emplace_back(LEFT, "img/walk_side.png", Vec2(0.5, 0.92), Vec2(-15, 0));
-    movingData.emplace_back(UP, "img/walk_up.png", Vec2(0.4, 0.92), Vec2(0, 0));
-    movingData.emplace_back(DOWN, "img/walk_down.png", Vec2(0.4, 0.92), Vec2(0, 0));
+    movingData.emplace_back(RIGHT, "img/walk_side.png", Vec2(0.421, 1), Vec2(20, 0));
+    movingData.emplace_back(LEFT, "img/walk_side.png", Vec2(0.421, 1), Vec2(-15, 0));
+    movingData.emplace_back(UP, "img/walk_up.png", Vec2(0.353, 1), Vec2(0, 0));
+    movingData.emplace_back(DOWN, "img/walk_down.png", Vec2(0.353, 1), Vec2(0, 0));
     grassStepSounds.emplace_back("audio/steps/grass/grass_1.wav");
     grassStepSounds.emplace_back("audio/steps/grass/grass_2.wav");
     grassStepSounds.emplace_back("audio/steps/grass/grass_3.wav");
@@ -56,10 +58,10 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     dirtStepSounds.emplace_back("audio/steps/dirt/dirt_6.wav");
 
 
-    dashingData.emplace_back(RIGHT, "img/dash_side.png", Vec2(0.5, 0.92), Vec2(20, 0));
-    dashingData.emplace_back(LEFT, "img/dash_side.png", Vec2(0.5, 0.92), Vec2(-15, 0));
-    dashingData.emplace_back(UP, "img/dash_up.png", Vec2(0.4, 0.92), Vec2(0, 0));
-    dashingData.emplace_back(DOWN, "img/dash_down.png", Vec2(0.4, 0.92), Vec2(0, 0));
+    dashingData.emplace_back(RIGHT, "img/dash_side.png", Vec2(0.311, 1.098), Vec2(20, 0));
+    dashingData.emplace_back(LEFT, "img/dash_side.png", Vec2(0.311, 1.098), Vec2(-15, 0));
+    dashingData.emplace_back(UP, "img/dash_up.png", Vec2(0.49, 1.018), Vec2(0, 0));
+    dashingData.emplace_back(DOWN, "img/dash_down.png", Vec2(0.38, 1.018), Vec2(0, 0));
     dashSounds.emplace_back("audio/dash/dash_1.wav");
     dashSounds.emplace_back("audio/dash/dash_2.wav");
     dashSounds.emplace_back("audio/dash/dash_3.wav");
@@ -69,10 +71,10 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     shootingData.emplace_back(UP, "img/magic_up.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(3, -80));
     shootingData.emplace_back(DOWN, "img/magic_down.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(4, 10));
 
-    attackingData.emplace_back(RIGHT, "img/attack_side.png", Vec2(0.3, 0.92), Vec2(-10, 0), Vec2(60, 0));
-    attackingData.emplace_back(LEFT, "img/attack_side.png", Vec2(0.3, 0.92), Vec2(10, 0), Vec2(-60, 0));
-    attackingData.emplace_back(UP, "img/attack_up.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(0, -40));
-    attackingData.emplace_back(DOWN, "img/attack_down.png", Vec2(0.4, 0.92), Vec2(0, 0), Vec2(0, 30));
+    attackingData.emplace_back(RIGHT, "img/attack_side.png", Vec2(0.247, 0.933), Vec2(-10, 0), Vec2(60, 0));
+    attackingData.emplace_back(LEFT, "img/attack_side.png", Vec2(0.247, 0.933), Vec2(10, 0), Vec2(-60, 0));
+    attackingData.emplace_back(UP, "img/attack_up.png", Vec2(0.342, 0.848), Vec2(0, 0), Vec2(0, -40));
+    attackingData.emplace_back(DOWN, "img/attack_down.png", Vec2(0.375, 0.965), Vec2(0, 0), Vec2(0, 30));
     attackMissSounds.emplace_back("audio/sword/attack_miss_1.wav");
     attackMissSounds.emplace_back("audio/sword/attack_miss_2.wav");
     attackMissSounds.emplace_back("audio/sword/attack_miss_3.wav");
@@ -80,10 +82,10 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     attackHitSounds.emplace_back("audio/sword/attack_hit_2.wav");
     attackHitSounds.emplace_back("audio/sword/attack_hit_3.wav");
 
-    idleData.emplace_back(RIGHT, "img/idle_down.png", Vec2(0.5, 0.92), Vec2(25, 0));
-    idleData.emplace_back(LEFT, "img/idle_up.png", Vec2(0.5, 0.92), Vec2(25, 0));
-    idleData.emplace_back(UP, "img/idle_up.png", Vec2(0.5, 0.92), Vec2(25, 0));
-    idleData.emplace_back(DOWN, "img/idle_down.png", Vec2(0.5, 0.92), Vec2(25, 0));
+    idleData.emplace_back(RIGHT, "img/idle_down.png", Vec2(0.444, 1), Vec2(25, 0));
+    idleData.emplace_back(LEFT, "img/idle_up.png", Vec2(0.444, 1), Vec2(25, 0));
+    idleData.emplace_back(UP, "img/idle_up.png", Vec2(0.444, 1), Vec2(25, 0));
+    idleData.emplace_back(DOWN, "img/idle_down.png", Vec2(0.444, 1), Vec2(25, 0));
 
 
     closestNpcDistance = numeric_limits<float>::infinity();
@@ -104,10 +106,12 @@ Player::PlayerDirection Player::GetNewDirection(vector<PlayerDirection> directio
 
 void Player::Update(float dt) {
     if (!frozen) {
+        UpdateCharge(dt);
         auto inputManager = InputManager::GetInstance();
         auto newState = state;
         auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
-        
+        lastBox = collider->box;
+
         if(tookDamageRecently && recentDamageTimer.Get() < PLAYER_INVULNERABILITY_DURATION){
             recentDamageTimer.Update(dt);
         } else if(tookDamageRecently && recentDamageTimer.Get() >= PLAYER_INVULNERABILITY_DURATION){
@@ -186,15 +190,20 @@ void Player::Update(float dt) {
             }
 
         } else if (newState == SHOOTING) {
-            speed = Vec2();
             if (state != SHOOTING) {
-                //Start the shooting animation
-                preparing = true;
-                target = Camera::GetAbsolutePosition(associated.GetLayer(),
-                                                     Vec2(inputManager.GetMouseX(),
-                                                          inputManager.GetMouseY()));
-                currentDirection = GetNewDirection(target);
-                timer.Restart();
+                if (!charged) {
+                    newState = state;
+                } else {
+                    speed = Vec2();
+                    //Start the shooting animation
+                    preparing = true;
+                    charged = false;
+                    target = Camera::GetAbsolutePosition(associated.GetLayer(),
+                                                         Vec2(inputManager.GetMouseX(),
+                                                              inputManager.GetMouseY()));
+                    currentDirection = GetNewDirection(target);
+                    timer.Restart();
+                }
             } else {
                 timer.Update(dt);
                 if (preparing && timer.Get() > PLAYER_MAGIC_SPRITE_DURATION) {
@@ -316,6 +325,18 @@ void Player::Start() {
     associated.AddComponent(collider);
     auto &state = (WorldState &) Game::GetInstance().GetCurrentState();
     state.AddCollider(state.GetObjectPtr(&associated).lock());
+
+    auto healthBarObject = new GameObject(8);
+    healthBarObject->AddComponent(new Bar(*healthBarObject, "img/health_bar.png", PLAYER_MAX_HP, PLAYER_MAX_HP));
+    auto healthBarPosition = Vec2(50, 50);
+    healthBarObject->AddComponent(new CameraFollower(*healthBarObject, healthBarPosition));
+    healthBar = state.AddObject(healthBarObject);
+
+    auto chargingBarObject = new GameObject(8);
+    chargingBarObject->AddComponent(new Bar(*chargingBarObject, "img/health_bar.png", 100, 100));
+    auto chargingBarPosition = Vec2(50, 100);
+    chargingBarObject->AddComponent(new CameraFollower(*chargingBarObject, chargingBarPosition));
+    chargingBar = state.AddObject(chargingBarObject);
 }
 
 Player::~Player() {
@@ -333,9 +354,137 @@ void Player::NotifyCollision(GameObject &other) {
             ChangeDirection();
         }
     } else {
-        auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
-        associated.box -= speed;
-        collider->Update(0);
+        auto collider = (Collider *)associated.GetComponent(COLLIDER_TYPE);
+        auto collidable = (Collidable *)other.GetComponent(COLLIDABLE_TYPE);
+        auto intersections = collidable->GetIntersections(*collider);
+        auto boxCorners = collider->box.GetCorners(associated.angleDeg, associated.rotationCenter);
+
+        auto u = LineSegment(boxCorners[0], boxCorners[1]);
+        auto r = LineSegment(boxCorners[1], boxCorners[2]);
+        auto d = LineSegment(boxCorners[2], boxCorners[3]);
+        auto l = LineSegment(boxCorners[3], boxCorners[0]);
+
+        auto lCount = 0;
+        auto rCount = 0;
+        auto uCount = 0;
+        auto dCount = 0;
+
+        auto sMinX = std::numeric_limits<float>::infinity();
+        auto sMinY = std::numeric_limits<float>::infinity();
+        auto sMaxX = -std::numeric_limits<float>::infinity();
+        auto sMaxY = -std::numeric_limits<float>::infinity();
+        auto fMinX = std::numeric_limits<float>::infinity();
+        auto fMinY = std::numeric_limits<float>::infinity();
+        auto fMaxX = -std::numeric_limits<float>::infinity();
+        auto fMaxY = -std::numeric_limits<float>::infinity();
+        auto absoluteMinX = std::numeric_limits<float>::infinity();
+        auto absoluteMinY = std::numeric_limits<float>::infinity();
+        auto absoluteMaxX = -std::numeric_limits<float>::infinity();
+        auto absoluteMaxY = -std::numeric_limits<float>::infinity();
+        auto currentMinX = collider->box.x;
+        auto currentMaxX = collider->box.x + collider->box.w;
+        auto currentMinY = collider->box.y;
+        auto currentMaxY = collider->box.y + collider->box.h;
+        vector<Intersection> verifyiedLines;
+
+        for (auto &intersection : intersections) {
+            auto colliderLine = intersection.colliderLine;
+            auto collidableLine = intersection.collidableLine;
+            if (intersection.intersectionPoint.x == -numeric_limits<float>::infinity()) {
+                continue;
+            }
+            auto isVerifyied = false;
+            for (auto &lines : verifyiedLines) {
+                if (colliderLine == lines.colliderLine && collidableLine == lines.collidableLine) {
+                    isVerifyied = true;
+                }
+            }
+            if (isVerifyied) {
+                continue;
+            } else {
+                verifyiedLines.push_back(intersection);
+            }
+
+            vector<Vec2> dots { collidableLine.dot1, collidableLine.dot2 };
+            float *minX = &sMinX;
+            float *maxX = &sMaxX;
+            float *minY = &sMinY;
+            float *maxY = &sMaxY;
+
+            if (colliderLine == u || colliderLine == d) {
+                minX = &fMinX;
+                maxX = &fMaxX;
+                minY = &fMinY;
+                maxY = &fMaxY;
+            }
+            
+            if (colliderLine == u) { uCount++; }
+            if (colliderLine == d) { dCount++; }
+            if (colliderLine == l) { lCount++; }
+            if (colliderLine == r) { rCount++; }
+
+            for (auto &dot : dots) {
+                if (dot.x < absoluteMinX) {
+                    absoluteMinX = dot.x;
+                }
+                if (dot.x > currentMinX && dot.x < currentMaxX && dot.x < *minX) {
+                    *minX = dot.x;
+                }
+                if (dot.x > absoluteMaxX) {
+                    absoluteMaxX = dot.x;
+                }
+                if (dot.x > currentMinX && dot.x < currentMaxX && dot.x > *maxX) {
+                    *maxX = dot.x;
+                }
+                if (dot.y > absoluteMaxY) {
+                    absoluteMaxY = dot.y;
+                }
+                if (dot.y > currentMinY && dot.y < currentMaxY && dot.y < *minY) {
+                    *minY = dot.y;
+                }
+                if (dot.y < absoluteMinY) {
+                    absoluteMinY = dot.y;
+                }
+                if (dot.y > currentMinY && dot.y < currentMaxY && dot.y > *maxY) {
+                    *maxY = dot.y;
+                }
+            }
+        }
+
+        auto playerMinX = lastBox.x;
+        auto playerMaxX = lastBox.x + lastBox.w;
+        auto playerMinY = lastBox.y;
+        auto playerMaxY = lastBox.y + lastBox.h;
+
+        if (dCount >= 1 && uCount >= 1) {
+            if (speed.x > 0) {
+                collider->box.x = fMaxX - collider->box.w - 1;
+            } else if (speed.x < 0) {
+                collider->box.x = fMinX + 1;
+            }
+        } else if (rCount > 1 || lCount > 1 || (((rCount > 0 && lCount == 0 )  || (lCount > 0 && rCount == 0)) && (playerMinX > absoluteMaxX || playerMaxX < absoluteMinX))) {
+            if (speed.x > 0) {
+                collider->box.x = sMinX - collider->box.w - 1;
+            } else if (speed.x < 0){
+                collider->box.x = sMaxX + 1;
+            }
+        }
+        
+        if (rCount >= 1 && lCount >= 1) {
+            if (speed.y > 0) {
+                collider->box.y = sMaxY - collider->box.h - 1;
+            } else if (speed.y < 0) {
+                collider->box.y = sMinY + 1;
+            }
+        } else if (uCount > 1 || dCount > 1 || (((dCount > 0 && uCount == 0 )  || (uCount > 0 && dCount == 0)) && (playerMinY > absoluteMaxY || playerMaxY < absoluteMinY))) {
+            if (speed.y > 0) {
+                collider->box.y = fMinY - collider->box.h - 1;
+            } else if (speed.y < 0){
+                collider->box.y = fMaxY + 1;
+            }
+        }
+
+        collider->UpdateGameObject();
     }
 }
 
@@ -349,10 +498,8 @@ void Player::SetSprite(string file, int frameCount, float frameTime, bool flip) 
     sprite->SetFlip(flip);
     sprite->SetFrameCount(frameCount);
     sprite->SetFrameTime(frameTime);
-    sprite->Open(file);
+    sprite->Open(file, false);
     sprite->SetFrame(0);
-
-    associated.SetCenter(associated.box.Center());
 }
 
 void Player::Shoot() {
@@ -380,7 +527,6 @@ void Player::Shoot() {
     beamObj->box += offset;
     auto beamCpt = new BeamSkill(*beamObj, target, currentDirection);
     beamObj->AddComponent(beamCpt);
-
 
     auto chargeObj = new GameObject(associated.GetLayer());
     chargeObj->AddComponent(new Charge(*chargeObj, beamObj, CHARGING_DURATION));
@@ -514,7 +660,10 @@ Player::PlayerStateData Player::ChangeDirection() {
     auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
     collider->SetOffset(playerData.playerSpriteOffset);
     collider->SetScale(playerData.playerSpriteScale);
-    SetSprite(playerData.animation, frameCount, animationDuration / frameCount, shouldFlip);
+    SetSprite(playerData.animation, frameCount, animationDuration/frameCount, shouldFlip);
+    if (collider->box.w != 0) {
+        collider->UpdateGameObject();
+    }
 
     return playerData;
 }
@@ -578,6 +727,26 @@ void Player::DecreaseHp(int damage) {
         hp -= damage;
         recentDamageTimer.Restart();
         tookDamageRecently = true;
+        auto bar = (Bar *) healthBar.lock()->GetComponent(BAR_TYPE);
+        bar->SetValue(hp);
+    }
+}
+
+void Player::UpdateCharge(float dt) {
+    if (!charged) {
+        chargeTimer.Update(dt);
+
+        auto currentDuration = chargeTimer.Get();
+        if (currentDuration > PLAYER_CHARGE_DURATION) {
+            chargeTimer.Restart();
+            PlaySound("audio/lazer_ready.wav");
+            chargeCount = 100;
+            charged = true;
+        } else {
+            chargeCount = (int) (100*(currentDuration/PLAYER_CHARGE_DURATION));
+        }
+        auto chargeBar = (Bar *) chargingBar.lock()->GetComponent(BAR_TYPE);
+        chargeBar->SetValue(chargeCount);
     }
 }
 

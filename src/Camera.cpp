@@ -4,6 +4,8 @@
 
 #include <InputManager.h>
 #include <Game.h>
+#include <Collider.h>
+#include <WorldState.h>
 #include "Camera.h"
 
 Vec2 Camera::pos = Vec2();
@@ -23,8 +25,36 @@ void Camera::Unfollow() {
 
 void Camera::Update(float dt) {
     if (focus != nullptr) {
-        auto center = focus->box.Center();
+        auto collider = (Collider *) focus->GetComponent(COLLIDER_TYPE);
+        Vec2 center;
+        if (collider != nullptr) {
+            center = collider->box.Center();
+        } else {
+            center = focus->box.Center();
+        }
         pos = Vec2(center.x - GAME_WIDTH/2, center.y - GAME_HEIGHT/2);
+
+        auto &state = (WorldState &) Game::GetInstance().GetCurrentState();
+        auto &currentMap = state.GetCurrentMap();
+        auto currentTileMap = currentMap.GetTileMap();
+        auto &nextMap = state.GetNextMap();
+        auto &prevMap = state.GetPreviousMap();
+        auto mapMinX = currentTileMap->box.x;
+        auto mapMaxX = currentTileMap->box.x + currentTileMap->box.w;
+        auto mapMinY = currentTileMap->box.y;
+        auto mapMaxY = currentTileMap->box.y + currentTileMap->box.h;
+
+        if (pos.x < mapMinX && nextMap.GetDirection() != Map::LEFT && (&prevMap == &currentMap || currentMap.GetDirection() != Map::RIGHT)) {
+            pos.x = mapMinX;
+        } else if (pos.x+GAME_WIDTH > mapMaxX && nextMap.GetDirection() != Map::RIGHT && (&prevMap == &currentMap || currentMap.GetDirection() != Map::LEFT)) {
+            pos.x = mapMaxX-GAME_WIDTH;
+        }
+
+        if (pos.y < mapMinY && nextMap.GetDirection() != Map::UP && (&prevMap == &currentMap || currentMap.GetDirection() != Map::DOWN)) {
+            pos.y = mapMinY;
+        } else if (pos.y+GAME_HEIGHT > mapMaxY && nextMap.GetDirection() != Map::DOWN && (&prevMap == &currentMap || currentMap.GetDirection() != Map::UP)) {
+            pos.y = mapMaxY-GAME_HEIGHT;
+        }
     } else {
         auto inputManager = InputManager::GetInstance();
 

@@ -5,6 +5,7 @@
 #include <Game.h>
 #include <fstream>
 #include <algorithm>
+#include <Camera.h>
 #include "CollisionMap.h"
 
 CollisionMap::CollisionMap(GameObject &associated, string file, int tileWidth, int tileHeight) :
@@ -19,7 +20,40 @@ void CollisionMap::Update(float dt) {
 }
 
 void CollisionMap::Render() {
+#ifdef COLLISION_MAP_DEBUG
+    //Showing always the first layer (just for testing)
+    for (int i = 0; i < mapHeight; ++i) {
+        for (int j = 0; j < mapWidth; ++j) {
+            if (At(j, i) == 1) {
+                continue;
+            }
+            auto box = Rect(associated.box.x + j*GetTileWidth(), associated.box.y + i*GetTileHeight(), GetTileHeight(), GetTileHeight());
+            Vec2 center( box.Center() );
+            SDL_Point points[5];
 
+            Vec2 point = (Vec2(box.x, box.y) - box.Center()).RotateDeg(associated.angleDeg) + box.Center();
+            point = Camera::GetRenderPosition(associated.GetLayer(), point);
+            points[0] = {(int)point.x, (int)point.y};
+            points[4] = {(int)point.x, (int)point.y};
+
+            point = (Vec2(box.x + box.w, box.y) - box.Center()).RotateDeg(associated.angleDeg) + box.Center();
+            point = Camera::GetRenderPosition(associated.GetLayer(), point);
+            points[1] = {(int)point.x, (int)point.y};
+
+            point = (Vec2(box.x + box.w, box.y + box.h) - box.Center()).RotateDeg(associated.angleDeg) + box.Center();
+            point = Camera::GetRenderPosition(associated.GetLayer(), point);
+            points[2] = {(int)point.x, (int)point.y};
+
+            point = (Vec2(box.x, box.y + box.h) - box.Center()).RotateDeg(associated.angleDeg) + box.Center();
+            point = Camera::GetRenderPosition(associated.GetLayer(), point);
+            points[3] = {(int)point.x, (int)point.y};
+
+            SDL_SetRenderDrawColor(Game::GetInstance().GetRenderer(), 255, 0, 0, SDL_ALPHA_OPAQUE);
+            SDL_RenderDrawLines(Game::GetInstance().GetRenderer(), points, 5);
+
+        }
+    }
+#endif
 }
 
 bool CollisionMap::Is(string type) {
@@ -242,8 +276,8 @@ int CollisionMap::GetMapDepth() {
     return mapDepth;
 }
 
-vector<pair<LineSegment, Vec2>> CollisionMap::GetIntersections(Collider &collider) {
-    vector<pair<LineSegment, Vec2>> intersections;
+vector<Intersection> CollisionMap::GetIntersections(Collider &collider) {
+    vector<Intersection> intersections;
     auto &colliderObject = collider.GetGameObject();
     auto layer = colliderObject.GetLayer();
     // get the rotated vertices of the collider box (the vertices from the Rect itself)
@@ -310,11 +344,11 @@ vector<pair<LineSegment, Vec2>> CollisionMap::GetIntersections(Collider &collide
             for (auto &colliderLine : colliderLines) {
                 for (auto &collidableLine : collidableLines) {
                     if (colliderLine == collidableLine) {
-                        intersections.push_back(make_pair(colliderLine, (colliderLine.dot1 - colliderLine.dot2)*0.5));
+                        intersections.emplace_back(colliderLine, collidableLine, (colliderLine.dot1 - colliderLine.dot2)*0.5);
                     } else {
                         auto intersection = colliderLine.GetIntersection(collidableLine);
                         if (collidableLine.Contains(intersection) && colliderLine.Contains(intersection)) {
-                            intersections.push_back(make_pair(colliderLine, intersection));
+                            intersections.emplace_back(colliderLine, collidableLine, intersection);
                         }
                     }
                 }

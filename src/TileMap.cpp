@@ -31,7 +31,7 @@ void TileMap::RenderLayer(int layer, int cameraX, int cameraY) {
 void TileMap::RenderLayer(int layer) {
     if (useImages) {
         if (layer >= 0 && layer < layers.size()) {
-            layers[layer].Render();
+            layers[layer].Render(associated.box.x, associated.box.y, layer);
         }
     } else {
         for (int i = 0; i < mapWidth; i++) {

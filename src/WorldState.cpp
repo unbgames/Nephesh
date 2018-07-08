@@ -15,6 +15,7 @@
 #include <FadeEffect.h>
 #include <Boss.h>
 #include <Resources.h>
+#include <CollisionMap.h>
 #include "WorldState.h"
 #include "Text.h"
 
@@ -30,12 +31,14 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
     AddObject(playerObj);
 
     Camera::Follow(playerObj);
+    Camera::SetCameraHeight(1);
+    Camera::SetLayerDepth(4, 0.92);
 
     bgMusic = new Music("audio/mundo.ogg");
     Mix_VolumeMusic(32);
 
     Player::player->Freeze();
-    auto fadeInObj = new GameObject(2);
+    auto fadeInObj = new GameObject(WORLD_LAST_LAYER);
     fadeInObj->AddComponent(new FadeEffect(*fadeInObj, WORLD_FADE_IN_DURATION, 2, [] { Player::player->Unfreeze(); }));
     AddObject(fadeInObj);
 
@@ -75,9 +78,16 @@ void WorldState::Update(float dt) {
         blockObj->SetCenter(Camera::pos +  mousePos);
         AddObject(blockObj);
     }
+    
+//    if (inputManager.KeyPress(SDLK_f)) {
+//        Player::player->DecreaseHp(10);
+//    }
+//    if (inputManager.KeyPress(SDLK_i)) {
+//        Player::player->DecreaseHp(-10);
+//    }
 
     if (inputManager.KeyPress(ESCAPE_KEY)) {
-        auto fadeObj = new GameObject(2);
+        auto fadeObj = new GameObject(WORLD_LAST_LAYER);
         bgMusic->Stop();
         function<void()> callback;
         callback = [&] {
@@ -118,8 +128,12 @@ void WorldState::Render() {
         
         if (maps.size() > 0) {
             auto tileMap = (TileMap *)maps[currentMapIndex].GetTileMap()->GetComponent(TILE_MAP_TYPE);
+            auto collisionMap = (CollisionMap *)maps[currentMapIndex].GetTileMap()->GetComponent(COLLISION_MAP_TYPE);
             if (i < tileMap->GetDepth()) {
                 tileMap->RenderLayer(i);
+            }
+            if (i < collisionMap->GetMapDepth()) {
+                collisionMap->Render();
             }
             auto prevIndex = currentMapIndex - 1;
             if (prevIndex >= 0) {
@@ -152,14 +166,16 @@ void WorldState::Start() {
     vector<string> m2 = { "map/2/ground.png", "map/2/rocks.png" };
     vector<string> m3 = { "map/3/ground.png", "map/3/rocks.png" };
     vector<string> m4 = { "map/4/ground.png", "map/4/rocks.png" };
-    vector<string> m5 = { "map/5/ground.png", "map/5/rocks.png" };
-    vector<string> m8 = { "map/8/ground.png", "map/8/rocks.png" };
+    vector<string> m5 = { "map/5/ground.png", "map/5/rocks.png", "map/5/trees.png", "map/5/surroundings.png", "map/5/lighting.png", "map/5/view.png", "map/5/vines.png" };
+    vector<string> m8 = { "map/8/ground.png", "map/8/rocks.png", "map/8/trees.png", "map/8/surroundings.png", "map/8/lighting.png", "map/8/vines.png" };
+    vector<string> m9 = { "map/9/ground.png", "map/9/rocks.png", "map/9/trees.png", "map/9/surroundings.png", "map/9/lighting.png", "map/9/view.png", "map/9/vine.png" };
     maps.emplace_back(m1, Map::MapDirection::DOWN, "map/1/collisionMap.txt", "map/1/terrainMap.txt");
     maps.emplace_back(m2, Map::MapDirection::DOWN, "map/2/collisionMap.txt", "map/2/terrainMap.txt");
     maps.emplace_back(m3, Map::MapDirection::RIGHT, "map/3/collisionMap.txt", "map/3/terrainMap.txt");
     maps.emplace_back(m4, Map::MapDirection::UP, "map/4/collisionMap.txt", "map/4/terrainMap.txt");
     maps.emplace_back(m5, Map::MapDirection::RIGHT, "map/5/collisionMap.txt", "map/5/terrainMap.txt");
     maps.emplace_back(m8, Map::MapDirection::RIGHT, "map/8/collisionMap.txt", "map/8/terrainMap.txt");
+    maps.emplace_back(m9, Map::MapDirection::UP, "map/9/collisionMap.txt", "map/9/terrainMap.txt");
 
     StartArray();
 
@@ -315,15 +331,36 @@ int WorldState::GetCurrentMapIndex() {
 }
 
 void WorldState::LoadNpcs() {
+    vector<string> creatureSounds {
+            "audio/npcs/criatura/criatura_magica_1.wav",
+            "audio/npcs/criatura/criatura_magica_2.wav",
+            "audio/npcs/criatura/criatura_magica_3.wav",
+            "audio/npcs/criatura/criatura_magica_4.wav",
+            "audio/npcs/criatura/criatura_magica_5.wav",
+    };
+
     auto creatureObj1 = new GameObject();
     creatureObj1->AddComponent(new Sprite(*creatureObj1, "img/criatura.png", 6, 0.2));
-    creatureObj1->AddComponent(new Npc(*creatureObj1, "npcs/criatura_magica1.txt"));
-    creatureObj1->AddComponent(new Sound(*creatureObj1, "audio/npcs/criatura_magica_1.wav"));
+    creatureObj1->AddComponent(new Npc(*creatureObj1, "npcs/criatura_magica1.txt", creatureSounds));
     AddObject(creatureObj1);
 
     auto creatureObj2 = new GameObject();
     creatureObj2->AddComponent(new Sprite(*creatureObj2, "img/criatura.png", 6, 0.2));
-    creatureObj2->AddComponent(new Npc(*creatureObj2, "npcs/criatura_magica2.txt", true));
-    creatureObj2->AddComponent(new Sound(*creatureObj2, "audio/npcs/criatura_magica_1.wav"));
+    creatureObj2->AddComponent(new Npc(*creatureObj2, "npcs/criatura_magica2.txt", creatureSounds));
     AddObject(creatureObj2);
+}
+
+Map &WorldState::GetNextMap() {
+    if (currentMapIndex + 1 < maps.size()) {
+        return maps[currentMapIndex + 1];
+    }
+    return maps[currentMapIndex];
+}
+
+Map &WorldState::GetPreviousMap() {
+    if (currentMapIndex - 1 >= 0) {
+        return maps[currentMapIndex - 1];
+    }
+
+    return maps[currentMapIndex];
 }

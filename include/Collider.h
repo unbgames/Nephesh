@@ -29,6 +29,7 @@ public:
 
     void SetCanCollide(function<bool(GameObject& collidable)> canCollide);
     bool CanCollide(GameObject& collidable);
+    void UpdateGameObject();
 
 private:
     Vec2 scale;

@@ -15,6 +15,7 @@ using namespace std;
 #define WORLD_FADE_OUT_DURATION 1
 #define WORLD_MUSIC_FADE_OUT_TIME 1500
 #define WORLD_PLAYER_INITIAL_POSITION Vec2(1024, 1024)
+#define WORLD_LAST_LAYER 10
 
 class WorldState : public State {
     public:
@@ -44,6 +45,8 @@ class WorldState : public State {
         weak_ptr<GameObject> AddCollider(shared_ptr<GameObject> object);
 
         Map &GetCurrentMap();
+        Map &GetNextMap();
+        Map &GetPreviousMap();
         int GetCurrentMapIndex();
 
 private:
