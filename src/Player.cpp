@@ -147,10 +147,7 @@ void Player::Update(float dt) {
         }
 
         if (newState != MOVING) {
-            auto intervalTimer = (IntervalTimer *) associated.GetComponent(EVENT_TIMER_TYPE);
-            if (intervalTimer != nullptr) {
-                associated.RemoveComponent(intervalTimer);
-            }
+           RemoveStepSounds();
         }
 
         if (newState == TALKING && !closestNpc.expired()) {
@@ -711,6 +708,7 @@ string Player::GetRandomStepSound() {
 }
 
 void Player::Freeze() {
+    RemoveStepSounds();
     frozen = true;
 }
 
@@ -747,6 +745,13 @@ void Player::UpdateCharge(float dt) {
         }
         auto chargeBar = (Bar *) chargingBar.lock()->GetComponent(BAR_TYPE);
         chargeBar->SetValue(chargeCount);
+    }
+}
+
+void Player::RemoveStepSounds() {
+    auto intervalTimer = (IntervalTimer *) associated.GetComponent(EVENT_TIMER_TYPE);
+    if (intervalTimer != nullptr) {
+        associated.RemoveComponent(intervalTimer);
     }
 }
 

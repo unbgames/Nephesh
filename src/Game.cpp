@@ -52,7 +52,8 @@ Game::Game(string title, int width, int height) : dt(0), framestart(0) {
         if (renderer == nullptr) {
             throw "Error while creating renderer";
         }
-
+        char hint = 0;
+        SDL_SetHint (SDL_HINT_RENDER_SCALE_QUALITY, &hint);
         //Initialize state
         storedState = nullptr;
     } else {
