@@ -79,12 +79,12 @@ void WorldState::Update(float dt) {
         AddObject(blockObj);
     }
     
-//    if (inputManager.KeyPress(SDLK_f)) {
-//        Player::player->DecreaseHp(10);
-//    }
-//    if (inputManager.KeyPress(SDLK_i)) {
-//        Player::player->DecreaseHp(-10);
-//    }
+    if (inputManager.KeyPress(SDLK_f)) {
+        Player::player->DecreaseHp(10);
+    }
+    if (inputManager.KeyPress(SDLK_i)) {
+        Player::player->IncreaseHp(10);
+    }
 
     if (inputManager.KeyPress(ESCAPE_KEY)) {
         auto fadeObj = new GameObject(WORLD_LAST_LAYER);
