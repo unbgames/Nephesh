@@ -30,6 +30,8 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
     AddObject(playerObj);
 
     Camera::Follow(playerObj);
+    Camera::SetCameraHeight(1);
+    Camera::SetLayerDepth(4, 0.92);
 
     bgMusic = new Music("audio/mundo.ogg");
     Mix_VolumeMusic(32);
