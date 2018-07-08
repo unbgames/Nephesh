@@ -7,8 +7,7 @@
 #include <Sprite.h>
 #include <InputManager.h>
 
-BossMeleeAttack::BossMeleeAttack(GameObject &associated, string sprite, bool flip, Vec2 offset, double
-attackDuration, bool debug) :
+BossMeleeAttack::BossMeleeAttack(GameObject &associated, string sprite, double attackDuration, bool flip, Vec2 offset, bool debug) :
         Component(associated),
         collisionTimer(),
         colliderCreated(false),
