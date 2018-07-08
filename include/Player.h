@@ -39,6 +39,7 @@ using namespace std;
 #define PLAYER_ATTACK_RANGE 70
 #define PLAYER_ATTACK_WIDTH 120
 #define PLAYER_IDLE_SPRITE "img/idle_up.png"
+#define PLAYER_MAX_HP 100
 
 class Player : public Component {
 public:
@@ -73,6 +74,8 @@ public:
     void Freeze();
     
     void Unfreeze();
+
+    void DecreaseHp(int decrement);
 private:
     enum PlayerState {
         //Starting state of player
@@ -162,6 +165,7 @@ private:
     Timer timer;
 
     weak_ptr<GameObject> meleeAttack;
+    weak_ptr<GameObject> healthBar;
 
     PlayerStateData GetStateData(vector<PlayerStateData> data);
     void SetSprite(string file, int frameCount, float frameTime, bool flip = false);

@@ -16,13 +16,14 @@
 #include <IntervalTimer.h>
 #include <TerrainMap.h>
 #include <Charge.h>
+#include <Bar.h>
 #include "Player.h"
 
 #define SPEED 200
 
 Player *Player::player = nullptr;
 
-Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), state(STARTING), hp(100) {
+Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), state(STARTING), hp(PLAYER_MAX_HP) {
     associated.AddComponent(new Sound(associated));
     Sprite *spr = new Sprite(associated, PLAYER_IDLE_SPRITE, PLAYER_IDLE_SPRITE_COUNT, 0.1, 0, true);
 
@@ -309,6 +310,10 @@ void Player::Start() {
     associated.AddComponent(collider);
     auto &state = (WorldState &) Game::GetInstance().GetCurrentState();
     state.AddCollider(state.GetObjectPtr(&associated).lock());
+
+    auto healthBarObject = new GameObject(8);
+    healthBarObject->AddComponent(new Bar(*healthBarObject, "img/health_bar.png", PLAYER_MAX_HP, PLAYER_MAX_HP));
+    healthBar = state.AddObject(healthBarObject);
 }
 
 Player::~Player() {
@@ -647,6 +652,18 @@ void Player::Freeze() {
 
 void Player::Unfreeze() {
     frozen = false;
+}
+
+void Player::DecreaseHp(int decrement) {
+    hp -= decrement;
+    if (hp <= 0) {
+        hp = 0;
+    } else if (hp > PLAYER_MAX_HP) {
+        hp = PLAYER_MAX_HP;
+    }
+
+    auto bar = (Bar *)healthBar.lock()->GetComponent(BAR_TYPE);
+    bar->SetValue(hp);
 }
 
 Player::PlayerStateData::PlayerStateData(PlayerDirection direction,

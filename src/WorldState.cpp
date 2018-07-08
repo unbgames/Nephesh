@@ -35,7 +35,7 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
     Mix_VolumeMusic(32);
 
     Player::player->Freeze();
-    auto fadeInObj = new GameObject(2);
+    auto fadeInObj = new GameObject(WORLD_LAST_LAYER);
     fadeInObj->AddComponent(new FadeEffect(*fadeInObj, WORLD_FADE_IN_DURATION, 2, [] { Player::player->Unfreeze(); }));
     AddObject(fadeInObj);
 
@@ -64,9 +64,16 @@ void WorldState::Update(float dt) {
         blockObj->SetCenter(Camera::pos +  mousePos);
         AddObject(blockObj);
     }
+    
+    if (inputManager.KeyPress(SDLK_f)) {
+        Player::player->DecreaseHp(10);
+    }
+    if (inputManager.KeyPress(SDLK_i)) {
+        Player::player->DecreaseHp(-10);
+    }
 
     if (inputManager.KeyPress(ESCAPE_KEY)) {
-        auto fadeObj = new GameObject(2);
+        auto fadeObj = new GameObject(WORLD_LAST_LAYER);
         bgMusic->Stop();
         function<void()> callback;
         callback = [&] {
