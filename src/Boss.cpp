@@ -28,7 +28,7 @@ Boss::Boss(GameObject &associated) :
     //associated.AddComponent(camShaker);
     //Sprite *spr = new Sprite(associated, "img/boss_clap.png", 10, 0.2, 0, true);
 
-    associated.SetCenter({associated.box.x, associated.box.y});
+//    associated.SetCenter({associated.box.x, associated.box.y});
 }
 
 void Boss::Update(float dt) {
