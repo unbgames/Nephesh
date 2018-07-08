@@ -11,7 +11,7 @@
 #include "Timer.h"
 
 #define CAMERA_SHAKER_TYPE "CameraShaker"
-#define CAMERA_SHAKER_ROTATION_SPEED 15 //in rad/s
+#define CAMERA_SHAKER_ROTATION_SPEED 1000 //in rad/s
 
 class CameraShaker : public Component {
 public:
@@ -29,15 +29,15 @@ public:
 
     void SingleShake();
     void KeepShaking(float duration, bool fade = false);
-
     void SetShakeSize(int shakeSize);
+
     int GetShakeSize();
 
 private:
     ShakerState currentState;
     Timer shakerTimer;
     int shakeSize;
-    int fadingShakeSizePercentage;
+    float fadingShakeSizePercentage;
     Vec2 shakeVec;
     float shakeDuration;
     float fadingSpeed;

@@ -14,7 +14,8 @@
 
 class BossMeleeAttack : public Component {
 public:
-    BossMeleeAttack(GameObject &associated, string sprite, bool flip = false, Vec2 offset = {0, 0}, double attackDuration = PLAYER_ATTACK_DURATION, bool debug = true);
+    BossMeleeAttack(GameObject &associated, string sprite, double attackDuration = PLAYER_ATTACK_DURATION, 
+    bool flip = false, Vec2 offset = {0, 0}, bool debug = true);
 
     void Update(float dt) override;
 

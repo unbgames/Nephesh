@@ -22,16 +22,19 @@ void CameraShaker::Update(float dt) {
         shakerTimer.Update(dt);
 
         auto deltaRotation = CAMERA_SHAKER_ROTATION_SPEED*dt;
-        shakeVec.Rotate(deltaRotation);
+        shakeVec = shakeVec.Rotate(deltaRotation);
 
-        if(currentState == FADING){
+        if(currentState == FADING && fadingShakeSizePercentage > 0){
+            Camera::pos += (shakeVec*fadingShakeSizePercentage);
             fadingShakeSizePercentage -= fadingSpeed*dt;
-            Camera::pos += shakeVec*fadingShakeSizePercentage;
+        }
+        else if(currentState == FADING && fadingShakeSizePercentage < 0){
+            currentState = IDLE;
+            shakerTimer.Restart();
         }
         else{
             Camera::pos += shakeVec;
         }
-
     }
     else if(currentState != IDLE){
         currentState = IDLE;
@@ -53,6 +56,8 @@ void CameraShaker::SingleShake() {
 }
 
 void CameraShaker::KeepShaking(float duration, bool fade) {
+    shakeDuration = duration;
+
     if(fade){
         currentState = FADING;
         fadingShakeSizePercentage = 1;

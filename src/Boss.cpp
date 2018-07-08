@@ -24,8 +24,9 @@ Boss::Boss(GameObject &associated) :
     associated.AddComponent(new Sprite(associated, BOSS_IDLE_SPRITE, 10, 0.1));
     associated.AddComponent(new Sound(associated));
 
-    //camShaker = new CameraShaker(associated);
-    //associated.AddComponent(camShaker);
+    camShaker = new CameraShaker(associated);
+    associated.AddComponent(camShaker);
+
     //Sprite *spr = new Sprite(associated, "img/boss_clap.png", 10, 0.2, 0, true);
 
 //    associated.SetCenter({associated.box.x, associated.box.y});
@@ -37,6 +38,7 @@ void Boss::Update(float dt) {
 
     if(inputManager.KeyPress(SDLK_q)){
         camShaker->KeepShaking(3);
+//        camShaker->SingleShake();
     }
     if(inputManager.KeyPress(SDLK_e)){
         camShaker->KeepShaking(3, true);
