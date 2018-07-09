@@ -58,15 +58,17 @@ void WorldState::Update(float dt) {
     Camera::Update(dt);
     auto& inputManager = InputManager::GetInstance();
     
-    musicChangeTimer.Update(dt);
-    
-    if(musicToPlay.size() > 0 && fadeIn >= 0 && musicChangeTimer.Get() > WORLD_MUSIC_FADE_OUT_TIME/1000.0){
-        bgMusic->Open(musicToPlay);
-        bgMusic->Play(-1, fadeIn);
+    if(bossMusicToPlay){
+        introMusicTimer.Update(dt);
         
-        musicToPlay = "";
-        fadeIn = -1;
-        musicChangeTimer.Restart();
+        if(introMusicTimer.Get() >= introMusicLength){
+            bgMusic->Stop(0);
+            bgMusic->Open("audio/first_encounter_loop.wav");
+            bgMusic->Play(0, 0);
+
+            bossMusicToPlay = false;
+            introMusicTimer.Restart();            
+        }
     }
 
     if (inputManager.KeyPress(SDLK_t)) {
@@ -196,6 +198,7 @@ void WorldState::Resume() {
 
 void WorldState::LoadAssets() {
     Resources::GetSound("audio/first_encounter_loop.wav");
+    Resources::GetSound("audio/first_encounter_intro.wav");
     Resources::GetSound("audio/mundo.ogg");
 }
 
@@ -281,11 +284,15 @@ void WorldState::UpdateMusic(int prevIndex) {
     if(prevIndex != currentMapIndex && currentMapIndex == bossMapIndex){
         bgMusic->Stop(500);
         //musicChangeTimer.Restart();
-        bgMusic->Open("audio/first_encounter_loop.wav");
-        bgMusic->Play(0, 2000);
+        bgMusic->Open("audio/first_encounter_intro.wav");
+        bgMusic->Play(1, 1000);
+        
+        introMusicTimer.Restart();
+        bossMusicToPlay = true;
         cout << "Musica boss." << endl;
     } else if(prevIndex != currentMapIndex && prevIndex == bossMapIndex){
         bgMusic->Stop(500);
+        bossMusicToPlay = false;
         //musicChangeTimer.Restart();
         bgMusic->Open("audio/mundo.ogg");
         bgMusic->Play(0, 2000);

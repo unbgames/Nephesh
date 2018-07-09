@@ -69,9 +69,9 @@ private:
         void UpdateMusic(int prevIndex);
         int bossMapIndex = 6;
         
-        string musicToPlay = "";
-        int fadeIn = -1;
-        Timer musicChangeTimer;
+        Timer introMusicTimer;
+        int introMusicLength = 57;
+        bool bossMusicToPlay = false;
 };
 
 

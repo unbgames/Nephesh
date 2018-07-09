@@ -34,6 +34,7 @@ void DecentMusic::Play(int times, int msToStart) {
 void DecentMusic::Stop(int msToStop) {
     if (music != nullptr) {
         Mix_FadeOutChannel(channel, msToStop);
+        cout << "Stop dMusic." << endl;
     }
 }
 
