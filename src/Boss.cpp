@@ -296,8 +296,10 @@ void Boss::SlamAttack() {
     });
 
     DecentTimer::ProgramTimer(associated, BOSS_ATTACK_TIME-0.3, [thisGO]() -> void{
+        string earthquakeSounds[3] = {BOSS_SLAM_EARTHQUAKE_SOUND_1, BOSS_SLAM_EARTHQUAKE_SOUND_2, BOSS_SLAM_EARTHQUAKE_SOUND_3};
+
         auto boss = (Boss*) thisGO->GetComponent(BOSS_TYPE);
-        boss->PlaySound(BOSS_SLAM_EARTHQUAKE_SOUND);
+        boss->PlaySound(earthquakeSounds[rand() % 3]);
         boss->camShaker->KeepShaking(BOSS_ATTACK_TIME, true);
     });
 

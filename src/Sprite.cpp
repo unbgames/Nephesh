@@ -171,11 +171,11 @@ void Sprite::SetFlip(bool f) {
     flip = f;
 }
 
-int Sprite::getFrameCount() {
+int Sprite::GetFrameCount() {
     return frameCount;
 }
 
-int Sprite::getCurrentFrame() {
+int Sprite::GetCurrentFrame() {
     return currentFrame;
 }
 
@@ -190,4 +190,12 @@ void Sprite::UnlockFrame() {
 
 void Sprite::SetAlpha(Uint8 a) {
     SDL_SetTextureAlphaMod(texture.get(), a);
+}
+
+float Sprite::GetSecondsToSelfDestruct() {
+    return secondsToSelfDestruct;
+}
+
+void Sprite::SetSecondsToSelfDestruct(float secondsToSelfDestruct) {
+    this->secondsToSelfDestruct = secondsToSelfDestruct;
 }
