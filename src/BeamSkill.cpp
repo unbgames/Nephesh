@@ -7,6 +7,8 @@
 #include <LineSegment.h>
 #include <Game.h>
 #include <Collidable.h>
+#include <CollisionMap.h>
+#include <Boss.h>
 #include "BeamSkill.h"
 
 BeamSkill::BeamSkill(GameObject &associated, Vec2 target, Player::PlayerDirection direction) : Component(associated), target(target), direction(direction), lockBeam(false) {
@@ -15,7 +17,7 @@ BeamSkill::BeamSkill(GameObject &associated, Vec2 target, Player::PlayerDirectio
     auto raySprite = new Sprite(associated, "img/magic_effect_side2.png", 5, BEAM_LIFETIME/5, 0, false, false);
     associated.AddComponent(raySprite);
     collider->SetCanCollide([] (GameObject &other) -> bool {
-        return false;
+        return other.HasComponent(COLLISION_MAP_TYPE) || other.HasComponent(BOSS_TYPE);
     });
 }
 
@@ -30,6 +32,15 @@ void BeamSkill::Update(float dt) {
         endObject.lock()->RequestDelete();
         associated.RequestDelete();
     }
+    if (lockBeam && !receivingObject.expired()) {
+        auto boss = (Boss *) receivingObject.lock()->GetComponent(BOSS_TYPE);
+        if (boss != nullptr) {
+            boss->TryHitLaser();
+            auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
+            collider->SetCanCollide([] (GameObject &other) -> bool { return false; });
+            receivingObject.reset();
+        }
+    }
 }
 
 void BeamSkill::Render() {
@@ -41,11 +52,12 @@ bool BeamSkill::Is(string type) {
 }
 
 void BeamSkill::NotifyCollision(GameObject &other) {
+    auto thisCollider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
     if (!lockBeam) {
         auto collidable = (Collidable *) other.GetComponent(COLLIDABLE_TYPE);
-        auto thisCollider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
         auto colliderBox = thisCollider->box;
 
+        auto &state = Game::GetInstance().GetCurrentState();
         auto intersections = collidable->GetIntersections(*thisCollider);
         auto boxCorners = colliderBox.GetCorners(associated.angleDeg, associated.rotationCenter);
         auto l1 = LineSegment(boxCorners[0], boxCorners[1]);
@@ -58,11 +70,13 @@ void BeamSkill::NotifyCollision(GameObject &other) {
                 auto d = (intersectionDot - l1.dot1).Module();
                 if (d < cutoffPoint) {
                     cutoffPoint = d;
+                    receivingObject = state.GetObjectPtr(&other);
                 }
             } else if (intersectionLine == l2) {
                 auto d = (intersectionDot - l2.dot2).Module();
                 if (d < cutoffPoint) {
                     cutoffPoint = d;
+                    receivingObject = state.GetObjectPtr(&other);
                 }
             }
         }
@@ -87,9 +101,6 @@ void BeamSkill::Start() {
     }
 
     auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
-    collider->SetCanCollide([] (GameObject &other) -> bool {
-        return true;
-    });
     collider->Update(0);
 
     auto d = target - Vec2(associated.box.x, associated.box.y + associated.box.h/2);

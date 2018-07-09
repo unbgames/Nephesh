@@ -28,6 +28,8 @@
 #define BOSS_AWAKEN_DISTANCE 350
 #define BOSS_DEATH_DURATION 2.5
 #define BOSS_DEATH_SPRITE_COUNT 25
+#define BOSS_PROTECT_DURATION 0.2
+#define BOSS_PROTECT_SPRITE_COUNT 10
 
 #define BOSS_CUTSCENE_SPRITE "img/cutscene_intro.png"
 #define BOSS_IDLE_SPRITE "img/boss_idle.png"
@@ -36,6 +38,10 @@
 #define BOSS_SLAM_SPRITE "img/boss_slam.png"
 #define BOSS_CLAP_SPRITE "img/boss_clap.png"
 #define BOSS_DEATH_SPRITE "img/death.png"
+#define BOSS_PROTECT_SPRITE "img/protect.png"
+#define BOSS_VULNERABLE_SPRITE "img/vulnerable.png"
+#define BOSS_VULNERABLE_SPRITE_COUNT 16
+#define BOSS_VULNERABLE_DURATION 2
 
 #define BOSS_CLAP_SOUND "audio/boss/boss_clap.wav"
 #define BOSS_SLAM_SOUND "audio/boss/boss_slam.wav"
@@ -52,7 +58,9 @@ public:
         ATTACKING,
         AWAKENING,
         IDLE,
-        DYING
+        DYING,
+        VULNERABLE,
+        DEFENDING
     };
 
     enum BossAttack{
@@ -79,6 +87,7 @@ public:
     void ShowBars();
 
     void DecreaseHp(int damage);
+    void TryHitLaser();
 
     void Start() override;
 

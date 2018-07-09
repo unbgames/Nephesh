@@ -79,7 +79,7 @@ void Boss::Update(float dt) {
         if (newState != STARTING && newState != AWAKENING) {
             Camera::offset = Vec2(0, 0);
         } else if (awoken) {
-            Camera::offset = Vec2(0, 200);
+            Camera::offset = Vec2(0, 0);
         }
         Sprite *sprite;
 
@@ -88,7 +88,7 @@ void Boss::Update(float dt) {
                 if (Player::player && center.Distance(Player::player->GetCenter()) <= BOSS_AWAKEN_DISTANCE) {
                     sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
                     sprite->UnlockFrame();
-                    Camera::Follow(&associated);
+//                    Camera::Follow(&associated);
                     newState = AWAKENING;
                     Player::player->Freeze();
                     PlaySound("audio/boss/boss_acordando.wav");
@@ -99,12 +99,33 @@ void Boss::Update(float dt) {
                 cutsceneTimer.Update(dt);
                 if (cutsceneTimer.Get() > BOSS_AWAKENING_DURATION) {
                     SetSprite(BOSS_IDLE_SPRITE);
-                    Camera::Follow(&Player::player->GetGameObject());
+//                    Camera::Follow(&Player::player->GetGameObject());
                     Player::player->Unfreeze();
                     newState = IDLE;
                 }
                 break;
-
+            case DEFENDING:
+                if (previousState != DEFENDING) {
+                    SetSprite(BOSS_PROTECT_SPRITE);
+                    timer.Restart();
+                } else {
+                    timer.Update(dt);
+                    if (timer.Get() > BOSS_PROTECT_DURATION) {
+                        newState = IDLE;
+                    }
+                }
+                break;
+            case VULNERABLE:
+                if (previousState != VULNERABLE) {
+                    SetSprite(BOSS_VULNERABLE_SPRITE);
+                    timer.Restart();
+                } else {
+                    timer.Update(dt);
+                    if (timer.Get() > BOSS_VULNERABLE_DURATION) {
+                        newState = IDLE;
+                    }
+                }
+                break;
             case IDLE:
                 ShowBars();
                 if(previousState != IDLE){
@@ -116,7 +137,6 @@ void Boss::Update(float dt) {
                     newState = ATTACKING;
                 }
                 break;
-
             case ATTACKING:
                 if(previousState != ATTACKING){
                     numOfAttacks = (rand()%(BOSS_MAX_NUM_OF_ATTACKS - BOSS_MIN_NUM_OF_ATTACKS + 1)) +
@@ -183,6 +203,12 @@ void Boss::SetSprite(string file, bool flip) {
     } else if (file == BOSS_DEATH_SPRITE) {
         sprite->SetFrameCount(BOSS_DEATH_SPRITE_COUNT);
         sprite->SetFrameTime(((float) BOSS_DEATH_DURATION)/BOSS_DEATH_SPRITE_COUNT);
+    } else if (file == BOSS_PROTECT_SPRITE) {
+        sprite->SetFrameCount(BOSS_PROTECT_SPRITE_COUNT);
+        sprite->SetFrameTime(((float) BOSS_PROTECT_DURATION)/BOSS_PROTECT_SPRITE_COUNT);
+    } else if (file == BOSS_VULNERABLE_SPRITE) {
+        sprite->SetFrameCount(BOSS_VULNERABLE_SPRITE_COUNT);
+        sprite->SetFrameTime(((float) BOSS_VULNERABLE_DURATION)/BOSS_VULNERABLE_SPRITE_COUNT);
     } else { // ATTACKS
         sprite->SetFrameCount(10);
         sprite->SetFrameTime(BOSS_ATTACK_TIME / 10);
@@ -207,12 +233,12 @@ void Boss::Attack() {
 
     if (dist <= BOSS_SLAP_DISTANCE) {
         attackProbabilityWeights[SLAP] = 0;
-        attackProbabilityWeights[SLAM] = 100;
-        attackProbabilityWeights[CLAP] = 0;
+        attackProbabilityWeights[SLAM] = 0;
+        attackProbabilityWeights[CLAP] = 100;
     } else {
         attackProbabilityWeights[SLAP] = 0;
-        attackProbabilityWeights[SLAM] = 100;
-        attackProbabilityWeights[CLAP] = 0;
+        attackProbabilityWeights[SLAM] = 0;
+        attackProbabilityWeights[CLAP] = 100;
     }
 
     attackState = (BossAttack) WeightedDraft(attackProbabilityWeights);
@@ -497,11 +523,23 @@ void Boss::Start() {
 }
 
 void Boss::DecreaseHp(int damage) {
-    hp -= damage;
-    if (hp < 0) {
-        hp = 0;
+    if (currentState == VULNERABLE) {
+        hp -= damage;
+        if (hp < 0) {
+            hp = 0;
+        }
+        auto bar = (Bar *) healthBar.lock()->GetComponent(BAR_TYPE);
+        bar->SetValue(hp);
     }
-    auto bar = (Bar *) healthBar.lock()->GetComponent(BAR_TYPE);
-    bar->SetValue(hp);
+}
+
+void Boss::TryHitLaser() {
+    if (awoken) {
+        if (currentState == ATTACKING && attackState == CLAP) {
+            UpdateState(VULNERABLE);
+        } else {
+            UpdateState(DEFENDING);
+        }
+    }
 }
 

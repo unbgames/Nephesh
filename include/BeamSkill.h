@@ -39,6 +39,7 @@ private:
     Vec2 target;
     Timer timer;
     float cutoffPoint;
+    weak_ptr<GameObject> receivingObject;
     bool lockBeam;
 };
 
