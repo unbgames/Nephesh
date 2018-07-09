@@ -69,6 +69,16 @@ void WorldState::Update(float dt) {
 
             ending = false;
             endingTimer.Restart();
+
+            auto fadeObj = new GameObject(WORLD_LAST_LAYER);
+            bgMusic->Stop();
+            function<void()> callback;
+            callback = [&] {
+                popRequested = true;
+            };
+
+            fadeObj->AddComponent(new FadeEffect(*fadeObj, END_GAME_FADE_DURATION, 0, callback, FadeEffect::FadeType::OUT));
+            AddObject(fadeObj);
         }
     }
     
