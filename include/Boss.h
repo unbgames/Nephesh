@@ -6,7 +6,7 @@
 #define NEPHESH_BOSS_H
 
 #include <algorithm>
-#include "Component.h"
+#include "GameObject.h"
 #include "Vec2.h"
 #include "Timer.h"
 #include <Sound.h>

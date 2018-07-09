@@ -5,7 +5,6 @@
 #ifndef NEPHESH_FALLINGROCK_H
 #define NEPHESH_FALLINGROCK_H
 
-#include "Component.h"
 #include "CameraShaker.h"
 
 #define FALLING_ROCK_TYPE "FallingRock"

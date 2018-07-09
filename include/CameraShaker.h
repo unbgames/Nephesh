@@ -6,7 +6,7 @@
 #define NEPHESH_CAMERASHAKER_H
 
 
-#include "Component.h"
+#include "GameObject.h"
 #include "Vec2.h"
 #include "Timer.h"
 
