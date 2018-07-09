@@ -14,6 +14,7 @@
 #include "Game.h"
 #endif // DEBUG
 
+#define PI 3.1415926
 
 Collidable::Collidable(GameObject &associated, Vec2 scale, Vec2 offset):
         Component(associated),
@@ -63,8 +64,8 @@ bool Collidable::Is(string type) {
 }
 
 bool Collidable::IsColliding(Collider& collider) {
-    auto angleOfCollidable = (float)(associated.angleDeg * M_PI/180);
-    auto angleOfCollider = (float)(collider.GetGameObject().angleDeg * M_PI/180);
+    auto angleOfCollidable = (float)(associated.angleDeg *  PI/180);
+    auto angleOfCollider = (float)(collider.GetGameObject().angleDeg * PI/180);
 
     auto collidableBox = box;
     auto colliderBox = collider.box;

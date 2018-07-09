@@ -14,6 +14,8 @@
 #include <Game.h>
 #include <CameraShaker.h>
 
+#define PI 3.1415926
+
 #define BOSS_TYPE "Boss"
 #define BOSS_INITIAL_HP 100
 #define BOSS_IDLE_TIME 5 // in seconds

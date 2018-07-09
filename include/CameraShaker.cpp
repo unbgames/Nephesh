@@ -6,6 +6,8 @@
 #include "CameraShaker.h"
 #include "Camera.h"
 
+#define PI 3.1415926
+
 CameraShaker::CameraShaker(GameObject &associated, int shakeSize) :
         Component(associated),
         currentState(IDLE),
@@ -79,7 +81,8 @@ int CameraShaker::GetShakeSize() {
 }
 
 void CameraShaker::GenerateShakeVec() {
-    shakeVec = Vec2(shakeSize, 0).Rotate(M_PI * ((rand() % 1001)/500.0));
+    shakeVec = Vec2(shakeSize, 0).Rotate(PI * ((rand() % 1001) / 500.0));
+    
 }
 
 

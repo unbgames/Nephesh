@@ -8,6 +8,7 @@
 #include <Sound.h>
 #include <Boss.h>
 #include <Cast.h>
+//#include <Utils.h>
 #include "RollingStones.h"  
 
 RollingStones::RollingStones(GameObject &associated, int damage, float speed, float maxDist) : 
@@ -59,7 +60,7 @@ void RollingStones::Start() {
     auto playerCenter = Player::player->GetCenter();
     auto d = playerCenter - stoneCenter;
     targetAngleDeg = d.XAngleDeg();
-    speedVec = Vec2(speed*cos(M_PI*targetAngleDeg/180.0), speed*sin(M_PI*targetAngleDeg/180.0));
+    speedVec = Vec2(speed*cos(PI*targetAngleDeg/180.0), speed*sin(PI*targetAngleDeg/180.0));
     //PlaySound();
     //cout << "Speed: " << speed << " Speed X: " << speedVec.x << " Speed Y: " << speedVec.y << endl;
 }
