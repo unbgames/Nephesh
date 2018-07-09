@@ -242,7 +242,6 @@ void Player::Update(float dt) {
                     newState = IDLE;
                 }
             }
-
         } else if (newState == MOVING) {
 
             if (state != MOVING) {
@@ -526,7 +525,7 @@ void Player::Shoot() {
             break;
     }
 
-    auto beamObj = new GameObject(associated.GetLayer());
+    auto beamObj = new GameObject(associated.GetLayer()+1);
     beamObj->box = Rect() + playerBoxCenter + GetStateData(shootingData).objectSpriteOffset;
     beamObj->box += offset;
     auto beamCpt = new BeamSkill(*beamObj, target, currentDirection);
