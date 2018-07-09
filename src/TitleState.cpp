@@ -25,13 +25,13 @@ TitleState::TitleState() : State(), frozen(false) {
 
     auto titleObj = new GameObject(1);
     SDL_Color white = {255, 255, 255, 255};
-    auto titleText = new Text(*titleObj, "font/leadcoat.ttf", 100, Text::TextStyle::SOLID, "NEPHESH", white);
+    auto titleText = new Text(*titleObj, "font/PressStart2P-Regular.ttf", 100, Text::TextStyle::SOLID, "NEPHESH", white);
     titleObj->AddComponent(titleText);
     titleObj->box += Vec2(20, 20);
     AddObject(titleObj);
 
     auto intrObj = new GameObject(1);
-    auto instrText = new Text(*intrObj, "font/leadcoat.ttf", 40, Text::TextStyle::SOLID, "Press space bar to start!", white);
+    auto instrText = new Text(*intrObj, "font/PressStart2P-Regular.ttf", 40, Text::TextStyle::SOLID, "Press space bar to start!", white);
     intrObj->AddComponent(instrText);
     auto callback = [instrText] {
         auto color = instrText->GetColor();

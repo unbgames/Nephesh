@@ -5,6 +5,7 @@
 #include <Game.h>
 #include <Camera.h>
 #include <Resources.h>
+#include <codecvt>
 #include "Text.h"
 
 Text::Text(GameObject &associated,
@@ -43,7 +44,7 @@ void Text::Render() {
         int w, h;
         SDL_QueryTexture(texture, nullptr, nullptr, &w, &h);
         SDL_Rect clipRect = { 0, 0, w, h };
-        SDL_Rect dstRect = { (int)renderPos.x, (int)renderPos.y + i*clipRect.h, clipRect.w, clipRect.h };
+        SDL_Rect dstRect = { (int)renderPos.x, (int)renderPos.y + i*(clipRect.h + 20), clipRect.w, clipRect.h };
         SDL_RenderCopyEx(game.GetRenderer(),
                          texture,
                          &clipRect,
@@ -95,10 +96,10 @@ void Text::RemakeTexture() {
         SDL_Surface *surface = nullptr;
         switch (style) {
             case TextStyle::SOLID:
-                surface = TTF_RenderText_Solid(font.get(), line.c_str(), color);
+                surface = TTF_RenderUTF8_Solid(font.get(), line.c_str(), color);
                 break;
             case TextStyle::BLENDED:
-                surface = TTF_RenderText_Blended(font.get(), line.c_str(), color);
+                surface = TTF_RenderUTF8_Blended(font.get(), line.c_str(), color);
                 break;
             case TextStyle::SHADED:
                 SDL_Color black = { 0, 0, 0, 255 };
@@ -121,6 +122,7 @@ SDL_Color Text::GetColor() {
 vector<string> Text::GetLines() {
     int NumSubstrings = text.length() / MAX_CHAR_PER_LINE;
     vector<string> ret;
+
 
     for (auto i = 0; i < NumSubstrings; i++)
     {

@@ -8,8 +8,9 @@
 
 #include "GameObject.h"
 
-#define PADDING_TOP 70
-#define PADDING_LEFT 140
+#define PADDING_TOP 110
+#define PADDING_LEFT 65
+#define DEFAULT_FONT "font/PressStart2P-Regular.ttf"
 #define TEXT_BOX_TYPE "TextBox"
 
 class TextBox : public Component {
@@ -29,6 +30,7 @@ public:
     void DeleteText();
 private:
     weak_ptr<GameObject> containedText;
+    Vec2 offset;
 };
 
 

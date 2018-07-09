@@ -23,7 +23,7 @@
 WorldState::WorldState() : State(), currentMapIndex(0) {
     auto obj = new GameObject();
     bgObj = shared_ptr<GameObject>(obj);
-    bgObj->AddComponent(new Sprite(*bgObj, "img/whiteBg.png"));
+    bgObj->AddComponent(new Sprite(*bgObj, "img/bg.png"));
     bgObj->AddComponent(new CameraFollower(*bgObj));
 
     auto playerObj = new GameObject();
@@ -165,10 +165,10 @@ void WorldState::Render() {
 }
 
 void WorldState::Start() {
-    vector<string> m1 = { "map/1/ground.png", "map/1/rocks.png" };
-    vector<string> m2 = { "map/2/ground.png", "map/2/rocks.png" };
-    vector<string> m3 = { "map/3/ground.png", "map/3/rocks.png" };
-    vector<string> m4 = { "map/4/ground.png", "map/4/rocks.png" };
+    vector<string> m1 = { "map/1/ground.png", "map/1/rocks.png", "map/1/trees.png", "map/1/surroundings.png", "map/1/lighting.png", "map/1/view.png" };
+    vector<string> m2 = { "map/2/ground.png", "map/2/rocks.png", "map/2/trees.png", "map/2/surroundings.png", "map/2/lighting.png", "map/2/view.png" };
+    vector<string> m3 = { "map/3/ground.png", "map/3/rocks.png", "map/3/trees.png", "map/3/surroundings.png", "map/3/lighting.png", "map/3/view.png", "map/3/vines.png" };
+    vector<string> m4 = { "map/4/ground.png", "map/4/rocks.png", "map/4/trees.png", "map/4/surroundings.png", "map/4/lighting.png", "map/4/view.png", "map/4/vines.png" };
     vector<string> m5 = { "map/5/ground.png", "map/5/rocks.png", "map/5/trees.png", "map/5/surroundings.png", "map/5/lighting.png", "map/5/view.png", "map/5/vines.png" };
     vector<string> m8 = { "map/8/ground.png", "map/8/rocks.png", "map/8/trees.png", "map/8/surroundings.png", "map/8/lighting.png", "map/8/vines.png" };
     vector<string> m9 = { "map/9/ground.png", "map/9/rocks.png", "map/9/trees.png", "map/9/surroundings.png", "map/9/lighting.png", "map/9/view.png", "map/9/vine.png" };
@@ -183,6 +183,7 @@ void WorldState::Start() {
     StartArray();
 
     LoadMaps();
+
     LoadNpcs();
     bgMusic->Play();
 
@@ -220,7 +221,7 @@ void WorldState::CheckCollisions() {
             for (int j = 0; j < collidables.size(); j++) {
                 auto collidable = collidables[j].lock();
 
-                if( (collidable) && (collider->GetLayer() == collidable->GetLayer()) && (colliderCpt->CanCollide(*collidable)) ){
+                if( (collidable) && (collider->GetLayer() == collidable->GetLayer() || collidable->HasComponent(COLLISION_MAP_TYPE)) && (colliderCpt->CanCollide(*collidable)) ){
                     auto collidableCpt = (Collidable*)collidable->GetComponent(COLLIDABLE_TYPE);
 
                     if(collidableCpt->IsColliding(*colliderCpt)){
@@ -341,22 +342,25 @@ int WorldState::GetCurrentMapIndex() {
 }
 
 void WorldState::LoadNpcs() {
-    vector<string> creatureSounds {
-            "audio/npcs/criatura/criatura_magica_1.wav",
-            "audio/npcs/criatura/criatura_magica_2.wav",
-            "audio/npcs/criatura/criatura_magica_3.wav",
+    vector<string> creatureSounds1 {
             "audio/npcs/criatura/criatura_magica_4.wav",
-            "audio/npcs/criatura/criatura_magica_5.wav",
+            "audio/npcs/criatura/criatura_magica_3.wav"
     };
 
     auto creatureObj1 = new GameObject();
     creatureObj1->AddComponent(new Sprite(*creatureObj1, "img/criatura.png", 6, 0.2));
-    creatureObj1->AddComponent(new Npc(*creatureObj1, "npcs/criatura_magica1.txt", creatureSounds));
+    creatureObj1->AddComponent(new Npc(*creatureObj1, "npcs/criatura_magica1.txt", creatureSounds1));
     AddObject(creatureObj1);
+
+    vector<string> creatureSounds2 {
+            "audio/npcs/criatura/criatura_magica_4.wav",
+            "audio/npcs/criatura/criatura_magica_2.wav",
+            "audio/npcs/criatura/criatura_magica_1.wav"
+    };
 
     auto creatureObj2 = new GameObject();
     creatureObj2->AddComponent(new Sprite(*creatureObj2, "img/criatura.png", 6, 0.2));
-    creatureObj2->AddComponent(new Npc(*creatureObj2, "npcs/criatura_magica2.txt", creatureSounds));
+    creatureObj2->AddComponent(new Npc(*creatureObj2, "npcs/criatura_magica2.txt", creatureSounds2));
     AddObject(creatureObj2);
 }
 

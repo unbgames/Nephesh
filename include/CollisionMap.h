@@ -41,5 +41,4 @@ private:
     int mapDepth;
 };
 
-
 #endif //NEPHESH_COLLISIONMAP_H

@@ -9,6 +9,7 @@
 #include <InputManager.h>
 #include <fstream>
 #include <Sound.h>
+#include <WorldState.h>
 #include "Npc.h"
 
 Npc::Npc(GameObject &associated, string file, vector<string> sounds, bool debug) : Component(associated),
@@ -111,7 +112,7 @@ void Npc::Talk() {
 
     RestartLines();
 
-    auto textBoxObj = new GameObject(1);
+    auto textBoxObj = new GameObject(HUD_LAYER);
     auto box = new TextBox(*textBoxObj);
     textBoxObj->AddComponent(box);
     textBox = Game::GetInstance().GetCurrentState().AddObject(textBoxObj);

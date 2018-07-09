@@ -11,7 +11,7 @@
 #include <vector>
 
 #define TEXT_TYPE "Text"
-#define MAX_CHAR_PER_LINE 100
+#define MAX_CHAR_PER_LINE 40
 
 class Text : public Component {
 public:

@@ -38,25 +38,24 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     movingData.emplace_back(LEFT, "img/walk_side.png", Vec2(0.421, 1), Vec2(-15, 0));
     movingData.emplace_back(UP, "img/walk_up.png", Vec2(0.353, 1), Vec2(0, 0));
     movingData.emplace_back(DOWN, "img/walk_down.png", Vec2(0.353, 1), Vec2(0, 0));
-    grassStepSounds.emplace_back("audio/steps/grass/grass_1.wav");
-    grassStepSounds.emplace_back("audio/steps/grass/grass_2.wav");
-    grassStepSounds.emplace_back("audio/steps/grass/grass_3.wav");
-    grassStepSounds.emplace_back("audio/steps/grass/grass_4.wav");
-    grassStepSounds.emplace_back("audio/steps/grass/grass_5.wav");
-    grassStepSounds.emplace_back("audio/steps/grass/grass_6.wav");
-    stoneStepSounds.emplace_back("audio/steps/stone/stone_1.wav");
-    stoneStepSounds.emplace_back("audio/steps/stone/stone_2.wav");
-    stoneStepSounds.emplace_back("audio/steps/stone/stone_3.wav");
-    stoneStepSounds.emplace_back("audio/steps/stone/stone_4.wav");
-    stoneStepSounds.emplace_back("audio/steps/stone/stone_5.wav");
-    stoneStepSounds.emplace_back("audio/steps/stone/stone_6.wav");
-    dirtStepSounds.emplace_back("audio/steps/dirt/dirt_1.wav");
-    dirtStepSounds.emplace_back("audio/steps/dirt/dirt_2.wav");
-    dirtStepSounds.emplace_back("audio/steps/dirt/dirt_3.wav");
-    dirtStepSounds.emplace_back("audio/steps/dirt/dirt_4.wav");
-    dirtStepSounds.emplace_back("audio/steps/dirt/dirt_5.wav");
-    dirtStepSounds.emplace_back("audio/steps/dirt/dirt_6.wav");
-
+    grassStepSounds.emplace_back("audio/steps/grass/passo_grama_1.wav");
+    grassStepSounds.emplace_back("audio/steps/grass/passo_grama_2.wav");
+    grassStepSounds.emplace_back("audio/steps/grass/passo_grama_3.wav");
+    grassStepSounds.emplace_back("audio/steps/grass/passo_grama_4.wav");
+    grassStepSounds.emplace_back("audio/steps/grass/passo_grama_5.wav");
+    grassStepSounds.emplace_back("audio/steps/grass/passo_grama_6.wav");
+    stoneStepSounds.emplace_back("audio/steps/stone/passo_pedra_1.wav");
+    stoneStepSounds.emplace_back("audio/steps/stone/passo_pedra_2.wav");
+    stoneStepSounds.emplace_back("audio/steps/stone/passo_pedra_3.wav");
+    stoneStepSounds.emplace_back("audio/steps/stone/passo_pedra_4.wav");
+    stoneStepSounds.emplace_back("audio/steps/stone/passo_pedra_5.wav");
+    stoneStepSounds.emplace_back("audio/steps/stone/passo_pedra_6.wav");
+    dirtStepSounds.emplace_back("audio/steps/dirt/passo_terra_1.wav");
+    dirtStepSounds.emplace_back("audio/steps/dirt/passo_terra_2.wav");
+    dirtStepSounds.emplace_back("audio/steps/dirt/passo_terra_3.wav");
+    dirtStepSounds.emplace_back("audio/steps/dirt/passo_terra_4.wav");
+    dirtStepSounds.emplace_back("audio/steps/dirt/passo_terra_5.wav");
+    dirtStepSounds.emplace_back("audio/steps/dirt/passo_terra_6.wav");
 
     dashingData.emplace_back(RIGHT, "img/dash_side.png", Vec2(0.311, 1.098), Vec2(20, 0));
     dashingData.emplace_back(LEFT, "img/dash_side.png", Vec2(0.311, 1.098), Vec2(-15, 0));
@@ -78,9 +77,9 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     attackMissSounds.emplace_back("audio/sword/attack_miss_1.wav");
     attackMissSounds.emplace_back("audio/sword/attack_miss_2.wav");
     attackMissSounds.emplace_back("audio/sword/attack_miss_3.wav");
-    attackHitSounds.emplace_back("audio/sword/attack_hit_1.wav");
-    attackHitSounds.emplace_back("audio/sword/attack_hit_2.wav");
-    attackHitSounds.emplace_back("audio/sword/attack_hit_3.wav");
+    attackHitSounds.emplace_back("audio/sword/hitbox_1.wav");
+    attackHitSounds.emplace_back("audio/sword/hitbox_2.wav");
+    attackHitSounds.emplace_back("audio/sword/hitbox_3.wav");
 
     idleData.emplace_back(RIGHT, "img/idle_down.png", Vec2(0.444, 1), Vec2(25, 0));
     idleData.emplace_back(LEFT, "img/idle_up.png", Vec2(0.444, 1), Vec2(25, 0));
@@ -551,6 +550,7 @@ void Player::Attack() {
 
     auto playerBoxCenter = associated.box.Center();
     auto attackObject = new GameObject(associated.GetLayer()+1);
+    cout << associated.GetLayer() << endl;
 
 //    attackObject->box = currentDirection == LEFT || currentDirection == RIGHT ? Rect(PLAYER_ATTACK_WIDTH,
 //                                                                                     PLAYER_ATTACK_RANGE)
