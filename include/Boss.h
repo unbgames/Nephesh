@@ -21,11 +21,13 @@
 #define BOSS_MIN_NUM_OF_ATTACKS 1
 #define BOSS_MAX_NUM_OF_ATTACKS 1
 #define BOSS_SLAP_DISTANCE 400
-#define BOSS_IDLE_DISTANCE 600
+#define BOSS_IDLE_DISTANCE 1000
 #define BOSS_MIN_SLIDING_ROCK_DIST 250
 #define BOSS_AWAKENING_DURATION 4
 #define BOSS_AWAKENING_SPRITE_COUNT 40
 #define BOSS_AWAKEN_DISTANCE 350
+#define BOSS_DEATH_DURATION 2.5
+#define BOSS_DEATH_SPRITE_COUNT 25
 
 #define BOSS_CUTSCENE_SPRITE "img/cutscene_intro.png"
 #define BOSS_IDLE_SPRITE "img/boss_idle.png"
@@ -33,6 +35,7 @@
 #define BOSS_SLAP_LEFT_SPRITE "img/boss_slap_left.png"
 #define BOSS_SLAM_SPRITE "img/boss_slam.png"
 #define BOSS_CLAP_SPRITE "img/boss_clap.png"
+#define BOSS_DEATH_SPRITE "img/death.png"
 
 #define BOSS_CLAP_SOUND "audio/boss/boss_clap.wav"
 #define BOSS_SLAM_SOUND "audio/boss/boss_slam.wav"
@@ -48,7 +51,8 @@ public:
         STARTING,
         ATTACKING,
         AWAKENING,
-        IDLE
+        IDLE,
+        DYING
     };
 
     enum BossAttack{
@@ -70,6 +74,13 @@ public:
     void SlapAttack();
     void SlamAttack();
     void ClapAttack();
+    void CreateBars();
+    void HideBars();
+    void ShowBars();
+
+    void DecreaseHp(int damage);
+
+    void Start() override;
 
 private:
 
@@ -91,6 +102,9 @@ private:
     double timeToLoadCollider = -1;
     GameObject* colliderToLoad = nullptr;
     Timer colliderTimer;
+
+    weak_ptr<GameObject> healthBar;
+    weak_ptr<GameObject> barDecoration;
 
     void PrintBossState();
     void PrintBossAttack();

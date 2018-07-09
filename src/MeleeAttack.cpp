@@ -5,6 +5,7 @@
 #include <Collider.h>
 #include <Sprite.h>
 #include <InputManager.h>
+#include <Boss.h>
 #include "MeleeAttack.h"
 
 MeleeAttack::MeleeAttack(GameObject &associated, string sprite, int frameCount, bool flip, Vec2 offset, Vec2 colScale, Vec2 colOffset, double attackDuration, bool debug) :
@@ -79,7 +80,10 @@ bool MeleeAttack::Is(string type) {
 }
 
 void MeleeAttack::NotifyCollision(GameObject &other) {
-    other.RequestDelete();
+    auto boss = (Boss *)other.GetComponent(BOSS_TYPE);
+    if (boss != nullptr) {
+        boss->DecreaseHp(10);
+    }
     attackHit = true;
 }
 
