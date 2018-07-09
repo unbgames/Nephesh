@@ -1,6 +1,7 @@
-#define _USE_MATH_DEFINES
+
 #include <cmath>
 #include "Vec2.h"
+#define PI 3.1415926
 
 Vec2::Vec2() : x(0), y(0) {}
 
@@ -46,14 +47,14 @@ Vec2 Vec2::Rotate(float angle) {
 }
 
 Vec2 Vec2::RotateDeg(float angle) {
-    auto rad = 2*M_PI*(angle/360.0);
+    auto rad = 2*PI*(angle/360.0);
     float cosO = cos(rad);
     float sinO = sin(rad);
     return { x*cosO - y*sinO, x*sinO + y*cosO };
 }
 
 float Vec2::XAngleDeg() {
-    return (XAngle()/(2*M_PI))*360;
+    return (XAngle()/(2*PI))*360;
 }
 
 void Vec2::operator+=(Vec2 v) {

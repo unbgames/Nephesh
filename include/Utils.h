@@ -6,6 +6,10 @@
 #define NEPHESH_UTILS_H
 
 #include <vector>
+#include <cstdlib>
+
+using namespace std;
+
 
 int WeightedDraft(vector<int> probabilityWeight){
     int totalWeights = 0;
