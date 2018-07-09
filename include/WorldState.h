@@ -12,7 +12,7 @@
 
 using namespace std;
 
-#define WORLD_FADE_IN_DURATION 1
+#define WORLD_FADE_IN_DURATION 6
 #define WORLD_FADE_OUT_DURATION 1
 #define WORLD_MUSIC_FADE_OUT_TIME 1500
 //8875, 1024

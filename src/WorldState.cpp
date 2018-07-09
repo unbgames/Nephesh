@@ -67,7 +67,8 @@ void WorldState::Update(float dt) {
             bgMusic->Play(0, 0);
 
             bossMusicToPlay = false;
-            introMusicTimer.Restart();            
+            introMusicTimer.Restart();
+            
         }
     }
 
