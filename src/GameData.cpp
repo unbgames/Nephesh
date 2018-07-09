@@ -6,3 +6,4 @@
 
 bool GameData::playerVictory = false;
 bool GameData::alreadyPlayed = false;
+bool GameData::easyMode = false;

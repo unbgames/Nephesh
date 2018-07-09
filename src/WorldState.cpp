@@ -147,6 +147,10 @@ void WorldState::Update(float dt) {
         Player::player->takeDamage = !Player::player->takeDamage;
     }
 
+    if (inputManager.KeyPress(SDLK_l)) {
+        GameData::easyMode = !GameData::easyMode;
+    }
+
     if (inputManager.KeyPress(ESCAPE_KEY)) {
         auto fadeObj = new GameObject(WORLD_LAST_LAYER);
         bgMusic->Stop();

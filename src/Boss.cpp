@@ -16,6 +16,7 @@
 #include <Bar.h>
 #include <CameraFollower.h>
 #include <DecentTimer.h>
+#include <GameData.h>
 #include "Boss.h"
 #include "Utils.h"
 
@@ -558,25 +559,25 @@ void Boss::DecreaseHp(int damage) {
 
 void Boss::TryHitLaser() {
     if (awoken) {
-        if (/*currentState == IDLE*/currentState == ATTACKING && attackState == CLAP) {
-            PlaySound("audio/hitbox_magica.wav");
-            UpdateState(VULNERABLE);
-        } else {
-            PlaySound("audio/hitbox_magica_fail.wav");
-            UpdateState(DEFENDING);
+        if(GameData::easyMode){
+            if (currentState == IDLE) {
+                PlaySound("audio/hitbox_magica.wav");
+                UpdateState(VULNERABLE);
+            } else {
+                PlaySound("audio/hitbox_magica_fail.wav");
+                UpdateState(DEFENDING);
+            }
+        } else{
+            if (currentState == ATTACKING && attackState == CLAP) {
+                PlaySound("audio/hitbox_magica.wav");
+                UpdateState(VULNERABLE);
+            } else {
+                PlaySound("audio/hitbox_magica_fail.wav");
+                UpdateState(DEFENDING);
+            }
         }
+        
     }
-
-//    if (awoken) {
-//        if (currentState == IDLE) {
-//            PlaySound("audio/hitbox_magica.wav");
-//            UpdateState(VULNERABLE);
-//        } else {
-//            PlaySound("audio/hitbox_magica_fail.wav");
-//            UpdateState(DEFENDING);
-//        }
-//    }
-    
     
 }
 

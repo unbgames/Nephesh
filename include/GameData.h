@@ -5,6 +5,7 @@ class GameData {
 public:
     static bool playerVictory;
     static bool alreadyPlayed;
+    static bool easyMode;
 };
 
 
