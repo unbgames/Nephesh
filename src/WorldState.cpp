@@ -492,26 +492,34 @@ void WorldState::LoadNpcs() {
 
     vector<string> religiosaSounds {
             "audio/npcs/religiosa/fanatica_1.wav",
+            "audio/npcs/religioso/fanatico_1.wav",
             "audio/npcs/religiosa/fanatica_2.wav",
+            "audio/npcs/religioso/fanatico_2.wav",
             "audio/npcs/religiosa/fanatica_3.wav",
-            "audio/npcs/religiosa/fanatica_4.wav"
+            "audio/npcs/religioso/fanatico_3.wav",
+            "audio/npcs/religiosa/fanatica_4.wav",
+            "audio/npcs/religioso/fanatico_4.wav"
     };
 
     auto religiosaObj = new GameObject();
     religiosaObj->AddComponent(new Sprite(*religiosaObj, "img/religiosa.png", 6, 0.2));
-    religiosaObj->AddComponent(new Npc(*religiosaObj, "npcs/religiosa.txt", religiosaSounds));
+    religiosaObj->AddComponent(new Npc(*religiosaObj, "npcs/religiosa.txt", religiosaSounds, false, true));
     AddObject(religiosaObj);
 
     vector<string> religiosoSounds {
+            "audio/npcs/religiosa/fanatica_1.wav",
             "audio/npcs/religioso/fanatico_1.wav",
+            "audio/npcs/religiosa/fanatica_2.wav",
             "audio/npcs/religioso/fanatico_2.wav",
+            "audio/npcs/religiosa/fanatica_3.wav",
             "audio/npcs/religioso/fanatico_3.wav",
+            "audio/npcs/religiosa/fanatica_4.wav",
             "audio/npcs/religioso/fanatico_4.wav"
     };
 
     auto religiosoObj = new GameObject();
     religiosoObj->AddComponent(new Sprite(*religiosoObj, "img/religioso.png", 6, 0.2));
-    religiosoObj->AddComponent(new Npc(*religiosoObj, "npcs/religioso.txt", religiosoSounds));
+    religiosoObj->AddComponent(new Npc(*religiosoObj, "npcs/religioso.txt", religiosoSounds, false, true));
     AddObject(religiosoObj);
 
     vector<string> roseSounds {

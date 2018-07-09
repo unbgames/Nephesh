@@ -11,9 +11,12 @@
 
 #define NPC_TYPE "Npc"
 
+#define MALE_BOX "img/text_box_religioso.png"
+#define FEMALE_BOX "img/text_box_religiosa.png"
+
 class Npc : public Component {
 public:
-    Npc(GameObject &associated, string file, vector<string> sounds, bool debug = false);
+    Npc(GameObject &associated, string file, vector<string> sounds, bool debug = false, bool isReligious = false);
 
     void Update(float dt) override;
 
@@ -30,6 +33,8 @@ private:
     weak_ptr<GameObject> textBox;
     vector<string> sounds;
     int currentSound;
+    bool isReligious;
+    bool isHim;
 
     string openedFile;
 
