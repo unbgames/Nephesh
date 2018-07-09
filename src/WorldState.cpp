@@ -35,7 +35,7 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
     Camera::SetCameraHeight(1);
     Camera::SetLayerDepth(4, 0.92);
 
-    bgMusic = new Music("audio/mundo.ogg");
+    bgMusic = new DecentMusic("audio/mundo.ogg");
     Mix_VolumeMusic(32);
 
     Player::player->Freeze();
@@ -195,7 +195,7 @@ void WorldState::Resume() {
 }
 
 void WorldState::LoadAssets() {
-    Resources::GetSound("audio/first_encounter_loop.mp3");
+    Resources::GetSound("audio/first_encounter_loop.wav");
     Resources::GetSound("audio/mundo.ogg");
 }
 
@@ -279,15 +279,17 @@ void WorldState::UpdateLoadedMaps() {
 
 void WorldState::UpdateMusic(int prevIndex) {
     if(prevIndex != currentMapIndex && currentMapIndex == bossMapIndex){
-        bgMusic->Stop(0);
+        bgMusic->Stop(500);
         //musicChangeTimer.Restart();
-        bgMusic->Open("audio/first_encounter_loop.mp3");
+        bgMusic->Open("audio/first_encounter_loop.wav");
         bgMusic->Play(0, 2000);
+        cout << "Musica boss." << endl;
     } else if(prevIndex != currentMapIndex && prevIndex == bossMapIndex){
-        bgMusic->Stop(0);
+        bgMusic->Stop(500);
         //musicChangeTimer.Restart();
         bgMusic->Open("audio/mundo.ogg");
         bgMusic->Play(0, 2000);
+        cout << "Musica mundo." << endl;
     }
 }
 

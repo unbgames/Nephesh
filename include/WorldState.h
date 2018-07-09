@@ -61,7 +61,7 @@ private:
         int currentMapIndex;
         vector<Map> maps;
 
-        Music *bgMusic;
+        DecentMusic *bgMusic;
 
         void UpdateLoadedMaps();
         void LoadMaps();
