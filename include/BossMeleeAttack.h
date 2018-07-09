@@ -14,7 +14,7 @@
 
 class BossMeleeAttack : public Component {
 public:
-    BossMeleeAttack(GameObject &associated, string sprite, int frameCount, double attackDuration = 
+    BossMeleeAttack(GameObject &associated, int damage, string sprite, int frameCount, double attackDuration = 
     PLAYER_ATTACK_DURATION, bool flip = false, Vec2 offset = {0, 0}, Vec2 colScale = {1,1}, Vec2 colOffset = {0,0}, bool debug = true);
 
     void Update(float dt) override;
@@ -28,6 +28,8 @@ public:
     bool AttackHit();
 
 private:
+    int damage;
+    
     Timer collisionTimer;
     Timer durationTimer;
     bool colliderCreated;

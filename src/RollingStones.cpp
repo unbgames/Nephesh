@@ -80,5 +80,7 @@ void RollingStones::NotifyCollision(GameObject &other) {
         chargeObj->AddComponent(stoneSprite);
         chargeObj->SetCenter(associated.box.Center());
         Game::GetInstance().GetCurrentState().AddObject(chargeObj); 
+    } else if(other.HasComponent(PLAYER_TYPE)){
+        Player::player->DecreaseHp(damage);
     }
 }

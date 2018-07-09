@@ -29,6 +29,7 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
     auto playerObj = new GameObject();
     playerObj->box += WORLD_PLAYER_INITIAL_POSITION;
     playerObj->AddComponent(new Player(*playerObj));
+    playerObj->AddComponent(new Collidable(*playerObj, {0.4, 1}));
     AddObject(playerObj);
 
     Camera::Follow(playerObj);
@@ -43,7 +44,7 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
     fadeInObj->AddComponent(new FadeEffect(*fadeInObj, WORLD_FADE_IN_DURATION, 2, [] { Player::player->Unfreeze(); }));
     AddObject(fadeInObj);
 
-    auto bossObj = new GameObject(1);
+    bossObj = new GameObject(1);
     bossObj->box += WORLD_BOSS_INITIAL_POSITION;
     bossObj->AddComponent(new Boss(*bossObj));
     bossObj->AddComponent(new Collidable(*bossObj));
@@ -58,10 +59,36 @@ void WorldState::Update(float dt) {
     Camera::Update(dt);
     auto& inputManager = InputManager::GetInstance();
     
+    if(ending){
+        endingTimer.Update(dt);
+
+        if(endingTimer.Get() >= endingMusicLength-0.5){
+            bgMusic->Stop(0);
+            bgMusic->Open("audio/logo_sound.wav");
+            bgMusic->Play(1, 0);
+
+            ending = false;
+            endingTimer.Restart();
+        }
+    }
+    
+    if(bossObj != nullptr){
+        auto compBoss = (Boss*)bossObj->GetComponent(BOSS_TYPE);
+        if(compBoss != nullptr && compBoss->GetHp() <= 0){
+            bgMusic->Stop(0);
+            bgMusic->Open("audio/black_out.wav");
+            bgMusic->Play(1, 0);
+            endingTimer.Restart();
+            ending = true;
+            bossObj = nullptr;
+            Player::player->Freeze();
+        }
+    }
+    
     if(bossMusicToPlay){
         introMusicTimer.Update(dt);
         
-        if(introMusicTimer.Get() >= introMusicLength){
+        if(introMusicTimer.Get() >= introMusicLength-0.5){
             bgMusic->Stop(0);
             bgMusic->Open("audio/first_encounter_loop.wav");
             bgMusic->Play(0, 0);
@@ -200,6 +227,7 @@ void WorldState::Resume() {
 void WorldState::LoadAssets() {
     Resources::GetSound("audio/first_encounter_loop.wav");
     Resources::GetSound("audio/first_encounter_intro.wav");
+    Resources::GetSound("audio/mundo.ogg");
     Resources::GetSound("audio/mundo.ogg");
 }
 

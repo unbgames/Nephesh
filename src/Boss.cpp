@@ -232,13 +232,13 @@ void Boss::Attack() {
     vector<int> attackProbabilityWeights(numOfAttacks);
 
     if (dist <= BOSS_SLAP_DISTANCE) {
-        attackProbabilityWeights[SLAP] = 0;
-        attackProbabilityWeights[SLAM] = 0;
-        attackProbabilityWeights[CLAP] = 100;
+        attackProbabilityWeights[SLAP] = 80;
+        attackProbabilityWeights[SLAM] = 10;
+        attackProbabilityWeights[CLAP] = 10;
     } else {
         attackProbabilityWeights[SLAP] = 0;
-        attackProbabilityWeights[SLAM] = 0;
-        attackProbabilityWeights[CLAP] = 100;
+        attackProbabilityWeights[SLAM] = 40;
+        attackProbabilityWeights[CLAP] = 60;
     }
 
     attackState = (BossAttack) WeightedDraft(attackProbabilityWeights);
@@ -267,7 +267,7 @@ void Boss::SlapAttack() {
     Vec2 bossBoxPos;
 
     auto attackObject = new GameObject(associated.GetLayer());
-    attackObject->AddComponent(new BossMeleeAttack(*attackObject, "", 0, BOSS_ATTACK_TIME));
+    attackObject->AddComponent(new BossMeleeAttack(*attackObject, 30, "", 0, BOSS_ATTACK_TIME));
 
     auto airWaveMeleeObject = new GameObject(associated.GetLayer());
 
@@ -285,7 +285,7 @@ void Boss::SlapAttack() {
         auto attackCenter = attackObject->box.Center();
         airWaveMeleeObject->box.PlaceCenterAt({attackCenter.x - 270, attackCenter.y + 270});
         airWaveMeleeObject->angleDeg = -50;
-        airWaveMeleeObject->AddComponent(new BossMeleeAttack(*airWaveMeleeObject, "img/slash_boss.png", 4,
+        airWaveMeleeObject->AddComponent(new BossMeleeAttack(*airWaveMeleeObject, 15, "img/slash_boss.png", 4,
                                                              secondsToEndAttack));
         colliderToLoad = airWaveMeleeObject;
     } else { //RIGHT
@@ -304,7 +304,8 @@ void Boss::SlapAttack() {
         airWaveMeleeObject->box.PlaceCenterAt({attackCenter.x + 270, attackCenter.y + 270});
         airWaveMeleeObject->angleDeg = 50;
         airWaveMeleeObject->AddComponent(
-                new BossMeleeAttack(*airWaveMeleeObject, "img/slash_boss.png", 4, secondsToEndAttack, true));
+                new BossMeleeAttack(*airWaveMeleeObject, 15, "img/slash_boss.png", 4, secondsToEndAttack, 
+                true));
         colliderToLoad = airWaveMeleeObject;
         //airWaveMeleeObject->AddComponent(new Debug(*airWaveMeleeObject));
         //Game::GetInstance().GetCurrentState().AddObject(airWaveMeleeObject);
@@ -326,8 +327,8 @@ void Boss::SlamAttack() {
     auto secondsToEndAttack = 0.5;
     timeToLoadCollider = BOSS_ATTACK_TIME - secondsToEndAttack;
 
-    colliderToLoad = new GameObject(associated.GetLayer());
-    colliderToLoad->AddComponent(new BossMeleeAttack(*colliderToLoad, "", 0, secondsToEndAttack));
+    colliderToLoad = new GameObject(0);
+    colliderToLoad->AddComponent(new BossMeleeAttack(*colliderToLoad, 35, "", 0, secondsToEndAttack));
     colliderToLoad->box = Rect(ATTACK_RANGE, ATTACK_WIDTH);
     colliderToLoad->box = bossBoxPos + Vec2(0.15 * associated.box.w, 0.55 * associated.box.h);
 
@@ -383,10 +384,10 @@ void Boss::RockSlide() {
     int numOfRocks = (rand() % (MAX_NUM_OF_ROCKS - MIN_NUM_OF_ROCKS + 1)) + MIN_NUM_OF_ROCKS;
 
     for (int i = 0; i < numOfRocks; i++) {
-        auto rockGO = new GameObject(associated.GetLayer());
-        rockGO->AddComponent(new FallingRock(*rockGO));
+        auto rockGO = new GameObject(0);
+        rockGO->AddComponent(new FallingRock(*rockGO, 20));
 
-        auto rockCastGO = new GameObject(associated.GetLayer());
+        auto rockCastGO = new GameObject(0);
         rockCastGO->AddComponent(new Cast(*rockCastGO, rockGO, BOSS_ATTACK_TIME + i * TIME_BETWEEN_ROCKS));
 
         Game::GetInstance().GetCurrentState().AddObject(rockCastGO);
@@ -406,7 +407,7 @@ void Boss::RollingStoneAttack() {
     auto bossCenter = associated.box.Center();
     auto playerCenter = Player::player->GetCenter();
 
-    auto rs = new GameObject();
+    auto rs = new GameObject(0);
 
     auto heightOffset = rand() % offHeig;
     auto widthOffset = (rand() % offWid) - offWid / 2;
@@ -441,7 +442,7 @@ void Boss::RollingStoneAttack() {
     rs->AddComponent(new RollingStones(*rs, 20, 300, 5200));
 
     auto chargeTime = 0.7;
-    auto chargeObj = new GameObject(associated.GetLayer());
+    auto chargeObj = new GameObject(0);
     chargeObj->AddComponent(new Cast(*chargeObj, rs, chargeTime));
     auto rsSprite = new Sprite(*chargeObj, RSTONE_SLIDING_UP_STONE_SPRITE, 6, chargeTime / 6);
     chargeObj->AddComponent(rsSprite);
@@ -451,7 +452,7 @@ void Boss::RollingStoneAttack() {
     sound->Play();
     Game::GetInstance().GetCurrentState().AddObject(chargeObj);
 
-    auto chargeObj2 = new GameObject(associated.GetLayer());
+    auto chargeObj2 = new GameObject(0);
     chargeObj2->AddComponent(new Cast(*chargeObj2, nullptr, chargeTime));
     auto dustSprite = new Sprite(*chargeObj2, "img/poeira.png", 6, chargeTime / 6);
     chargeObj2->AddComponent(dustSprite);
@@ -467,12 +468,12 @@ void Boss::ClapAttack() {
 
     auto secondsToEndAttack = 0.4;
     timeToLoadCollider = BOSS_ATTACK_TIME - secondsToEndAttack;
-    colliderToLoad = new GameObject(associated.GetLayer());
+    colliderToLoad = new GameObject(0);
 
     auto playerBoxCenter = associated.box.Center();
 
     colliderToLoad->SetCenter(playerBoxCenter);
-    colliderToLoad->AddComponent(new BossMeleeAttack(*colliderToLoad, "img/slash_boss_down.png", 4,
+    colliderToLoad->AddComponent(new BossMeleeAttack(*colliderToLoad, 30, "img/slash_boss_down.png", 4,
                                                      secondsToEndAttack, true, {0, 0}, {1.2, 0.7}));
 
     colliderToLoad->box.y += associated.box.h / 2 + 40;
@@ -535,7 +536,7 @@ void Boss::DecreaseHp(int damage) {
 
 void Boss::TryHitLaser() {
     if (awoken) {
-        if (currentState == ATTACKING && attackState == CLAP) {
+        if (currentState == IDLE/*currentState == ATTACKING && attackState == CLAP*/) {
             PlaySound("audio/hitbox_magica.wav");
             UpdateState(VULNERABLE);
         } else {
@@ -543,5 +544,9 @@ void Boss::TryHitLaser() {
             UpdateState(DEFENDING);
         }
     }
+}
+
+int Boss::GetHp() {
+    return hp;
 }
 

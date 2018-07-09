@@ -22,7 +22,7 @@
 
 class FallingRock : public Component {
 public:
-    explicit FallingRock(GameObject& associated);
+    explicit FallingRock(GameObject& associated, int damage);
 
     void Start() override;
     void Update(float dt) override;
@@ -35,7 +35,8 @@ private:
     GameObject *rockShadow;
     float linearSpeed;
     CameraShaker* camShaker;
-
+    
+    int damage;
 };
 
 
