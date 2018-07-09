@@ -2,18 +2,18 @@
 // Created by ftfnunes on 06/07/18.
 //
 
-#ifndef NEPHESH_CHARGE_H
-#define NEPHESH_CHARGE_H
+#ifndef NEPHESH_CAST_H
+#define NEPHESH_CAST_H
 
 
 #include <GameObject.h>
 #include <Timer.h>
 
-#define CHARGE_TYPE "Charge"
+#define CAST_TYPE "Cast"
 
-class Charge : public Component {
+class Cast : public Component {
 public:
-    explicit Charge(GameObject &associated, GameObject *next, float duration);
+    explicit Cast(GameObject &associated, GameObject *next, float duration);
 
     void Update(float dt) override;
 
@@ -22,10 +22,10 @@ public:
     bool Is(string type) override;
 
 private:
-    Timer chargeTimer;
+    Timer castTimer;
     GameObject *next;
     float duration;
 };
 
 
-#endif //NEPHESH_CHARGE_H
+#endif //NEPHESH_CAST_H

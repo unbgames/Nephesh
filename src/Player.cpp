@@ -15,7 +15,7 @@
 #include <Sound.h>
 #include <IntervalTimer.h>
 #include <TerrainMap.h>
-#include <Charge.h>
+#include <Cast.h>
 #include <Bar.h>
 #include <CameraFollower.h>
 #include "Player.h"
@@ -532,7 +532,7 @@ void Player::Shoot() {
     beamObj->AddComponent(beamCpt);
 
     auto chargeObj = new GameObject(associated.GetLayer());
-    chargeObj->AddComponent(new Charge(*chargeObj, beamObj, CHARGING_DURATION));
+    chargeObj->AddComponent(new Cast(*chargeObj, beamObj, CHARGING_DURATION));
     auto raySprite = new Sprite(*chargeObj, spriteName, 4, CHARGING_DURATION / 4, 0, false,
                                 currentDirection == LEFT);
     chargeObj->AddComponent(raySprite);
