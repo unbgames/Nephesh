@@ -59,6 +59,34 @@ void WorldState::Update(float dt) {
     Camera::Update(dt);
     auto& inputManager = InputManager::GetInstance();
     
+    if(Player::player && Player::player->GetHp() <= 0){
+        bgMusic->Stop();
+        Player::player->Freeze();
+        bossMusicToPlay = false;
+        ending = false;
+        auto compBoss = (Boss*)bossObj->GetComponent(BOSS_TYPE);
+        if(compBoss){
+            compBoss->Restart();
+        }
+
+        auto fadeObj = new GameObject(WORLD_LAST_LAYER);        
+        function<void()> callback;
+        callback = [&] {
+            popRequested = true;
+            auto& playerObject = Player::player->GetGameObject();
+            playerObject.SetCenter({8725, 1024});
+            Camera::offset = {0, 0};
+
+            auto fadeInObj = new GameObject(WORLD_LAST_LAYER);
+            fadeInObj->AddComponent(new FadeEffect(*fadeInObj, WORLD_FADE_IN_DURATION, 1, [] { Player::player->Unfreeze(); }));
+            AddObject(fadeInObj);
+
+        };
+
+        fadeObj->AddComponent(new FadeEffect(*fadeObj, END_GAME_FADE_DURATION, 0, callback, FadeEffect::FadeType::OUT));
+        AddObject(fadeObj);
+    }
+    
     if(ending){
         endingTimer.Update(dt);
 
@@ -91,6 +119,7 @@ void WorldState::Update(float dt) {
             endingTimer.Restart();
             ending = true;
             bossObj = nullptr;
+            bossMusicToPlay = false;
             Player::player->Freeze();
         }
     }

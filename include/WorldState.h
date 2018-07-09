@@ -70,7 +70,7 @@ private:
         void LoadMaps();
         void LoadNpcs();
         void UpdateMusic(int prevIndex);
-        int bossMapIndex = 6;
+        int bossMapIndex = 8;
         
         Timer introMusicTimer;
         int introMusicLength = 57;
