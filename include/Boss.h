@@ -16,22 +16,18 @@
 
 #define BOSS_TYPE "Boss"
 #define BOSS_INITIAL_HP 100
-#define BOSS_IDLE_TIME 4 // in seconds
-#define BOSS_SPEED 300 // in pixels/s
-#define BOSS_MIN_DIST_TO_PLAYER 100 // in pixels
-#define BOSS_SPR_MOV_TIME 0.05 // in seconds
+#define BOSS_IDLE_TIME 5 // in seconds
 #define BOSS_ATTACK_TIME 1.0 // in seconds
 #define BOSS_MIN_NUM_OF_ATTACKS 1
 #define BOSS_MAX_NUM_OF_ATTACKS 1
-#define BOSS_ATTACK_SPRITE_COUNT 4
-#define BOSS_ATTACK_RANGE 100 // in pixels
-#define BOSS_ATTACK_WIDTH 200 // in pixels
 #define BOSS_SLAP_DISTANCE 400
-#define BOSS_IDLE_DISTANCE 600
+#define BOSS_IDLE_DISTANCE 1000
 #define BOSS_MIN_SLIDING_ROCK_DIST 250
 #define BOSS_AWAKENING_DURATION 4
 #define BOSS_AWAKENING_SPRITE_COUNT 40
 #define BOSS_AWAKEN_DISTANCE 350
+#define BOSS_DEATH_DURATION 2.5
+#define BOSS_DEATH_SPRITE_COUNT 25
 
 #define BOSS_CUTSCENE_SPRITE "img/cutscene_intro.png"
 #define BOSS_IDLE_SPRITE "img/boss_idle.png"
@@ -39,8 +35,13 @@
 #define BOSS_SLAP_LEFT_SPRITE "img/boss_slap_left.png"
 #define BOSS_SLAM_SPRITE "img/boss_slam.png"
 #define BOSS_CLAP_SPRITE "img/boss_clap.png"
+#define BOSS_DEATH_SPRITE "img/death.png"
 
 #define BOSS_CLAP_SOUND "audio/boss/boss_clap.wav"
+#define BOSS_SLAM_SOUND "audio/boss/boss_slam.wav"
+#define BOSS_SLAM_EARTHQUAKE_SOUND_1 "audio/boss/earthquake_1.wav"
+#define BOSS_SLAM_EARTHQUAKE_SOUND_2 "audio/boss/earthquake_2.wav"
+#define BOSS_SLAM_EARTHQUAKE_SOUND_3 "audio/boss/earthquake_3.wav"
 
 using namespace std;
 
@@ -50,7 +51,8 @@ public:
         STARTING,
         ATTACKING,
         AWAKENING,
-        IDLE
+        IDLE,
+        DYING
     };
 
     enum BossAttack{
@@ -72,6 +74,13 @@ public:
     void SlapAttack();
     void SlamAttack();
     void ClapAttack();
+    void CreateBars();
+    void HideBars();
+    void ShowBars();
+
+    void DecreaseHp(int damage);
+
+    void Start() override;
 
 private:
 
@@ -93,7 +102,10 @@ private:
     double timeToLoadCollider = -1;
     GameObject* colliderToLoad = nullptr;
     Timer colliderTimer;
-    
+
+    weak_ptr<GameObject> healthBar;
+    weak_ptr<GameObject> barDecoration;
+
     void PrintBossState();
     void PrintBossAttack();
 

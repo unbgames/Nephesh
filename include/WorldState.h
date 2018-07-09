@@ -18,6 +18,7 @@ using namespace std;
 #define WORLD_PLAYER_INITIAL_POSITION Vec2(8875, -1336)
 #define WORLD_BOSS_INITIAL_POSITION Vec2(8593, -2298)
 #define WORLD_LAST_LAYER 10
+#define HUD_LAYER 8
 
 class WorldState : public State {
     public:

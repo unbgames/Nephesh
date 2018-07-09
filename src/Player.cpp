@@ -15,7 +15,7 @@
 #include <Sound.h>
 #include <IntervalTimer.h>
 #include <TerrainMap.h>
-#include <Charge.h>
+#include <Cast.h>
 #include <Bar.h>
 #include <CameraFollower.h>
 #include "Player.h"
@@ -190,6 +190,7 @@ void Player::Update(float dt) {
             if (state != SHOOTING) {
                 if (!charged) {
                     newState = state;
+                    PlaySound("audio/magica_fail.wav");
                 } else {
                     speed = Vec2();
                     //Start the shooting animation
@@ -323,19 +324,19 @@ void Player::Start() {
     auto &state = (WorldState &) Game::GetInstance().GetCurrentState();
     state.AddCollider(state.GetObjectPtr(&associated).lock());
 
-    auto healthBarObject = new GameObject(8);
+    auto healthBarObject = new GameObject(HUD_LAYER);
     healthBarObject->AddComponent(new Bar(*healthBarObject, "img/hp_mc.png", PLAYER_MAX_HP, PLAYER_MAX_HP));
     auto healthBarPosition = Vec2(60, 50);
     healthBarObject->AddComponent(new CameraFollower(*healthBarObject, healthBarPosition));
     healthBar = state.AddObject(healthBarObject);
 
-    auto rDecoration = new GameObject(8);
+    auto rDecoration = new GameObject(HUD_LAYER);
     rDecoration->AddComponent(new Sprite(*rDecoration, "img/deco_mc_escuro.png"));
     auto rPosition = Vec2(healthBarPosition.x - rDecoration->box.w/2 - 25, healthBarPosition.y - healthBarObject->box.h/2 - 5);
     healthBarObject->AddComponent(new CameraFollower(*rDecoration, rPosition));
     state.AddObject(rDecoration);
 
-    auto chargingBarObject = new GameObject(8);
+    auto chargingBarObject = new GameObject(HUD_LAYER);
     chargingBarObject->AddComponent(new Bar(*chargingBarObject, "img/mp_mc.png", 100, 100));
     auto chargingBarPosition = Vec2(62, 70);
     chargingBarObject->AddComponent(new CameraFollower(*chargingBarObject, chargingBarPosition));
@@ -532,7 +533,7 @@ void Player::Shoot() {
     beamObj->AddComponent(beamCpt);
 
     auto chargeObj = new GameObject(associated.GetLayer());
-    chargeObj->AddComponent(new Charge(*chargeObj, beamObj, CHARGING_DURATION));
+    chargeObj->AddComponent(new Cast(*chargeObj, beamObj, CHARGING_DURATION));
     auto raySprite = new Sprite(*chargeObj, spriteName, 4, CHARGING_DURATION / 4, 0, false,
                                 currentDirection == LEFT);
     chargeObj->AddComponent(raySprite);
@@ -550,7 +551,7 @@ void Player::Attack() {
     currentDirection = GetNewDirection(target);
 
     auto playerBoxCenter = associated.box.Center();
-    auto attackObject = new GameObject(associated.GetLayer());
+    auto attackObject = new GameObject(associated.GetLayer()+1);
 
 //    attackObject->box = currentDirection == LEFT || currentDirection == RIGHT ? Rect(PLAYER_ATTACK_WIDTH,
 //                                                                                     PLAYER_ATTACK_RANGE)
@@ -724,11 +725,19 @@ void Player::Unfreeze() {
 
 void Player::IncreaseHp(int healing) {
     hp += healing;
+    if (hp > PLAYER_MAX_HP) {
+        hp = PLAYER_MAX_HP;
+    }
+    auto bar = (Bar *) healthBar.lock()->GetComponent(BAR_TYPE);
+    bar->SetValue(hp);
 }
 
 void Player::DecreaseHp(int damage) {
     if (!tookDamageRecently) {
         hp -= damage;
+        if (hp < 0) {
+            hp = 0;
+        }
         recentDamageTimer.Restart();
         tookDamageRecently = true;
         auto bar = (Bar *) healthBar.lock()->GetComponent(BAR_TYPE);
