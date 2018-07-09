@@ -53,8 +53,8 @@ void Npc::Update(float dt) {
             isTalking = false;
         } else {
             auto sound = (Sound *)associated.GetComponent(SOUND_TYPE);
-            if (sound != nullptr && sounds.size() > 0 && currentSound%2 == 0) {
-                sound->Open(sounds[(currentSound/2) % sounds.size()]);
+            if (sound != nullptr && sounds.size() > 0) {
+                sound->Open(sounds[(currentSound) % sounds.size()]);
                 sound->Play();
             }
             currentSound++;

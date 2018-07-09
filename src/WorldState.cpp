@@ -466,8 +466,8 @@ int WorldState::GetCurrentMapIndex() {
 
 void WorldState::LoadNpcs() {
     vector<string> creatureSounds1 {
-            "audio/npcs/criatura/criatura_magica_4.wav",
-            "audio/npcs/criatura/criatura_magica_3.wav"
+            "audio/npcs/criatura/criatura_magica_1.wav",
+            "audio/npcs/criatura/criatura_magica_2.wav"
     };
 
     auto creatureObj1 = new GameObject();
@@ -476,15 +476,60 @@ void WorldState::LoadNpcs() {
     AddObject(creatureObj1);
 
     vector<string> creatureSounds2 {
+            "audio/npcs/criatura/criatura_magica_3.wav",
             "audio/npcs/criatura/criatura_magica_4.wav",
-            "audio/npcs/criatura/criatura_magica_2.wav",
-            "audio/npcs/criatura/criatura_magica_1.wav"
+            "audio/npcs/criatura/criatura_magica_5.wav"
     };
 
     auto creatureObj2 = new GameObject();
     creatureObj2->AddComponent(new Sprite(*creatureObj2, "img/criatura.png", 6, 0.2));
     creatureObj2->AddComponent(new Npc(*creatureObj2, "npcs/criatura_magica2.txt", creatureSounds2));
     AddObject(creatureObj2);
+
+    vector<string> boySounds {
+            "audio/npcs/menino/crianca_perdida_1.wav",
+            "audio/npcs/menino/crianca_perdida_2.wav",
+            "audio/npcs/menino/crianca_perdida_3.wav"
+    };
+
+    auto boyObj = new GameObject();
+    boyObj->AddComponent(new Sprite(*boyObj, "img/menino.png", 6, 0.2));
+    boyObj->AddComponent(new Npc(*boyObj, "npcs/menino.txt", boySounds));
+    AddObject(boyObj);
+
+    vector<string> religiosaSounds {
+            "audio/npcs/religiosa/fanatica_1.wav",
+            "audio/npcs/religiosa/fanatica_2.wav",
+            "audio/npcs/religiosa/fanatica_3.wav",
+            "audio/npcs/religiosa/fanatica_4.wav"
+    };
+
+    auto religiosaObj = new GameObject();
+    religiosaObj->AddComponent(new Sprite(*religiosaObj, "img/religiosa.png", 6, 0.2));
+    religiosaObj->AddComponent(new Npc(*religiosaObj, "npcs/religiosa.txt", religiosaSounds));
+    AddObject(religiosaObj);
+
+    vector<string> religiosoSounds {
+            "audio/npcs/religioso/fanatico_1.wav",
+            "audio/npcs/religioso/fanatico_2.wav",
+            "audio/npcs/religioso/fanatico_3.wav",
+            "audio/npcs/religioso/fanatico_4.wav"
+    };
+
+    auto religiosoObj = new GameObject();
+    religiosoObj->AddComponent(new Sprite(*religiosoObj, "img/religioso.png", 6, 0.2));
+    religiosoObj->AddComponent(new Npc(*religiosoObj, "npcs/religioso.txt", religiosoSounds));
+    AddObject(religiosoObj);
+
+    vector<string> roseSounds {
+            "audio/npcs/rosa/mulher_flor_1.wav",
+            "audio/npcs/criatura/mulher_flor_2.wav"
+    };
+
+    auto roseObj = new GameObject();
+    roseObj->AddComponent(new Sprite(*roseObj, "img/rosa.png", 6, 0.2));
+    roseObj->AddComponent(new Npc(*roseObj, "npcs/rose.txt", roseSounds, true));
+    AddObject(roseObj);
 }
 
 Map &WorldState::GetNextMap() {
