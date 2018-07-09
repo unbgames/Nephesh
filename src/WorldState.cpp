@@ -16,6 +16,7 @@
 #include <Boss.h>
 #include <Resources.h>
 #include <CollisionMap.h>
+#include <GameData.h>
 #include "WorldState.h"
 #include "Text.h"
 #include "Debug.h"
@@ -27,7 +28,12 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
     bgObj->AddComponent(new CameraFollower(*bgObj));
 
     auto playerObj = new GameObject();
-    playerObj->box += WORLD_PLAYER_INITIAL_POSITION;
+    if(GameData::alreadyPlayed){
+        playerObj->box += WORLD_PLAYER_NEAR_BOSS_POS;
+    } else {
+        playerObj->box += WORLD_PLAYER_INITIAL_POSITION;
+        GameData::alreadyPlayed = true;
+    }    
     playerObj->AddComponent(new Player(*playerObj));
     playerObj->AddComponent(new Collidable(*playerObj, {0.4, 1}));
     AddObject(playerObj);
@@ -60,27 +66,14 @@ void WorldState::Update(float dt) {
     auto& inputManager = InputManager::GetInstance();
     
     if(Player::player && Player::player->GetHp() <= 0){
-        bgMusic->Stop();
         Player::player->Freeze();
-        bossMusicToPlay = false;
+        bgMusic->Stop();
         ending = false;
-        auto compBoss = (Boss*)bossObj->GetComponent(BOSS_TYPE);
-        if(compBoss){
-            compBoss->Restart();
-        }
-
+        bossMusicToPlay = false;
         auto fadeObj = new GameObject(WORLD_LAST_LAYER);        
         function<void()> callback;
         callback = [&] {
             popRequested = true;
-            auto& playerObject = Player::player->GetGameObject();
-            playerObject.SetCenter({8725, 1024});
-            Camera::offset = {0, 0};
-
-            auto fadeInObj = new GameObject(WORLD_LAST_LAYER);
-            fadeInObj->AddComponent(new FadeEffect(*fadeInObj, WORLD_FADE_IN_DURATION, 1, [] { Player::player->Unfreeze(); }));
-            AddObject(fadeInObj);
-
         };
 
         fadeObj->AddComponent(new FadeEffect(*fadeObj, END_GAME_FADE_DURATION, 0, callback, FadeEffect::FadeType::OUT));
@@ -150,7 +143,7 @@ void WorldState::Update(float dt) {
     }
     
     if (inputManager.KeyPress(SDLK_f)) {
-        Player::player->DecreaseHp(10);
+        Player::player->DecreaseHp(25);
     }
     if (inputManager.KeyPress(SDLK_i)) {
         Player::player->IncreaseHp(10);
@@ -402,7 +395,7 @@ void WorldState::UpdateLoadedMaps() {
             throw string("Player out of bounds");
         }
     }
-    
+    //cout << "Current map: " << currentMapIndex << ", Prev map: " << prevIndex << endl;
     UpdateMusic(prevIndex);
 }
 
