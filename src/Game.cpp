@@ -32,9 +32,14 @@ Game::Game(string title, int width, int height) : dt(0), framestart(0) {
         }
 
         // Initialize SDL_MIXER
-        if (Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3) != (MIX_INIT_OGG | MIX_INIT_MP3)) {
+//        if (Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3) != (MIX_INIT_OGG | MIX_INIT_MP3)) {
+//            throw "Error initializing SDL_Mixer";
+//        }
+
+        if (Mix_Init(0) != (0)) {
             throw "Error initializing SDL_Mixer";
         }
+
         if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, MIX_DEFAULT_CHANNELS, 1024) != 0) {
             throw "Error while opening audio";
         }

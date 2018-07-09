@@ -434,7 +434,7 @@ void Boss::RollingStoneAttack() {
     auto heightOffset = rand() % offHeig;
     auto widthOffset = (rand() % offWid) - offWid / 2;
 
-    Vec2 blockPos = {bossCenter.x + widthOffset, bossCenter.y + (associated.box.h / 2) + 10 + heightOffset};
+    Vec2 blockPos = {bossCenter.x + widthOffset, bossCenter.y + (associated.box.h / 2) + 50 + heightOffset};
 
     if (blockPos.Distance(playerCenter) < BOSS_MIN_SLIDING_ROCK_DIST) {
         Vec2 topRight = {bossCenter.x + offWid / 2, bossCenter.y + (associated.box.h / 2) + 10};
