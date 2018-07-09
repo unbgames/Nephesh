@@ -488,7 +488,14 @@ void Player::NotifyCollision(GameObject &other) {
                 collider->box.y = fMaxY + 1;
             }
         }
-
+        
+        if (collider->box.x == std::numeric_limits<float>::infinity() || collider->box.x == -std::numeric_limits<float>::infinity()) {
+            collider->box.x = lastBox.x;
+        }
+        if (collider->box.y == std::numeric_limits<float>::infinity() || collider->box.y == -std::numeric_limits<float>::infinity()) {
+            collider->box.y = lastBox.y;
+        }
+        
         collider->UpdateGameObject();
     }
 }

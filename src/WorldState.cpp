@@ -419,8 +419,6 @@ void WorldState::UpdateMusic(int prevIndex) {
     }
 }
 
-
-
 void WorldState::LoadMaps() {
     for (int i = 0; i < maps.size()-1; ++i) {
         auto currentMap = maps[i];

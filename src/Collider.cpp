@@ -91,3 +91,7 @@ void Collider::UpdateGameObject() {
     //TODO: Add rotation if needed
     associated.box = newBox;
 }
+
+Vec2 Collider::GetScale() {
+    return scale;
+}

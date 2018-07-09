@@ -25,11 +25,21 @@ Collidable::Collidable(GameObject &associated, Vec2 scale, Vec2 offset):
 
 void Collidable::Update(float dt) {
     auto newBox = Rect();
-    newBox.w = associated.box.w*scale.x;
-    newBox.h = associated.box.h*scale.y;
-    newBox.PlaceCenterAt(associated.box.Center());
+    auto collider = (Collider *) associated.GetComponent(COLLIDER_TYPE);
+    if (collider != nullptr) {
+        auto colScale = collider->GetScale();
+        newBox.w = associated.box.w*colScale.x;
+        newBox.h = associated.box.h*colScale.y;
+        newBox.PlaceCenterAt(associated.box.Center());
 
-    box = newBox + offset.RotateDeg(associated.angleDeg);
+        box = newBox + collider->GetOffset().RotateDeg(associated.angleDeg);
+    } else {
+        newBox.w = associated.box.w*scale.x;
+        newBox.h = associated.box.h*scale.y;
+        newBox.PlaceCenterAt(associated.box.Center());
+
+        box = newBox + offset.RotateDeg(associated.angleDeg);
+    }
 }
 
 void Collidable::Render() {
