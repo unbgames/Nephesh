@@ -53,6 +53,7 @@ StageState::StageState() :
 }
 
 void StageState::LoadAssets() {
+
 }
 
 void StageState::Update(float dt) {

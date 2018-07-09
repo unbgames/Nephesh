@@ -39,17 +39,17 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
     bgMusic = new DecentMusic("audio/mundo.ogg");
     Mix_VolumeMusic(32);
 
-    Player::player->Freeze();
-    auto fadeInObj = new GameObject(WORLD_LAST_LAYER);
-    fadeInObj->AddComponent(new FadeEffect(*fadeInObj, WORLD_FADE_IN_DURATION, 2, [] { Player::player->Unfreeze(); }));
-    AddObject(fadeInObj);
-
     bossObj = new GameObject(1);
     bossObj->box += WORLD_BOSS_INITIAL_POSITION;
     bossObj->AddComponent(new Boss(*bossObj));
     bossObj->AddComponent(new Collidable(*bossObj));
 //  bossObj->AddComponent(new Debug(*bossObj));
     AddObject(bossObj);
+
+    Player::player->Freeze();
+    auto fadeInObj = new GameObject(WORLD_LAST_LAYER);
+    fadeInObj->AddComponent(new FadeEffect(*fadeInObj, WORLD_FADE_IN_DURATION, 1, [] { Player::player->Unfreeze(); }));
+    AddObject(fadeInObj);
 }
 
 WorldState::~WorldState() = default;
@@ -218,13 +218,13 @@ void WorldState::Start() {
     maps.emplace_back(m8, Map::MapDirection::RIGHT, "map/8/collisionMap.txt", "map/8/terrainMap.txt");
     maps.emplace_back(m9, Map::MapDirection::UP, "map/9/collisionMap.txt", "map/9/terrainMap.txt");
 
+
     StartArray();
 
     LoadMaps();
 
     LoadNpcs();
     bgMusic->Play();
-
 }
 
 void WorldState::Pause() {
@@ -240,6 +240,54 @@ void WorldState::LoadAssets() {
     Resources::GetSound("audio/first_encounter_intro.wav");
     Resources::GetSound("audio/mundo.ogg");
     Resources::GetSound("audio/mundo.ogg");
+    Resources::GetImage("map/1/ground.png");
+    Resources::GetImage("map/1/rocks.png");
+    Resources::GetImage("map/1/trees.png");
+    Resources::GetImage("map/1/surroundings.png");
+    Resources::GetImage("map/1/lighting.png");
+    Resources::GetImage("map/1/view.png");
+    Resources::GetImage("map/2/ground.png");
+    Resources::GetImage("map/2/rocks.png");
+    Resources::GetImage("map/2/trees.png");
+    Resources::GetImage("map/2/surroundings.png");
+    Resources::GetImage("map/2/lighting.png");
+    Resources::GetImage("map/2/view.png");
+    Resources::GetImage("map/3/ground.png");
+    Resources::GetImage("map/3/rocks.png");
+    Resources::GetImage("map/3/trees.png");
+    Resources::GetImage("map/3/surroundings.png");
+    Resources::GetImage("map/3/lighting.png");
+    Resources::GetImage("map/3/view.png");
+    Resources::GetImage("map/3/vines.png");
+    Resources::GetImage("map/4/ground.png");
+    Resources::GetImage("map/4/rocks.png");
+    Resources::GetImage("map/4/trees.png");
+    Resources::GetImage("map/4/surroundings.png");
+    Resources::GetImage("map/4/lighting.png");
+    Resources::GetImage("map/4/view.png");
+    Resources::GetImage("map/4/vines.png");
+    Resources::GetImage("map/5/ground.png");
+    Resources::GetImage("map/5/rocks.png");
+    Resources::GetImage("map/5/trees.png");
+    Resources::GetImage("map/5/surroundings.png");
+    Resources::GetImage("map/5/lighting.png");
+    Resources::GetImage("map/5/view.png");
+    Resources::GetImage("map/5/vines.png");
+    Resources::GetImage("map/8/ground.png");
+    Resources::GetImage("map/8/rocks.png");
+    Resources::GetImage("map/8/trees.png");
+    Resources::GetImage("map/8/surroundings.png");
+    Resources::GetImage("map/8/lighting.png");
+    Resources::GetImage("map/8/vines.png");
+    Resources::GetImage("map/9/ground.png");
+    Resources::GetImage("map/9/rocks.png");
+    Resources::GetImage("map/9/trees.png");
+    Resources::GetImage("map/9/surroundings.png");
+    Resources::GetImage("map/9/lighting.png");
+    Resources::GetImage("map/9/view.png");
+    Resources::GetImage("map/9/vine.png");
+    Resources::GetImage("img/cutscene_intro.png");
+    Resources::GetImage("img/death.png");
 }
 
 weak_ptr<GameObject> WorldState::AddCollidable(shared_ptr<GameObject> object) {
