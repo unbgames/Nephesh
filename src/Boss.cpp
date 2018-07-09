@@ -77,7 +77,7 @@ void Boss::Update(float dt) {
     if(Player::player && center.Distance(Player::player->GetCenter()) <= BOSS_IDLE_DISTANCE){
         auto newState = currentState;
         if (newState != STARTING && newState != AWAKENING) {
-            Camera::offset = Vec2(0, -200);
+            Camera::offset = Vec2(0, -100);
         } else if (awoken) {
             Camera::offset = Vec2(0, -200);
         }
