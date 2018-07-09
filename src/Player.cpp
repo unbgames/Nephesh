@@ -551,7 +551,7 @@ void Player::Attack() {
     currentDirection = GetNewDirection(target);
 
     auto playerBoxCenter = associated.box.Center();
-    auto attackObject = new GameObject(associated.GetLayer());
+    auto attackObject = new GameObject(associated.GetLayer()+1);
 
 //    attackObject->box = currentDirection == LEFT || currentDirection == RIGHT ? Rect(PLAYER_ATTACK_WIDTH,
 //                                                                                     PLAYER_ATTACK_RANGE)
@@ -725,11 +725,19 @@ void Player::Unfreeze() {
 
 void Player::IncreaseHp(int healing) {
     hp += healing;
+    if (hp > PLAYER_MAX_HP) {
+        hp = PLAYER_MAX_HP;
+    }
+    auto bar = (Bar *) healthBar.lock()->GetComponent(BAR_TYPE);
+    bar->SetValue(hp);
 }
 
 void Player::DecreaseHp(int damage) {
     if (!tookDamageRecently) {
         hp -= damage;
+        if (hp < 0) {
+            hp = 0;
+        }
         recentDamageTimer.Restart();
         tookDamageRecently = true;
         auto bar = (Bar *) healthBar.lock()->GetComponent(BAR_TYPE);

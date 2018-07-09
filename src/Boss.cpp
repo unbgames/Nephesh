@@ -33,10 +33,8 @@ Boss::Boss(GameObject &associated) :
     associated.AddComponent(sprite);
     sprite->LockFrame();
     associated.AddComponent(new Sound(associated));
-
     camShaker = new CameraShaker(associated);
     associated.AddComponent(camShaker);
-
     //Sprite *spr = new Sprite(associated, "img/boss_clap.png", 10, 0.2, 0, true);
 
 //    associated.SetCenter({associated.box.x, associated.box.y});
@@ -57,15 +55,25 @@ void Boss::Update(float dt) {
     }
 
     if (hp <= 0) {
-        associated.RequestDelete();
-
-        auto explosionGO = new GameObject();
-        auto explosionSound = new Sound(*explosionGO, "BOOM.wav");
-        explosionGO->AddComponent(new Sprite(*explosionGO, "EXPLOSION.png", 4, 0.1, 0.4));
-        explosionGO->AddComponent(explosionSound);
-        explosionSound->Play();
-        explosionGO->box.PlaceCenterAt(associated.box.Center());
-        Game::GetInstance().GetCurrentState().AddObject(explosionGO);
+        if (previousState != DYING) {
+            auto oldCenter = associated.box.Center();
+            SetSprite(BOSS_DEATH_SPRITE);
+            auto sprite = (Sprite *)associated.GetComponent(SPRITE_TYPE);
+            sprite->SetScale(2, 2);
+            associated.box.PlaceCenterAt(oldCenter);
+            cutsceneTimer.Restart();
+            PlaySound("audio/boss/boss_morrendo.wav");
+            UpdateState(DYING);
+        } else {
+            cutsceneTimer.Update(dt);
+            if (cutsceneTimer.Get() > BOSS_DEATH_DURATION) {
+                auto sprite = (Sprite *)associated.GetComponent(SPRITE_TYPE);
+                barDecoration.lock()->RequestDelete();
+                healthBar.lock()->RequestDelete();
+                sprite->LockFrame();
+                associated.RequestDelete();
+            }
+        }
 
         return;
     }
@@ -78,7 +86,7 @@ void Boss::Update(float dt) {
     if(Player::player && center.Distance(Player::player->GetCenter()) <= BOSS_IDLE_DISTANCE){
         auto newState = currentState;
         if (newState != STARTING && newState != AWAKENING) {
-            Camera::offset = Vec2(0, -250);
+            Camera::offset = Vec2(0, 0);
         } else if (awoken) {
             Camera::offset = Vec2(0, 200);
         }
@@ -103,7 +111,6 @@ void Boss::Update(float dt) {
                     Camera::Follow(&Player::player->GetGameObject());
                     Player::player->Unfreeze();
                     newState = IDLE;
-                    CreateBars();
                 }
                 break;
 
@@ -182,6 +189,9 @@ void Boss::SetSprite(string file, bool flip) {
     if (file == BOSS_IDLE_SPRITE) {
         sprite->SetFrameCount(10);
         sprite->SetFrameTime(0.1);
+    } else if (file == BOSS_DEATH_SPRITE) {
+        sprite->SetFrameCount(BOSS_DEATH_SPRITE_COUNT);
+        sprite->SetFrameTime(((float) BOSS_DEATH_DURATION)/BOSS_DEATH_SPRITE_COUNT);
     } else { // ATTACKS
         sprite->SetFrameCount(10);
         sprite->SetFrameTime(BOSS_ATTACK_TIME / 10);
@@ -487,5 +497,19 @@ void Boss::ShowBars() {
     decorationSprite->SetAlpha(255);
     auto barSprite = (Sprite *) healthBar.lock()->GetComponent(SPRITE_TYPE);
     barSprite->SetAlpha(255);
+}
+
+void Boss::Start() {
+    CreateBars();
+    HideBars();
+}
+
+void Boss::DecreaseHp(int damage) {
+    hp -= damage;
+    if (hp < 0) {
+        hp = 0;
+    }
+    auto bar = (Bar *) healthBar.lock()->GetComponent(BAR_TYPE);
+    bar->SetValue(hp);
 }
 
