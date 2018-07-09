@@ -54,7 +54,7 @@ WorldState::WorldState() : State(), currentMapIndex(0) {
 
     Player::player->Freeze();
     auto fadeInObj = new GameObject(WORLD_LAST_LAYER);
-    fadeInObj->AddComponent(new FadeEffect(*fadeInObj, WORLD_FADE_IN_DURATION, 1, [] { Player::player->Unfreeze(); }));
+    fadeInObj->AddComponent(new FadeEffect(*fadeInObj, 15, 10, [] { Player::player->Unfreeze(); }));
     AddObject(fadeInObj);
 }
 
