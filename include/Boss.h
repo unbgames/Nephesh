@@ -92,6 +92,7 @@ public:
     void TryHitLaser();
 
     void Start() override;
+    int GetHp();
 
 private:
 

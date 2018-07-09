@@ -31,6 +31,9 @@ Player::Player(GameObject &associated) : Component(associated), speed({0, 0}), s
     associated.AddComponent(new Sprite(associated, PLAYER_IDLE_SPRITE, PLAYER_IDLE_SPRITE_COUNT, 0.1, 0));
 
     associated.SetCenter({associated.box.x, associated.box.y});
+    
+    auto sound = new Sound(associated);
+    associated.AddComponent(sound);
 
     Player::player = this;
 
@@ -741,6 +744,9 @@ void Player::DecreaseHp(int damage) {
         tookDamageRecently = true;
         auto bar = (Bar *) healthBar.lock()->GetComponent(BAR_TYPE);
         bar->SetValue(hp);
+        auto sound = (Sound*)associated.GetComponent(SOUND_TYPE);
+        sound->Open("audio/player/player_damage.wav");
+        sound->Play(1);
     }
 }
 

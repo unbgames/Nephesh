@@ -14,21 +14,30 @@
 
 #define PI 3.1415926
 
-FallingRock::FallingRock(GameObject &associated) : Component(associated), linearSpeed(0) {
-    vector<string> rockPossibleSprites = {FALLING_ROCK_SPRITE_1, FALLING_ROCK_SPRITE_2, FALLING_ROCK_SPRITE_3};
+FallingRock::FallingRock(GameObject &associated, int damage) : Component(associated), linearSpeed(0),
+                                                               damage(damage) {
+    vector<string> rockPossibleSprites = {FALLING_ROCK_SPRITE_1, FALLING_ROCK_SPRITE_2,
+                                          FALLING_ROCK_SPRITE_3};
 
     Vec2 targetReference = (Player::player) ? Player::player->GetCenter() : Camera::Camera::GetCameraCenter();
 
-    targetPos = Vec2(rand() % (int)FALLING_ROCK_MAX_RADIUS, 0).Rotate(PI * ((rand() % 1001)/500.0)) + targetReference;
+    targetPos = Vec2(rand() % (int) FALLING_ROCK_MAX_RADIUS, 0).Rotate(PI * ((rand() % 1001) / 500.0)) +
+                targetReference;
 
     associated.AddComponent(new Sprite(associated, rockPossibleSprites[rand() % rockPossibleSprites.size()]));
-    associated.SetCenter(targetPos - Vec2(0, 1.5*GAME_HEIGHT));
+    associated.SetCenter(targetPos - Vec2(0, 1.5 * GAME_HEIGHT));
 
     camShaker = new CameraShaker(associated);
     associated.AddComponent(camShaker);
 
     rockShadow = new GameObject(associated.GetLayer());
     Game::GetInstance().GetCurrentState().AddObject(rockShadow);
+
+    auto collider = new Collider(associated);
+    collider->SetCanCollide([](GameObject& collidable) -> bool {
+        return collidable.HasComponent(PLAYER_TYPE);
+    });
+    associated.AddComponent(collider);
 }
 
 void FallingRock::Start() {
@@ -37,7 +46,7 @@ void FallingRock::Start() {
 }
 
 void FallingRock::Update(float dt) {
-    if(associated.box.Center() == targetPos){ // Rock is on the ground!
+    if (associated.box.Center() == targetPos) { // Rock is on the ground!
         string fallingRocksSounds[2] = {FALLING_ROCK_BREAKING_SOUND_1, FALLING_ROCK_BREAKING_SOUND_2};
 
         auto boomGO = new GameObject(associated.GetLayer());
@@ -59,15 +68,13 @@ void FallingRock::Update(float dt) {
         associated.RequestDelete();
     }
 
-    auto deltaSpeed = FALLING_ROCK_ACCELERATION*dt;
-    auto deltaPos = linearSpeed*dt + deltaSpeed*(dt/2);
+    auto deltaSpeed = FALLING_ROCK_ACCELERATION * dt;
+    auto deltaPos = linearSpeed * dt + deltaSpeed * (dt / 2);
     linearSpeed += deltaSpeed;
-
-    if(associated.box.Center().Distance(targetPos) < deltaPos){
+    
+    if (associated.box.Center().Distance(targetPos) < deltaPos) {
         associated.SetCenter(targetPos);
-        associated.AddComponent(new Collider(associated));
-    }
-    else{
+    } else {
         associated.box += Vec2(0, deltaPos);
     }
 
@@ -82,5 +89,7 @@ bool FallingRock::Is(string type) {
 }
 
 void FallingRock::NotifyCollision(GameObject &other) {
-//    other.RequestDelete();
+    if (other.HasComponent(PLAYER_TYPE)) {
+        Player::player->DecreaseHp(damage);
+    }
 }

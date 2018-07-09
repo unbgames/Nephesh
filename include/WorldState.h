@@ -63,6 +63,7 @@ private:
         vector<Map> maps;
 
         DecentMusic *bgMusic;
+        GameObject* bossObj;
 
         void UpdateLoadedMaps();
         void LoadMaps();
@@ -73,6 +74,10 @@ private:
         Timer introMusicTimer;
         int introMusicLength = 57;
         bool bossMusicToPlay = false;
+
+        Timer endingTimer;
+        int endingMusicLength = 8;
+        bool ending = false;
 };
 
 

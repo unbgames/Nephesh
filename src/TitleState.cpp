@@ -16,25 +16,22 @@
 
 TitleState::TitleState() : State(), frozen(false) {
     auto bgObj = new GameObject();
-    auto bgSprite = new Sprite(*bgObj, "img/title_screen.png");
-    bgSprite->SetScale(GAME_WIDTH/bgObj->box.w, GAME_HEIGHT/bgObj->box.h);
-    bgObj->AddComponent(bgSprite);
+    bgObj->AddComponent(new Sprite(*bgObj, "img/bg.png"));
     bgObj->AddComponent(new CameraFollower(*bgObj));
     AddObject(bgObj);
 
     bgMusic = new Music("audio/menu.ogg");
     bgMusic->Play();
 
-//    auto titleObj = new GameObject(1);
-//    SDL_Color white = {255, 255, 255, 255};
-//    auto titleText = new Text(*titleObj, "font/PressStart2P-Regular.ttf", 100, Text::TextStyle::SOLID, "NEPHESH", white);
-//    titleObj->AddComponent(titleText);
-//    titleObj->box += Vec2(20, 20);
-//    AddObject(titleObj);
+    auto titleObj = new GameObject(1);
+    SDL_Color white = {255, 255, 255, 255};
+    auto titleText = new Text(*titleObj, "font/PressStart2P-Regular.ttf", 100, Text::TextStyle::SOLID, "NEPHESH", white);
+    titleObj->AddComponent(titleText);
+    titleObj->box += Vec2(20, 20);
+    AddObject(titleObj);
 
-    SDL_Color white = {0, 0, 0, 255};
     auto intrObj = new GameObject(1);
-    auto instrText = new Text(*intrObj, "font/PressStart2P-Regular.ttf", 30, Text::TextStyle::SOLID, "Pressione barra de espaco para comecar!", white);
+    auto instrText = new Text(*intrObj, "font/PressStart2P-Regular.ttf", 40, Text::TextStyle::SOLID, "Press space bar to start!", white);
     intrObj->AddComponent(instrText);
     auto callback = [instrText] {
         auto color = instrText->GetColor();
@@ -43,7 +40,8 @@ TitleState::TitleState() : State(), frozen(false) {
         instrText->RemakeTexture();
     };
     intrObj->AddComponent(new IntervalTimer(*intrObj, 0.6, callback));
-    intrObj->box.PlaceCenterAt(Vec2((GAME_WIDTH/2)-500, GAME_HEIGHT/2 + 400));
+    intrObj->box.x = GAME_WIDTH/2 - intrObj->box.w/2;
+    intrObj->box.y = GAME_HEIGHT/2 + 400;
     AddObject(intrObj);
 
     auto fadeInObj = new GameObject(2);

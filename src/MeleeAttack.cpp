@@ -8,6 +8,8 @@
 #include <Boss.h>
 #include "MeleeAttack.h"
 
+#define PLAYER_MELEE_DAMAGE 100
+
 MeleeAttack::MeleeAttack(GameObject &associated, string sprite, int frameCount, bool flip, Vec2 offset, Vec2 colScale, Vec2 colOffset, double attackDuration, bool debug) :
         Component(associated),
         collisionTimer(),
@@ -82,7 +84,7 @@ bool MeleeAttack::Is(string type) {
 void MeleeAttack::NotifyCollision(GameObject &other) {
     auto boss = (Boss *)other.GetComponent(BOSS_TYPE);
     if (boss != nullptr) {
-        boss->DecreaseHp(10);
+        boss->DecreaseHp(PLAYER_MELEE_DAMAGE);
     }
     attackHit = true;
 }
