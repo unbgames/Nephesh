@@ -11,7 +11,7 @@
 #include <Sound.h>
 #include "FallingRock.h"
 
-FallingRock::FallingRock(GameObject &associated) : Component(associated), linearSpeed(0), fell(false) {
+FallingRock::FallingRock(GameObject &associated) : Component(associated), linearSpeed(0) {
     vector<string> rockPossibleSprites = {FALLING_ROCK_SPRITE_1, FALLING_ROCK_SPRITE_2, FALLING_ROCK_SPRITE_3};
 
     Vec2 targetReference = (Player::player) ? Player::player->GetCenter() : Camera::Camera::GetCameraCenter();
@@ -34,20 +34,26 @@ void FallingRock::Start() {
 }
 
 void FallingRock::Update(float dt) {
-    if(associated.box.Center() == targetPos){
-        if(!fell){
-            auto boomGO = new GameObject(associated.GetLayer());
-//        auto boomSound = new Sound(*boomGO, "BOOM.wav");
-//        boomGO->AddComponent(boomSound);
-//        boomSound->Play();
-            boomGO->AddComponent(new Sprite(*boomGO, "img/dust.png", 6, 0.1, 0.6));
-            boomGO->box.PlaceCenterAt(associated.box.Center());
-            Game::GetInstance().GetCurrentState().AddObject(boomGO);
+    if(associated.box.Center() == targetPos){ // Rock is on the ground!
+        string fallingRocksSounds[2] = {FALLING_ROCK_BREAKING_SOUND_1, FALLING_ROCK_BREAKING_SOUND_2};
 
-            camShaker->SingleShake();
-        }
+        auto boomGO = new GameObject(associated.GetLayer());
+        auto boomSound = new Sound(*boomGO, fallingRocksSounds[rand() % 2]);
+        boomGO->AddComponent(boomSound);
+        boomSound->Play();
+        boomGO->AddComponent(new Sprite(*boomGO, FALLING_ROCK_DUST_SPRITE, 6, 0.1, 0.6));
+        boomGO->box.PlaceCenterAt(associated.box.Center());
+        Game::GetInstance().GetCurrentState().AddObject(boomGO);
 
-        fell = true;
+        auto rockBreakingGO = new GameObject(associated.GetLayer());
+        rockBreakingGO->AddComponent(new Sprite(*rockBreakingGO, FALLING_ROCK_BREAKING_SPRITE, 7, 0.1, 0.7));
+        rockBreakingGO->box.PlaceCenterAt(associated.box.Center());
+        Game::GetInstance().GetCurrentState().AddObject(rockBreakingGO);
+
+        camShaker->SingleShake();
+
+        rockShadow->RequestDelete();
+        associated.RequestDelete();
     }
 
     auto deltaSpeed = FALLING_ROCK_ACCELERATION*dt;

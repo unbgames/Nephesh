@@ -40,12 +40,13 @@ public:
     void SetFrameTime(float frameTime);
     void SetFlip(bool f);
 
-    int getFrameCount();
-    int getCurrentFrame();
+    int GetFrameCount();
+    int GetCurrentFrame();
     void LockFrame();
     void UnlockFrame();
-    int GetFrame();
     void SetAlpha(Uint8 a);
+    float GetSecondsToSelfDestruct();
+    void SetSecondsToSelfDestruct(float secondsToSelfDestruct);
 
 private:
     shared_ptr<SDL_Texture> texture;

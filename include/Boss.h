@@ -45,7 +45,9 @@
 
 #define BOSS_CLAP_SOUND "audio/boss/boss_clap.wav"
 #define BOSS_SLAM_SOUND "audio/boss/boss_slam.wav"
-#define BOSS_SLAM_EARTHQUAKE_SOUND "audio/boss/earthquake_1.wav"
+#define BOSS_SLAM_EARTHQUAKE_SOUND_1 "audio/boss/earthquake_1.wav"
+#define BOSS_SLAM_EARTHQUAKE_SOUND_2 "audio/boss/earthquake_2.wav"
+#define BOSS_SLAM_EARTHQUAKE_SOUND_3 "audio/boss/earthquake_3.wav"
 
 using namespace std;
 

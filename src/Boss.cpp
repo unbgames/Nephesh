@@ -6,9 +6,8 @@
 #include <MeleeAttack.h>
 #include <Collider.h>
 #include <RollingStones.h>
-#include <Charge.h>
+#include <Cast.h>
 #include <FallingRock.h>
-#include <InputManager.h>
 #include <BossMeleeAttack.h>
 #include <Debug.h>
 #include <Collidable.h>
@@ -44,16 +43,6 @@ Boss::Boss(GameObject &associated) :
 }
 
 void Boss::Update(float dt) {
-//    auto& inputManager = InputManager::GetInstance();
-//
-//    if (inputManager.KeyPress(SDLK_q)) {
-//        camShaker->KeepShaking(3);
-//        camShaker->SingleShake();
-//    }
-//    if (inputManager.KeyPress(SDLK_e)) {
-//        camShaker->KeepShaking(3, true);
-//    }
-
     auto center = associated.box.Center();
 
     if (hp <= 0) {
@@ -327,7 +316,7 @@ void Boss::SlapAttack() {
 void Boss::SlamAttack() {
     SetSprite(BOSS_SLAM_SPRITE);
 
-    const int ATTACK_RANGE = 0.7 * associated.box.h;
+    const int ATTACK_RANGE = 0.6 * associated.box.h;
     const int ATTACK_WIDTH = 0.7 * associated.box.w;
 
     auto bossBoxPos = Vec2(associated.box.x, associated.box.y);
@@ -349,8 +338,10 @@ void Boss::SlamAttack() {
     });
 
     DecentTimer::ProgramTimer(associated, BOSS_ATTACK_TIME-0.3, [thisGO]() -> void{
+        string earthquakeSounds[3] = {BOSS_SLAM_EARTHQUAKE_SOUND_1, BOSS_SLAM_EARTHQUAKE_SOUND_2, BOSS_SLAM_EARTHQUAKE_SOUND_3};
+
         auto boss = (Boss*) thisGO->GetComponent(BOSS_TYPE);
-        boss->PlaySound(BOSS_SLAM_EARTHQUAKE_SOUND);
+        boss->PlaySound(earthquakeSounds[rand() % 3]);
         boss->camShaker->KeepShaking(BOSS_ATTACK_TIME, true);
     });
 
@@ -396,7 +387,7 @@ void Boss::RockSlide() {
         rockGO->AddComponent(new FallingRock(*rockGO));
 
         auto rockCastGO = new GameObject(associated.GetLayer());
-        rockCastGO->AddComponent(new Charge(*rockCastGO, rockGO, BOSS_ATTACK_TIME + i * TIME_BETWEEN_ROCKS));
+        rockCastGO->AddComponent(new Cast(*rockCastGO, rockGO, BOSS_ATTACK_TIME + i * TIME_BETWEEN_ROCKS));
 
         Game::GetInstance().GetCurrentState().AddObject(rockCastGO);
     }
@@ -451,7 +442,7 @@ void Boss::RollingStoneAttack() {
 
     auto chargeTime = 0.7;
     auto chargeObj = new GameObject(associated.GetLayer());
-    chargeObj->AddComponent(new Charge(*chargeObj, rs, chargeTime));
+    chargeObj->AddComponent(new Cast(*chargeObj, rs, chargeTime));
     auto rsSprite = new Sprite(*chargeObj, RSTONE_SLIDING_UP_STONE_SPRITE, 6, chargeTime / 6);
     chargeObj->AddComponent(rsSprite);
     chargeObj->box = rs->box;
@@ -461,7 +452,7 @@ void Boss::RollingStoneAttack() {
     Game::GetInstance().GetCurrentState().AddObject(chargeObj);
 
     auto chargeObj2 = new GameObject(associated.GetLayer());
-    chargeObj2->AddComponent(new Charge(*chargeObj2, nullptr, chargeTime));
+    chargeObj2->AddComponent(new Cast(*chargeObj2, nullptr, chargeTime));
     auto dustSprite = new Sprite(*chargeObj2, "img/poeira.png", 6, chargeTime / 6);
     chargeObj2->AddComponent(dustSprite);
     auto dustPos = chargeObj->box.Center();

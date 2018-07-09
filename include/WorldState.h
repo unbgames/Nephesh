@@ -5,6 +5,7 @@
 #include "State.h"
 #include "TileMap.h"
 #include "Map.h"
+#include "DecentMusic.h"
 #include "Music.h"
 #include <vector>
 #include <memory>
@@ -60,13 +61,13 @@ private:
         int currentMapIndex;
         vector<Map> maps;
 
-        Music *bgMusic;
+        DecentMusic *bgMusic;
 
         void UpdateLoadedMaps();
         void LoadMaps();
         void LoadNpcs();
-        void UpdateMusic(int prevIndex, int currentMapIndex);
-        int bossMapIndex = 1;
+        void UpdateMusic(int prevIndex);
+        int bossMapIndex = 6;
         
         string musicToPlay = "";
         int fadeIn = -1;
