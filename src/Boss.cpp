@@ -274,20 +274,18 @@ void Boss::SlapAttack() {
     auto playerCenter = Player::player->GetCenter();
     auto bossCenter = associated.box.Center();
     Vec2 bossBoxPos;
-    int numOfSounds = 3;
+    int numOfSounds = 2;
     
-    vector<string> soundsVector = {"audio/boss/boss_slap_1.wav", "audio/boss/boss_slap_2.wav", 
-    "audio/boss/boss_slap_3.wav" };
+    vector<string> soundsVector = {"audio/boss/boss_slap_1.wav", "audio/boss/boss_slap_2.wav" };
     vector<int> soundProbabilityWeights(numOfSounds);
 
-    soundProbabilityWeights[0] = 33;
-    soundProbabilityWeights[1] = 33;
-    soundProbabilityWeights[2] = 34;
+    soundProbabilityWeights[0] = 50;
+    soundProbabilityWeights[1] = 50;
 
     int soundIndex = WeightedDraft(soundProbabilityWeights);
 
     auto attackObject = new GameObject(0);
-    attackObject->AddComponent(new BossMeleeAttack(*attackObject, 30, "", 0, BOSS_ATTACK_TIME));
+    attackObject->AddComponent(new BossMeleeAttack(*attackObject, 15, "", 0, BOSS_ATTACK_TIME));
     auto airWaveMeleeObject = new GameObject(0);
 
     if (playerCenter.x <= bossCenter.x) { //LEFT
@@ -304,7 +302,7 @@ void Boss::SlapAttack() {
         auto attackCenter = attackObject->box.Center();
         airWaveMeleeObject->box.PlaceCenterAt({attackCenter.x - 270, attackCenter.y + 270});
         airWaveMeleeObject->angleDeg = -50;
-        airWaveMeleeObject->AddComponent(new BossMeleeAttack(*airWaveMeleeObject, 15, "img/slash_boss.png", 4,
+        airWaveMeleeObject->AddComponent(new BossMeleeAttack(*airWaveMeleeObject, 10, "img/slash_boss.png", 4,
                                                              secondsToEndAttack));
         colliderToLoad = airWaveMeleeObject;
     } else { //RIGHT
@@ -323,7 +321,7 @@ void Boss::SlapAttack() {
         airWaveMeleeObject->box.PlaceCenterAt({attackCenter.x + 270, attackCenter.y + 270});
         airWaveMeleeObject->angleDeg = 50;
         airWaveMeleeObject->AddComponent(
-                new BossMeleeAttack(*airWaveMeleeObject, 15, "img/slash_boss.png", 4, secondsToEndAttack,
+                new BossMeleeAttack(*airWaveMeleeObject, 10, "img/slash_boss.png", 4, secondsToEndAttack,
                                     true));
         colliderToLoad = airWaveMeleeObject;
         //airWaveMeleeObject->AddComponent(new Debug(*airWaveMeleeObject));
@@ -350,7 +348,7 @@ void Boss::SlamAttack() {
     timeToLoadCollider = BOSS_ATTACK_TIME - secondsToEndAttack;
 
     colliderToLoad = new GameObject(0);
-    colliderToLoad->AddComponent(new BossMeleeAttack(*colliderToLoad, 35, "", 0, secondsToEndAttack));
+    colliderToLoad->AddComponent(new BossMeleeAttack(*colliderToLoad, 20, "", 0, secondsToEndAttack));
     colliderToLoad->box = Rect(ATTACK_RANGE, ATTACK_WIDTH);
     colliderToLoad->box = bossBoxPos + Vec2(0.15 * associated.box.w, 0.55 * associated.box.h);
 
@@ -462,7 +460,7 @@ void Boss::RollingStoneAttack() {
     }
 
     rs->box = blockPos;
-    rs->AddComponent(new RollingStones(*rs, 20, 300, 5200));
+    rs->AddComponent(new RollingStones(*rs, 10, 300, 5200));
 
     auto chargeTime = 0.7;
     auto chargeObj = new GameObject(0);
@@ -496,7 +494,7 @@ void Boss::ClapAttack() {
     auto playerBoxCenter = associated.box.Center();
 
     colliderToLoad->SetCenter(playerBoxCenter);
-    colliderToLoad->AddComponent(new BossMeleeAttack(*colliderToLoad, 30, "img/slash_boss_down.png", 4,
+    colliderToLoad->AddComponent(new BossMeleeAttack(*colliderToLoad, 15, "img/slash_boss_down.png", 4,
                                                      secondsToEndAttack, true, {0, 0}, {1.2, 0.7}));
 
     colliderToLoad->box.y += associated.box.h / 2 + 40;
@@ -560,7 +558,7 @@ void Boss::DecreaseHp(int damage) {
 
 void Boss::TryHitLaser() {
     if (awoken) {
-        if (currentState == IDLE/*currentState == ATTACKING && attackState == CLAP*/) {
+        if (/*currentState == IDLE*/currentState == ATTACKING && attackState == CLAP) {
             PlaySound("audio/hitbox_magica.wav");
             UpdateState(VULNERABLE);
         } else {
