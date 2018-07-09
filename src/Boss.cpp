@@ -566,6 +566,18 @@ void Boss::TryHitLaser() {
             UpdateState(DEFENDING);
         }
     }
+
+//    if (awoken) {
+//        if (currentState == IDLE) {
+//            PlaySound("audio/hitbox_magica.wav");
+//            UpdateState(VULNERABLE);
+//        } else {
+//            PlaySound("audio/hitbox_magica_fail.wav");
+//            UpdateState(DEFENDING);
+//        }
+//    }
+    
+    
 }
 
 int Boss::GetHp() {
