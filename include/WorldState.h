@@ -19,6 +19,7 @@ using namespace std;
 //8875, 1024
 #define WORLD_PLAYER_INITIAL_POSITION Vec2(1024, 1024)
 #define WORLD_BOSS_INITIAL_POSITION Vec2(11153, -2298)
+#define WORLD_PLAYER_NEAR_BOSS_POS Vec2(11455, 1024)
 #define WORLD_LAST_LAYER 10
 #define HUD_LAYER 8
 
@@ -70,7 +71,7 @@ private:
         void LoadMaps();
         void LoadNpcs();
         void UpdateMusic(int prevIndex);
-        int bossMapIndex = 8;
+        int bossMapIndex = 7;
         
         Timer introMusicTimer;
         int introMusicLength = 57;

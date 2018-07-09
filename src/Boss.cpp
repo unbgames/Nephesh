@@ -22,13 +22,14 @@
 Boss::Boss(GameObject &associated) :
         Component(associated),
         hp(BOSS_INITIAL_HP),
-        speed(0,0),
+        speed(0, 0),
         currentState(STARTING),
         previousState(STARTING),
         timer(),
         attacksPerformed(0),
         awoken(false) {
-    auto sprite = new Sprite(associated, BOSS_CUTSCENE_SPRITE, BOSS_AWAKENING_SPRITE_COUNT, ((float)BOSS_AWAKENING_DURATION)/BOSS_AWAKENING_SPRITE_COUNT);
+    auto sprite = new Sprite(associated, BOSS_CUTSCENE_SPRITE, BOSS_AWAKENING_SPRITE_COUNT,
+                             ((float) BOSS_AWAKENING_DURATION) / BOSS_AWAKENING_SPRITE_COUNT);
     sprite->SetScale(2, 2, false);
     associated.AddComponent(sprite);
     sprite->LockFrame();
@@ -49,7 +50,7 @@ void Boss::Update(float dt) {
         if (previousState != DYING) {
             auto oldCenter = associated.box.Center();
             SetSprite(BOSS_DEATH_SPRITE);
-            auto sprite = (Sprite *)associated.GetComponent(SPRITE_TYPE);
+            auto sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
             sprite->SetScale(2, 2);
             associated.box.PlaceCenterAt(oldCenter);
             cutsceneTimer.Restart();
@@ -58,7 +59,7 @@ void Boss::Update(float dt) {
         } else {
             cutsceneTimer.Update(dt);
             if (cutsceneTimer.Get() > BOSS_DEATH_DURATION) {
-                auto sprite = (Sprite *)associated.GetComponent(SPRITE_TYPE);
+                auto sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
                 barDecoration.lock()->RequestDelete();
                 healthBar.lock()->RequestDelete();
                 sprite->LockFrame();
@@ -70,12 +71,12 @@ void Boss::Update(float dt) {
     }
     //cout << "State: " << currentState << " ||| Center: (" << center.x << ", " << center.y << ")" << endl;
 
-    if(colliderToLoad != nullptr && timeToLoadCollider >= 0){
+    if (colliderToLoad != nullptr && timeToLoadCollider >= 0) {
         colliderTimer.Update(dt);
     }
 
-    if(Player::player && Player::player->GetHp() > 0 && center.Distance(Player::player->GetCenter()) <= 
-    BOSS_IDLE_DISTANCE){
+    if (Player::player && Player::player->GetHp() > 0 && center.Distance(Player::player->GetCenter()) <=
+                                                         BOSS_IDLE_DISTANCE) {
         auto newState = currentState;
         if (newState != STARTING && newState != AWAKENING) {
             Camera::offset = Vec2(0, -100);
@@ -84,7 +85,7 @@ void Boss::Update(float dt) {
         }
         Sprite *sprite;
 
-        switch(currentState) {
+        switch (currentState) {
             case STARTING:
                 if (Player::player && center.Distance(Player::player->GetCenter()) <= BOSS_AWAKEN_DISTANCE) {
                     sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
@@ -129,7 +130,7 @@ void Boss::Update(float dt) {
                 break;
             case IDLE:
                 ShowBars();
-                if(previousState != IDLE){
+                if (previousState != IDLE) {
                     SetSprite(BOSS_IDLE_SPRITE);
                     timer.Restart();
                 } else if (timer.Get() < BOSS_IDLE_TIME) {
@@ -139,15 +140,15 @@ void Boss::Update(float dt) {
                 }
                 break;
             case ATTACKING:
-                if(previousState != ATTACKING){
-                    numOfAttacks = (rand()%(BOSS_MAX_NUM_OF_ATTACKS - BOSS_MIN_NUM_OF_ATTACKS + 1)) +
+                if (previousState != ATTACKING) {
+                    numOfAttacks = (rand() % (BOSS_MAX_NUM_OF_ATTACKS - BOSS_MIN_NUM_OF_ATTACKS + 1)) +
                                    BOSS_MIN_NUM_OF_ATTACKS;
                     Attack();
                     timer.Restart();
                 } else if (timer.Get() < BOSS_ATTACK_TIME) {
                     timer.Update(dt);
-                    if( colliderToLoad != nullptr && timeToLoadCollider >= 0 && colliderTimer.Get() >=
-                                                                                timeToLoadCollider){
+                    if (colliderToLoad != nullptr && timeToLoadCollider >= 0 && colliderTimer.Get() >=
+                                                                                timeToLoadCollider) {
                         Game::GetInstance().GetCurrentState().AddObject(colliderToLoad);
                         timeToLoadCollider = -1;
                         colliderToLoad = nullptr;
@@ -172,7 +173,7 @@ void Boss::Update(float dt) {
         UpdateState(newState);
 
 
-    } else{
+    } else {
         UpdateState(currentState);
         Camera::offset = Vec2();
         HideBars();
@@ -192,31 +193,38 @@ bool Boss::Is(string type) {
 
 void Boss::SetSprite(string file, bool flip) {
     auto sprite = (Sprite *) associated.GetComponent("Sprite");
+    float wScale = 1, hScale = 1;
 
     auto lastCenter = associated.box.Center();
-    if(!sprite){
-        throw("Sprite component not found on Boss's GameObject.");
+    if (!sprite) {
+        throw ("Sprite component not found on Boss's GameObject.");
     }
 
     if (file == BOSS_IDLE_SPRITE) {
         sprite->SetFrameCount(10);
         sprite->SetFrameTime(0.1);
+    } else if (file == BOSS_CUTSCENE_SPRITE) {
+        sprite->SetFrameCount(BOSS_AWAKENING_SPRITE_COUNT);
+        sprite->SetFrameTime(((float) BOSS_AWAKENING_DURATION) / BOSS_AWAKENING_SPRITE_COUNT);
+        wScale = 2;
+        hScale = 2;
+        sprite->LockFrame();
     } else if (file == BOSS_DEATH_SPRITE) {
         sprite->SetFrameCount(BOSS_DEATH_SPRITE_COUNT);
-        sprite->SetFrameTime(((float) BOSS_DEATH_DURATION)/BOSS_DEATH_SPRITE_COUNT);
+        sprite->SetFrameTime(((float) BOSS_DEATH_DURATION) / BOSS_DEATH_SPRITE_COUNT);
     } else if (file == BOSS_PROTECT_SPRITE) {
         sprite->SetFrameCount(BOSS_PROTECT_SPRITE_COUNT);
-        sprite->SetFrameTime(((float) BOSS_PROTECT_DURATION)/BOSS_PROTECT_SPRITE_COUNT);
+        sprite->SetFrameTime(((float) BOSS_PROTECT_DURATION) / BOSS_PROTECT_SPRITE_COUNT);
     } else if (file == BOSS_VULNERABLE_SPRITE) {
         sprite->SetFrameCount(BOSS_VULNERABLE_SPRITE_COUNT);
-        sprite->SetFrameTime(((float) BOSS_VULNERABLE_DURATION)/BOSS_VULNERABLE_SPRITE_COUNT);
+        sprite->SetFrameTime(((float) BOSS_VULNERABLE_DURATION) / BOSS_VULNERABLE_SPRITE_COUNT);
     } else { // ATTACKS
         sprite->SetFrameCount(10);
         sprite->SetFrameTime(BOSS_ATTACK_TIME / 10);
     }
 
     sprite->SetFlip(flip);
-    sprite->SetScale(1, 1, false);
+    sprite->SetScale(wScale, hScale, false);
     sprite->Open(file, false);
     sprite->SetFrame(0);
 
@@ -266,11 +274,21 @@ void Boss::SlapAttack() {
     auto playerCenter = Player::player->GetCenter();
     auto bossCenter = associated.box.Center();
     Vec2 bossBoxPos;
+    int numOfSounds = 3;
+    
+    vector<string> soundsVector = {"audio/boss/boss_slap_1.wav", "audio/boss/boss_slap_2.wav", 
+    "audio/boss/boss_slap_3.wav" };
+    vector<int> soundProbabilityWeights(numOfSounds);
 
-    auto attackObject = new GameObject(associated.GetLayer());
+    soundProbabilityWeights[0] = 33;
+    soundProbabilityWeights[1] = 33;
+    soundProbabilityWeights[2] = 34;
+
+    int soundIndex = WeightedDraft(soundProbabilityWeights);
+
+    auto attackObject = new GameObject(0);
     attackObject->AddComponent(new BossMeleeAttack(*attackObject, 30, "", 0, BOSS_ATTACK_TIME));
-
-    auto airWaveMeleeObject = new GameObject(associated.GetLayer());
+    auto airWaveMeleeObject = new GameObject(0);
 
     if (playerCenter.x <= bossCenter.x) { //LEFT
         SetSprite(BOSS_SLAP_LEFT_SPRITE);
@@ -305,13 +323,16 @@ void Boss::SlapAttack() {
         airWaveMeleeObject->box.PlaceCenterAt({attackCenter.x + 270, attackCenter.y + 270});
         airWaveMeleeObject->angleDeg = 50;
         airWaveMeleeObject->AddComponent(
-                new BossMeleeAttack(*airWaveMeleeObject, 15, "img/slash_boss.png", 4, secondsToEndAttack, 
-                true));
+                new BossMeleeAttack(*airWaveMeleeObject, 15, "img/slash_boss.png", 4, secondsToEndAttack,
+                                    true));
         colliderToLoad = airWaveMeleeObject;
         //airWaveMeleeObject->AddComponent(new Debug(*airWaveMeleeObject));
         //Game::GetInstance().GetCurrentState().AddObject(airWaveMeleeObject);
     }
 
+    auto sound = new Sound(*attackObject, soundsVector[soundIndex]);
+    attackObject->AddComponent(sound);
+    sound->Play();
     Game::GetInstance().GetCurrentState().AddObject(attackObject);
 }
 
@@ -334,15 +355,16 @@ void Boss::SlamAttack() {
     colliderToLoad->box = bossBoxPos + Vec2(0.15 * associated.box.w, 0.55 * associated.box.h);
 
     auto thisGO = &associated;
-    DecentTimer::ProgramTimer(associated, 0.2, [thisGO]() -> void{
-        auto boss = (Boss*) thisGO->GetComponent(BOSS_TYPE);
+    DecentTimer::ProgramTimer(associated, 0.2, [thisGO]() -> void {
+        auto boss = (Boss *) thisGO->GetComponent(BOSS_TYPE);
         boss->PlaySound(BOSS_SLAM_SOUND);
     });
 
-    DecentTimer::ProgramTimer(associated, BOSS_ATTACK_TIME-0.3, [thisGO]() -> void{
-        string earthquakeSounds[3] = {BOSS_SLAM_EARTHQUAKE_SOUND_1, BOSS_SLAM_EARTHQUAKE_SOUND_2, BOSS_SLAM_EARTHQUAKE_SOUND_3};
+    DecentTimer::ProgramTimer(associated, BOSS_ATTACK_TIME - 0.3, [thisGO]() -> void {
+        string earthquakeSounds[3] = {BOSS_SLAM_EARTHQUAKE_SOUND_1, BOSS_SLAM_EARTHQUAKE_SOUND_2,
+                                      BOSS_SLAM_EARTHQUAKE_SOUND_3};
 
-        auto boss = (Boss*) thisGO->GetComponent(BOSS_TYPE);
+        auto boss = (Boss *) thisGO->GetComponent(BOSS_TYPE);
         boss->PlaySound(earthquakeSounds[rand() % 3]);
         boss->camShaker->KeepShaking(BOSS_ATTACK_TIME, true);
     });
@@ -414,7 +436,7 @@ void Boss::RollingStoneAttack() {
     auto widthOffset = (rand() % offWid) - offWid / 2;
 
     Vec2 blockPos = {bossCenter.x + widthOffset, bossCenter.y + (associated.box.h / 2) + 10 + heightOffset};
-    
+
     if (blockPos.Distance(playerCenter) < BOSS_MIN_SLIDING_ROCK_DIST) {
         Vec2 topRight = {bossCenter.x + offWid / 2, bossCenter.y + (associated.box.h / 2) + 10};
         Vec2 topLeft = {bossCenter.x - offWid / 2, bossCenter.y + (associated.box.h / 2) + 10};
@@ -425,7 +447,7 @@ void Boss::RollingStoneAttack() {
         auto topLeftDist = playerCenter.Distance(topLeft);
         auto botRightDist = playerCenter.Distance(botRight);
         auto botLeftDist = playerCenter.Distance(botLeft);
-        
+
         float dist = std::max({topRightDist, topLeftDist, botRightDist, botLeftDist}, cmp);
 
         if (dist == topRightDist) {
@@ -494,13 +516,14 @@ void Boss::CreateBars() {
 
     auto healthBarObject = new GameObject(HUD_LAYER);
     healthBarObject->AddComponent(new Bar(*healthBarObject, "img/hp_boss.png", hp, BOSS_INITIAL_HP));
-    auto healthBarPosition = Vec2(GAME_WIDTH/2 - healthBarObject->box.w/2, GAME_HEIGHT - 60);
+    auto healthBarPosition = Vec2(GAME_WIDTH / 2 - healthBarObject->box.w / 2, GAME_HEIGHT - 60);
     healthBarObject->AddComponent(new CameraFollower(*healthBarObject, healthBarPosition));
     healthBar = state.AddObject(healthBarObject);
 
     auto decoration = new GameObject(HUD_LAYER);
     decoration->AddComponent(new Sprite(*decoration, "img/deco_boss_escuro.png"));
-    auto rPosition = Vec2(GAME_WIDTH/2 - decoration->box.w/2, healthBarPosition.y - healthBarObject->box.h/2 - 20);
+    auto rPosition = Vec2(GAME_WIDTH / 2 - decoration->box.w / 2,
+                          healthBarPosition.y - healthBarObject->box.h / 2 - 20);
     healthBarObject->AddComponent(new CameraFollower(*decoration, rPosition));
     barDecoration = state.AddObject(decoration);
 }
@@ -551,13 +574,15 @@ int Boss::GetHp() {
     return hp;
 }
 
-void Boss::SetHp(int h){
+void Boss::SetHp(int h) {
     hp = h;
 }
 
 void Boss::Restart() {
     hp = 100;
+    SetSprite(BOSS_CUTSCENE_SPRITE);
     currentState = STARTING;
     awoken = false;
+    Start();
 }
 
