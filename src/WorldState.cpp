@@ -195,8 +195,8 @@ void WorldState::Resume() {
 }
 
 void WorldState::LoadAssets() {
-    Resources::GetMusic("audio/first_encounter_loop.mp3");
-    Resources::GetMusic("audio/mundo.ogg");
+    Resources::GetSound("audio/first_encounter_loop.mp3");
+    Resources::GetSound("audio/mundo.ogg");
 }
 
 weak_ptr<GameObject> WorldState::AddCollidable(shared_ptr<GameObject> object) {
@@ -274,20 +274,20 @@ void WorldState::UpdateLoadedMaps() {
         }
     }
     
-    //UpdateMusic(prevIndex, currentMapIndex);
+    UpdateMusic(prevIndex);
 }
 
-void WorldState::UpdateMusic(int prevIndex, int currentMapIndex) {
+void WorldState::UpdateMusic(int prevIndex) {
     if(prevIndex != currentMapIndex && currentMapIndex == bossMapIndex){
-        bgMusic->Stop(WORLD_MUSIC_FADE_OUT_TIME);
-        musicChangeTimer.Restart();
-        musicToPlay = "audio/first_encounter_loop.mp3";
-        fadeIn = 2000;
+        bgMusic->Stop(0);
+        //musicChangeTimer.Restart();
+        bgMusic->Open("audio/first_encounter_loop.mp3");
+        bgMusic->Play(0, 2000);
     } else if(prevIndex != currentMapIndex && prevIndex == bossMapIndex){
-        bgMusic->Stop(WORLD_MUSIC_FADE_OUT_TIME);
-        musicChangeTimer.Restart();
-        musicToPlay = "audio/mundo.ogg";
-        fadeIn = 500;
+        bgMusic->Stop(0);
+        //musicChangeTimer.Restart();
+        bgMusic->Open("audio/mundo.ogg");
+        bgMusic->Play(0, 2000);
     }
 }
 
