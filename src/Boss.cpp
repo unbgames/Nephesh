@@ -16,6 +16,7 @@
 #include <WorldState.h>
 #include <Bar.h>
 #include <CameraFollower.h>
+#include <DecentTimer.h>
 #include "Boss.h"
 #include "Utils.h"
 
@@ -43,16 +44,17 @@ Boss::Boss(GameObject &associated) :
 }
 
 void Boss::Update(float dt) {
-    auto center = associated.box.Center();
-    auto& inputManager = InputManager::GetInstance();
-
-    if (inputManager.KeyPress(SDLK_q)) {
-        camShaker->KeepShaking(3);
+//    auto& inputManager = InputManager::GetInstance();
+//
+//    if (inputManager.KeyPress(SDLK_q)) {
+//        camShaker->KeepShaking(3);
 //        camShaker->SingleShake();
-    }
-    if (inputManager.KeyPress(SDLK_e)) {
-        camShaker->KeepShaking(3, true);
-    }
+//    }
+//    if (inputManager.KeyPress(SDLK_e)) {
+//        camShaker->KeepShaking(3, true);
+//    }
+
+    auto center = associated.box.Center();
 
     if (hp <= 0) {
         if (previousState != DYING) {
@@ -216,12 +218,12 @@ void Boss::Attack() {
 
     if (dist <= BOSS_SLAP_DISTANCE) {
         attackProbabilityWeights[SLAP] = 0;
-        attackProbabilityWeights[SLAM] = 0;
-        attackProbabilityWeights[CLAP] = 100;
+        attackProbabilityWeights[SLAM] = 100;
+        attackProbabilityWeights[CLAP] = 0;
     } else {
         attackProbabilityWeights[SLAP] = 0;
-        attackProbabilityWeights[SLAM] = 0;
-        attackProbabilityWeights[CLAP] = 100;
+        attackProbabilityWeights[SLAM] = 100;
+        attackProbabilityWeights[CLAP] = 0;
     }
 
     attackState = (BossAttack) WeightedDraft(attackProbabilityWeights);
@@ -299,35 +301,34 @@ void Boss::SlapAttack() {
 void Boss::SlamAttack() {
     SetSprite(BOSS_SLAM_SPRITE);
 
-    const int ATTACK_RANGE = 0.6 * associated.box.h;
+    const int ATTACK_RANGE = 0.7 * associated.box.h;
     const int ATTACK_WIDTH = 0.7 * associated.box.w;
 
-//    auto playerCenter = Player::player->GetCenter();
-//    auto bossCenter = associated.box.Center();
     auto bossBoxPos = Vec2(associated.box.x, associated.box.y);
-
-    auto attackObject = new GameObject(associated.GetLayer());
-    attackObject->AddComponent(new BossMeleeAttack(*attackObject, "", 0, BOSS_ATTACK_TIME));
-    attackObject->box = Rect(ATTACK_RANGE, ATTACK_WIDTH);
-    attackObject->box = bossBoxPos + Vec2(0.15 * associated.box.w, 0.55 * associated.box.h);
 
     colliderTimer.Restart();
 
-    auto secondsToEndAttack = 0.4;
+    auto secondsToEndAttack = 0.5;
     timeToLoadCollider = BOSS_ATTACK_TIME - secondsToEndAttack;
+
     colliderToLoad = new GameObject(associated.GetLayer());
+    colliderToLoad->AddComponent(new BossMeleeAttack(*colliderToLoad, "", 0, secondsToEndAttack));
+    colliderToLoad->box = Rect(ATTACK_RANGE, ATTACK_WIDTH);
+    colliderToLoad->box = bossBoxPos + Vec2(0.15 * associated.box.w, 0.55 * associated.box.h);
 
-    auto playerBoxCenter = associated.box.Center();
+    auto thisGO = &associated;
+    DecentTimer::ProgramTimer(associated, 0.2, [thisGO]() -> void{
+        auto boss = (Boss*) thisGO->GetComponent(BOSS_TYPE);
+        boss->PlaySound(BOSS_SLAM_SOUND);
+    });
 
-    colliderToLoad->SetCenter(playerBoxCenter);
-    colliderToLoad->AddComponent(new BossMeleeAttack(*colliderToLoad, "img/slash_boss_down.png", 4,
-                                                     secondsToEndAttack, true, {0, 0}, {1.2, 0.7}));
+    DecentTimer::ProgramTimer(associated, BOSS_ATTACK_TIME-0.3, [thisGO]() -> void{
+        auto boss = (Boss*) thisGO->GetComponent(BOSS_TYPE);
+        boss->PlaySound(BOSS_SLAM_EARTHQUAKE_SOUND);
+        boss->camShaker->KeepShaking(BOSS_ATTACK_TIME, true);
+    });
 
-    colliderToLoad->box.y += associated.box.h / 2 + 40;
-
-    Game::GetInstance().GetCurrentState().AddObject(attackObject);
-
-    //RockSlide();
+    RockSlide();
 }
 
 void Boss::PrintBossState() {
