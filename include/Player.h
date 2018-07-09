@@ -82,6 +82,8 @@ public:
     void IncreaseHp(int healing);
     
     void DecreaseHp(int damage);
+    
+    int GetHp();
 private:
     enum PlayerState {
         //Starting state of player

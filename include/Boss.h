@@ -93,6 +93,9 @@ public:
 
     void Start() override;
     int GetHp();
+    void SetHp(int h);
+    
+    void Restart();
 
 private:
 

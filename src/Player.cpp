@@ -757,6 +757,10 @@ void Player::DecreaseHp(int damage) {
     }
 }
 
+int Player::GetHp(){
+    return hp;
+}
+
 void Player::UpdateCharge(float dt) {
     if (!charged) {
         chargeTimer.Update(dt);

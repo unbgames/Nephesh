@@ -74,7 +74,8 @@ void Boss::Update(float dt) {
         colliderTimer.Update(dt);
     }
 
-    if(Player::player && center.Distance(Player::player->GetCenter()) <= BOSS_IDLE_DISTANCE){
+    if(Player::player && Player::player->GetHp() > 0 && center.Distance(Player::player->GetCenter()) <= 
+    BOSS_IDLE_DISTANCE){
         auto newState = currentState;
         if (newState != STARTING && newState != AWAKENING) {
             Camera::offset = Vec2(0, -100);
@@ -548,5 +549,15 @@ void Boss::TryHitLaser() {
 
 int Boss::GetHp() {
     return hp;
+}
+
+void Boss::SetHp(int h){
+    hp = h;
+}
+
+void Boss::Restart() {
+    hp = 100;
+    currentState = STARTING;
+    awoken = false;
 }
 
