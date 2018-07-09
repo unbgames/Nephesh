@@ -237,6 +237,7 @@ void WorldState::Start() {
     vector<string> m3 = { "map/3/ground.png", "map/3/rocks.png", "map/3/trees.png", "map/3/surroundings.png", "map/3/lighting.png", "map/3/view.png", "map/3/vines.png" };
     vector<string> m4 = { "map/4/ground.png", "map/4/rocks.png", "map/4/trees.png", "map/4/surroundings.png", "map/4/lighting.png", "map/4/view.png", "map/4/vines.png" };
     vector<string> m5 = { "map/5/ground.png", "map/5/rocks.png", "map/5/trees.png", "map/5/surroundings.png", "map/5/lighting.png", "map/5/view.png", "map/5/vines.png" };
+    vector<string> m6 = { "map/6/ground.png", "map/6/houses.png", "map/6/rocks.png", "map/6/surroundings.png", "map/6/lighting.png", "map/6/view.png" };
     vector<string> m8 = { "map/8/ground.png", "map/8/rocks.png", "map/8/trees.png", "map/8/surroundings.png", "map/8/lighting.png", "map/8/vines.png" };
     vector<string> m9 = { "map/9/ground.png", "map/9/rocks.png", "map/9/trees.png", "map/9/surroundings.png", "map/9/lighting.png", "map/9/view.png", "map/9/vine.png" };
     maps.emplace_back(m1, Map::MapDirection::DOWN, "map/1/collisionMap.txt", "map/1/terrainMap.txt");
@@ -244,8 +245,10 @@ void WorldState::Start() {
     maps.emplace_back(m3, Map::MapDirection::RIGHT, "map/3/collisionMap.txt", "map/3/terrainMap.txt");
     maps.emplace_back(m4, Map::MapDirection::UP, "map/4/collisionMap.txt", "map/4/terrainMap.txt");
     maps.emplace_back(m5, Map::MapDirection::RIGHT, "map/5/collisionMap.txt", "map/5/terrainMap.txt");
+    maps.emplace_back(m6, Map::MapDirection::RIGHT, "map/6/collisionMap.txt", "map/6/terrainMap.txt");
     maps.emplace_back(m8, Map::MapDirection::RIGHT, "map/8/collisionMap.txt", "map/8/terrainMap.txt");
     maps.emplace_back(m9, Map::MapDirection::UP, "map/9/collisionMap.txt", "map/9/terrainMap.txt");
+
 
 
     StartArray();
@@ -302,6 +305,12 @@ void WorldState::LoadAssets() {
     Resources::GetImage("map/5/lighting.png");
     Resources::GetImage("map/5/view.png");
     Resources::GetImage("map/5/vines.png");
+    Resources::GetImage("map/6/ground.png");
+    Resources::GetImage("map/6/rocks.png");
+    Resources::GetImage("map/6/houses.png");
+    Resources::GetImage("map/6/surroundings.png");
+    Resources::GetImage("map/6/lighting.png");
+    Resources::GetImage("map/6/view.png");
     Resources::GetImage("map/8/ground.png");
     Resources::GetImage("map/8/rocks.png");
     Resources::GetImage("map/8/trees.png");
