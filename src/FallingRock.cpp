@@ -34,15 +34,16 @@ FallingRock::FallingRock(GameObject &associated, int damage) : Component(associa
     Game::GetInstance().GetCurrentState().AddObject(rockShadow);
 
     auto collider = new Collider(associated);
-    collider->SetCanCollide([](GameObject& collidable) -> bool {
-        return collidable.HasComponent(PLAYER_TYPE);
+    collider->SetCanCollide([] (GameObject &other) -> bool {
+        return (other.HasComponent(PLAYER_TYPE));
     });
     associated.AddComponent(collider);
+    
 }
 
 void FallingRock::Start() {
     rockShadow->AddComponent(new Sprite(*rockShadow, FALLING_ROCK_SHADOW_SPRITE));
-    rockShadow->SetCenter(targetPos);
+    rockShadow->SetCenter(targetPos);    
 }
 
 void FallingRock::Update(float dt) {
@@ -67,12 +68,25 @@ void FallingRock::Update(float dt) {
         rockShadow->RequestDelete();
         associated.RequestDelete();
     }
+    
+    
 
     auto deltaSpeed = FALLING_ROCK_ACCELERATION * dt;
     auto deltaPos = linearSpeed * dt + deltaSpeed * (dt / 2);
     linearSpeed += deltaSpeed;
+    auto dist = associated.box.Center().Distance(targetPos);
     
-    if (associated.box.Center().Distance(targetPos) < deltaPos) {
+    if(dist <= FROCKS_COLLIDING_DIST && !colliderSet){
+        //cout << "Aqui!" << endl;
+        colliderSet = true;
+//        auto collider = new Collider(associated);
+//        collider->SetCanCollide([] (GameObject &other) -> bool {
+//            return (other.HasComponent(PLAYER_TYPE));
+//        });
+//        associated.AddComponent(collider);
+    }
+    
+    if (dist < deltaPos) {
         associated.SetCenter(targetPos);
     } else {
         associated.box += Vec2(0, deltaPos);
@@ -89,7 +103,7 @@ bool FallingRock::Is(string type) {
 }
 
 void FallingRock::NotifyCollision(GameObject &other) {
-    if (other.HasComponent(PLAYER_TYPE)) {
+    if (other.HasComponent(PLAYER_TYPE) && colliderSet) {
         Player::player->DecreaseHp(damage);
     }
 }

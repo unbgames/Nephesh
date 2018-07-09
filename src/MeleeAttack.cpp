@@ -8,7 +8,7 @@
 #include <Boss.h>
 #include "MeleeAttack.h"
 
-#define PLAYER_MELEE_DAMAGE 100
+#define PLAYER_MELEE_DAMAGE 10
 
 MeleeAttack::MeleeAttack(GameObject &associated, string sprite, int frameCount, bool flip, Vec2 offset, Vec2 colScale, Vec2 colOffset, double attackDuration, bool debug) :
         Component(associated),

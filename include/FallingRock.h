@@ -19,6 +19,7 @@
 
 #define FALLING_ROCK_BREAKING_SOUND_1 "audio/boss/falling_rock_1.wav"
 #define FALLING_ROCK_BREAKING_SOUND_2 "audio/boss/falling_rock_2.wav"
+#define FROCKS_COLLIDING_DIST 40
 
 class FallingRock : public Component {
 public:
@@ -37,6 +38,7 @@ private:
     CameraShaker* camShaker;
     
     int damage;
+    bool colliderSet = false;
 };
 
 

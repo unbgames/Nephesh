@@ -43,7 +43,7 @@ using namespace std;
 #define PLAYER_IDLE_SPRITE "img/idle_up.png"
 #define PLAYER_MAX_HP 100
 #define PLAYER_CHARGE_DURATION 2
-#define PLAYER_INVULNERABILITY_DURATION 1.0
+#define PLAYER_INVULNERABILITY_DURATION 2.0
 
 class Player : public Component {
 public:
@@ -84,6 +84,8 @@ public:
     void DecreaseHp(int damage);
     
     int GetHp();
+    
+    bool takeDamage = true;
 private:
     enum PlayerState {
         //Starting state of player

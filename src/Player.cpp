@@ -742,7 +742,7 @@ void Player::IncreaseHp(int healing) {
 }
 
 void Player::DecreaseHp(int damage) {
-    if (!tookDamageRecently) {
+    if (!tookDamageRecently && takeDamage) {
         hp -= damage;
         if (hp < 0) {
             hp = 0;

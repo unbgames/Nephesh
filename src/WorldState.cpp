@@ -142,11 +142,11 @@ void WorldState::Update(float dt) {
         AddObject(blockObj);
     }
     
-    if (inputManager.KeyPress(SDLK_f)) {
-        Player::player->DecreaseHp(25);
-    }
+//    if (inputManager.KeyPress(SDLK_f)) {
+//        Player::player->DecreaseHp(25);
+//    }
     if (inputManager.KeyPress(SDLK_i)) {
-        Player::player->IncreaseHp(10);
+        Player::player->takeDamage = !Player::player->takeDamage;
     }
 
     if (inputManager.KeyPress(ESCAPE_KEY)) {
