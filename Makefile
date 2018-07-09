@@ -29,7 +29,7 @@ DEP_FILES = $(addprefix $(DEP_PATH)/, $(addprefix .d,$(FILE_NAMES)))
 OBJ_FILES = $(addprefix $(BIN_PATH)/,$(notdir $(CPP_FILES:.cpp=.o)))
 
 
-EXEC = 140039082_FabioMarques
+EXEC = Nephesh
 
 # Caso for Windows
 

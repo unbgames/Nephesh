@@ -43,7 +43,7 @@ TitleState::TitleState() : State(), frozen(false) {
         instrText->RemakeTexture();
     };
     intrObj->AddComponent(new IntervalTimer(*intrObj, 0.6, callback));
-    intrObj->box.PlaceCenterAt(Vec2((GAME_WIDTH/2)-500, GAME_HEIGHT/2 + 400));
+    intrObj->box.PlaceCenterAt(Vec2((GAME_WIDTH/2)-550, GAME_HEIGHT/2 + 400));
     AddObject(intrObj);
 
     auto fadeInObj = new GameObject(2);
