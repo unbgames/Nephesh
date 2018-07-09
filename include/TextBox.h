@@ -25,6 +25,8 @@ public:
 
     void SetText(string text);
 
+    void SetBox(string file);
+
     void Start() override;
 
     void DeleteText();

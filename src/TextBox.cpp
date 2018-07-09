@@ -58,3 +58,9 @@ void TextBox::SetText(string text) {
 void TextBox::DeleteText() {
     containedText.lock()->RequestDelete();
 }
+
+void TextBox::SetBox(string file) {
+    auto sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
+    sprite->Open(file);
+
+}

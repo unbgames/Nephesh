@@ -12,11 +12,11 @@
 #include <WorldState.h>
 #include "Npc.h"
 
-Npc::Npc(GameObject &associated, string file, vector<string> sounds, bool debug) : Component(associated),
+Npc::Npc(GameObject &associated, string file, vector<string> sounds, bool debug, bool isReligious) : Component(associated),
                                                                                    isTalking(false),
                                                                                    sounds(sounds),
                                                                                    debug(debug),
-                                                                                   currentSound(0) {
+                                                                                   currentSound(0), isReligious(isReligious), isHim(true) {
     associated.AddComponent(new Collidable(associated, Vec2(1, 1)*2));
     associated.AddComponent(new Sound(associated));
     ReadSpeeches(file);
@@ -53,9 +53,17 @@ void Npc::Update(float dt) {
             isTalking = false;
         } else {
             auto sound = (Sound *)associated.GetComponent(SOUND_TYPE);
-            if (sound != nullptr && sounds.size() > 0 && currentSound%2 == 0) {
-                sound->Open(sounds[(currentSound/2) % sounds.size()]);
+            if (sound != nullptr && sounds.size() > 0) {
+                sound->Open(sounds[(currentSound) % sounds.size()]);
                 sound->Play();
+            }
+            if (isReligious) {
+                isHim = !isHim;
+                if (isHim) {
+                    boxCpt->SetBox(MALE_BOX);
+                } else {
+                    boxCpt->SetBox(FEMALE_BOX);
+                }
             }
             currentSound++;
             boxCpt->SetText(speechQueue.front());
@@ -119,6 +127,10 @@ void Npc::Talk() {
 
     box->SetText(speechLines.front());
     speechQueue.pop();
+    
+    if (isReligious) {
+        box->SetBox(MALE_BOX);
+    }
 
     Player::player->closestNpc = weak_ptr<GameObject>();
 }
