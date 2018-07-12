@@ -53,11 +53,11 @@ void MeleeAttack::Update(float dt) {
             associated.box.x += 1;
         }
 
-        if (inputManager.KeyPress(SDLK_p)) {
-            auto playerCenter = Player::player->GetCenter();
-            auto center = associated.box.Center();
-            cout << center.x - playerCenter.x << ", " << center.y - playerCenter.y << endl;
-        }
+//        if (inputManager.KeyPress(SDLK_p)) {
+//            auto playerCenter = Player::player->GetCenter();
+//            auto center = associated.box.Center();
+//            cout << center.x - playerCenter.x << ", " << center.y - playerCenter.y << endl;
+//        }
     }
     durationTimer.Update(dt);
 

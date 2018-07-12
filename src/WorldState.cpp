@@ -142,11 +142,13 @@ void WorldState::Update(float dt) {
         AddObject(blockObj);
     }
     
-//    if (inputManager.KeyPress(SDLK_f)) {
-//        Player::player->DecreaseHp(25);
-//    }
+       
     if (inputManager.KeyPress(SDLK_i)) {
         Player::player->takeDamage = !Player::player->takeDamage;
+    }
+
+    if (inputManager.KeyPress(SDLK_l)) {
+        GameData::easyMode = !GameData::easyMode;
     }
 
     if (inputManager.KeyPress(ESCAPE_KEY)) {
@@ -524,7 +526,7 @@ void WorldState::LoadNpcs() {
 
     vector<string> roseSounds {
             "audio/npcs/rosa/mulher_flor_1.wav",
-            "audio/npcs/criatura/mulher_flor_2.wav"
+            "audio/npcs/rosa/mulher_flor_2.wav"
     };
 
     auto roseObj = new GameObject();

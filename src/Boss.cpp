@@ -16,6 +16,7 @@
 #include <Bar.h>
 #include <CameraFollower.h>
 #include <DecentTimer.h>
+#include <GameData.h>
 #include "Boss.h"
 #include "Utils.h"
 
@@ -433,7 +434,7 @@ void Boss::RollingStoneAttack() {
     auto heightOffset = rand() % offHeig;
     auto widthOffset = (rand() % offWid) - offWid / 2;
 
-    Vec2 blockPos = {bossCenter.x + widthOffset, bossCenter.y + (associated.box.h / 2) + 10 + heightOffset};
+    Vec2 blockPos = {bossCenter.x + widthOffset, bossCenter.y + (associated.box.h / 2) + 50 + heightOffset};
 
     if (blockPos.Distance(playerCenter) < BOSS_MIN_SLIDING_ROCK_DIST) {
         Vec2 topRight = {bossCenter.x + offWid / 2, bossCenter.y + (associated.box.h / 2) + 10};
@@ -558,14 +559,26 @@ void Boss::DecreaseHp(int damage) {
 
 void Boss::TryHitLaser() {
     if (awoken) {
-        if (/*currentState == IDLE*/currentState == ATTACKING && attackState == CLAP) {
-            PlaySound("audio/hitbox_magica.wav");
-            UpdateState(VULNERABLE);
-        } else {
-            PlaySound("audio/hitbox_magica_fail.wav");
-            UpdateState(DEFENDING);
+        if(GameData::easyMode){
+            if (currentState == IDLE) {
+                PlaySound("audio/hitbox_magica.wav");
+                UpdateState(VULNERABLE);
+            } else {
+                PlaySound("audio/hitbox_magica_fail.wav");
+                UpdateState(DEFENDING);
+            }
+        } else{
+            if (currentState == ATTACKING && attackState == CLAP) {
+                PlaySound("audio/hitbox_magica.wav");
+                UpdateState(VULNERABLE);
+            } else {
+                PlaySound("audio/hitbox_magica_fail.wav");
+                UpdateState(DEFENDING);
+            }
         }
+        
     }
+    
 }
 
 int Boss::GetHp() {
