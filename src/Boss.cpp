@@ -29,11 +29,6 @@ Boss::Boss(GameObject &associated) :
         timer(),
         attacksPerformed(0),
         awoken(false) {
-    auto sprite = new Sprite(associated, BOSS_CUTSCENE_SPRITE, BOSS_AWAKENING_SPRITE_COUNT,
-                             ((float) BOSS_AWAKENING_DURATION) / BOSS_AWAKENING_SPRITE_COUNT);
-    sprite->SetScale(2, 2, false);
-    associated.AddComponent(sprite);
-    sprite->LockFrame();
     associated.AddComponent(new Sound(associated));
     camShaker = new CameraShaker(associated);
     associated.AddComponent(camShaker);
@@ -50,7 +45,8 @@ void Boss::Update(float dt) {
     if (hp <= 0) {
         if (previousState != DYING) {
             auto oldCenter = associated.box.Center();
-            SetSprite(BOSS_DEATH_SPRITE);
+            SetSprite(BOSS_DEATH_SPRITE1);
+            secondSprite = false;
             auto sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
             sprite->SetScale(2, 2);
             associated.box.PlaceCenterAt(oldCenter);
@@ -59,7 +55,11 @@ void Boss::Update(float dt) {
             UpdateState(DYING);
         } else {
             cutsceneTimer.Update(dt);
-            if (cutsceneTimer.Get() > BOSS_DEATH_DURATION) {
+            if ((cutsceneTimer.Get() > BOSS_DEATH1_DURATION) && !secondSprite) {
+                SetSprite(BOSS_DEATH_SPRITE2);
+                secondSprite = true;
+            }
+            if (cutsceneTimer.Get() > (BOSS_DEATH1_DURATION + BOSS_DEATH2_DURATION)) {
                 auto sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
                 barDecoration.lock()->RequestDelete();
                 healthBar.lock()->RequestDelete();
@@ -96,14 +96,21 @@ void Boss::Update(float dt) {
                     Player::player->Freeze();
                     PlaySound("audio/boss/boss_acordando.wav");
                     awoken = true;
+                    secondSprite = false;
                 }
                 break;
             case AWAKENING:
                 cutsceneTimer.Update(dt);
-                if (cutsceneTimer.Get() > BOSS_AWAKENING_DURATION) {
+                if (cutsceneTimer.Get() > ((BOSS_AWAKENING_SPRITE_COUNT/2)*0.1) && !secondSprite) {
+                    SetSprite(BOSS_CUTSCENE_SPRITE2);
+//                    Camera::Follow(&Player::player->GetGameObject());
+                    secondSprite = true;
+                }
+                if (cutsceneTimer.Get() > (BOSS_AWAKENING_SPRITE_COUNT)*0.1) {
                     SetSprite(BOSS_IDLE_SPRITE);
 //                    Camera::Follow(&Player::player->GetGameObject());
                     Player::player->Unfreeze();
+                    secondSprite = false;
                     newState = IDLE;
                 }
                 break;
@@ -204,20 +211,28 @@ void Boss::SetSprite(string file, bool flip) {
     if (file == BOSS_IDLE_SPRITE) {
         sprite->SetFrameCount(10);
         sprite->SetFrameTime(0.1);
-    } else if (file == BOSS_CUTSCENE_SPRITE) {
-        sprite->SetFrameCount(BOSS_AWAKENING_SPRITE_COUNT);
-        sprite->SetFrameTime(((float) BOSS_AWAKENING_DURATION) / BOSS_AWAKENING_SPRITE_COUNT);
+    } else if (file == BOSS_CUTSCENE_SPRITE2) {
+        sprite->SetFrameCount(BOSS_AWAKENING_SPRITE_COUNT/2);
         wScale = 2;
         hScale = 2;
-        sprite->LockFrame();
-    } else if (file == BOSS_DEATH_SPRITE) {
-        sprite->SetFrameCount(BOSS_DEATH_SPRITE_COUNT);
-        sprite->SetFrameTime(((float) BOSS_DEATH_DURATION) / BOSS_DEATH_SPRITE_COUNT);
+        sprite->SetFrameTime(0.1);
+    } else if (file == BOSS_DEATH_SPRITE1) {
+        sprite->SetFrameCount(BOSS_DEATH1_SPRITE_COUNT);
+        wScale = 2;
+        hScale = 2;
+        sprite->SetFrameTime(((float) BOSS_DEATH1_DURATION) / BOSS_DEATH1_SPRITE_COUNT);
+    } else if (file == BOSS_DEATH_SPRITE2) {
+        sprite->SetFrameCount(BOSS_DEATH2_SPRITE_COUNT);
+        wScale = 2;
+        hScale = 2;
+        sprite->SetFrameTime(((float) BOSS_DEATH2_DURATION) / BOSS_DEATH2_SPRITE_COUNT);
     } else if (file == BOSS_PROTECT_SPRITE) {
         sprite->SetFrameCount(BOSS_PROTECT_SPRITE_COUNT);
         sprite->SetFrameTime(((float) BOSS_PROTECT_DURATION) / BOSS_PROTECT_SPRITE_COUNT);
     } else if (file == BOSS_VULNERABLE_SPRITE) {
         sprite->SetFrameCount(BOSS_VULNERABLE_SPRITE_COUNT);
+        wScale = 2;
+        hScale = 2;
         sprite->SetFrameTime(((float) BOSS_VULNERABLE_DURATION) / BOSS_VULNERABLE_SPRITE_COUNT);
     } else { // ATTACKS
         sprite->SetFrameCount(10);
@@ -542,6 +557,12 @@ void Boss::ShowBars() {
 }
 
 void Boss::Start() {
+    auto sprite = new Sprite(associated, BOSS_CUTSCENE_SPRITE1, BOSS_AWAKENING_SPRITE_COUNT/2,
+                             0.1);
+    sprite->SetScale(2, 2, false);
+    associated.AddComponent(sprite);
+    sprite->LockFrame();
+
     CreateBars();
     HideBars();
 }
@@ -591,7 +612,7 @@ void Boss::SetHp(int h) {
 
 void Boss::Restart() {
     hp = 100;
-    SetSprite(BOSS_CUTSCENE_SPRITE);
+    SetSprite(BOSS_CUTSCENE_SPRITE1);
     currentState = STARTING;
     awoken = false;
     Start();

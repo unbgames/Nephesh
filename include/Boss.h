@@ -25,21 +25,25 @@
 #define BOSS_SLAP_DISTANCE 400
 #define BOSS_IDLE_DISTANCE 1000
 #define BOSS_MIN_SLIDING_ROCK_DIST 250
-#define BOSS_AWAKENING_DURATION 4
+#define BOSS_AWAKENING1_DURATION 4
 #define BOSS_AWAKENING_SPRITE_COUNT 40
 #define BOSS_AWAKEN_DISTANCE 350
-#define BOSS_DEATH_DURATION 2.5
-#define BOSS_DEATH_SPRITE_COUNT 25
+#define BOSS_DEATH1_DURATION 1.3
+#define BOSS_DEATH1_SPRITE_COUNT 13
+#define BOSS_DEATH2_DURATION 1.2
+#define BOSS_DEATH2_SPRITE_COUNT 12
 #define BOSS_PROTECT_DURATION 0.2
 #define BOSS_PROTECT_SPRITE_COUNT 10
 
-#define BOSS_CUTSCENE_SPRITE "img/cutscene_intro.png"
+#define BOSS_CUTSCENE_SPRITE1 "img/cutscene_intro1.png"
+#define BOSS_CUTSCENE_SPRITE2 "img/cutscene_intro2.png"
 #define BOSS_IDLE_SPRITE "img/boss_idle.png"
 #define BOSS_SLAP_RIGHT_SPRITE "img/boss_slap_right.png"
 #define BOSS_SLAP_LEFT_SPRITE "img/boss_slap_left.png"
 #define BOSS_SLAM_SPRITE "img/boss_slam.png"
 #define BOSS_CLAP_SPRITE "img/boss_clap.png"
-#define BOSS_DEATH_SPRITE "img/death.png"
+#define BOSS_DEATH_SPRITE1 "img/death1.png"
+#define BOSS_DEATH_SPRITE2 "img/death2.png"
 #define BOSS_PROTECT_SPRITE "img/protect.png"
 #define BOSS_VULNERABLE_SPRITE "img/vulnerable.png"
 #define BOSS_VULNERABLE_SPRITE_COUNT 16
@@ -127,7 +131,7 @@ private:
     void PlaySound(string file);
     
     bool work = true;
-
+    bool secondSprite;
 };
 
 

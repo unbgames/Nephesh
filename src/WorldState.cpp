@@ -319,8 +319,10 @@ void WorldState::LoadAssets() {
     Resources::GetImage("map/9/lighting.png");
     Resources::GetImage("map/9/view.png");
     Resources::GetImage("map/9/vine.png");
-    Resources::GetImage("img/cutscene_intro.png");
-    Resources::GetImage("img/death.png");
+    Resources::GetImage("img/cutscene_intro1.png");
+    Resources::GetImage("img/cutscene_intro2.png");
+    Resources::GetImage("img/death1.png");
+    Resources::GetImage("img/death2.png");
 }
 
 weak_ptr<GameObject> WorldState::AddCollidable(shared_ptr<GameObject> object) {
