@@ -15,6 +15,7 @@ BeamSkill::BeamSkill(GameObject &associated, Vec2 target, Player::PlayerDirectio
     auto collider = new Collider(associated);
     associated.AddComponent(collider);
     auto raySprite = new Sprite(associated, "img/magic_effect_side2.png", 5, BEAM_LIFETIME/5, 0, false, false);
+    raySprite->SetScale(2, 2);
     associated.AddComponent(raySprite);
     collider->SetCanCollide([] (GameObject &other) -> bool {
         return other.HasComponent(COLLISION_MAP_TYPE) || other.HasComponent(BOSS_TYPE);
@@ -85,7 +86,7 @@ void BeamSkill::NotifyCollision(GameObject &other) {
         thisCollider->box.w = cutoffPoint;
         auto sprite = (Sprite *) associated.GetComponent(SPRITE_TYPE);
         auto clip = sprite->GetClip();
-        sprite->SetClip(clip.x, clip.y, cutoffPoint, clip.h);
+        sprite->SetClip(clip.x, clip.y, cutoffPoint/2, clip.h);
 
         endObject.lock()->SetCenter((Vec2(associated.box.x + cutoffPoint, associated.box.y + associated.box.h/2) - Vec2(associated.box.x, associated.box.y + associated.box.h/2)).RotateDeg(associated.angleDeg) + Vec2(associated.box.x, associated.box.y + associated.box.h/2));
     }
@@ -108,7 +109,7 @@ void BeamSkill::Start() {
     associated.angleDeg = d.XAngleDeg();
     cutoffPoint = associated.box.w;
     auto clip = sprite->GetClip();
-    sprite->SetClip(clip.x, clip.y, cutoffPoint, clip.h);
+    sprite->SetClip(clip.x, clip.y, cutoffPoint/2, clip.h);
 
     auto initObj = new GameObject(associated.GetLayer());
     initObj->angleDeg = associated.angleDeg;
