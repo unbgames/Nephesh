@@ -11,7 +11,7 @@ O personagem é um ser misterioso, que o jogador não sabe nem seus objetivos e 
 Programadores:
 	- Fernando Nunes: sistema de layers, sistema de mapas renderizados dinamicamente, projetil do player, dash, algoritmo de colisão do player com o mapa, efeitos de fade da tela.
 	- Fabio Marques: sistema de movimentação do personagem, ataque de palmas do boss (colunas que se erguem do chão), melhorias no sistema de musica (fade da musica dependendo do contexto do jogo).
-	- Bruno Rodrigues: Melhorias no sistema de colisão. Sistema de colisão com o mapa. Ataques de slam (pedras que caem do ceu) e slam (ataque proximo).
+	- Bruno Rodrigues: Melhorias no sistema de colisão. Sistema de colisão com o mapa. Ataques de slam (pedras que caem do ceu) e slap (ataque proximo).
 
 	Todos os programadores participaram das fases de integração das animações e sons com os sistemas implementados e da elaboração dos sistemas apresentados acima.
 
