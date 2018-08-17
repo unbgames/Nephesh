@@ -123,7 +123,7 @@ void WorldState::Update(float dt) {
         
         if(introMusicTimer.Get() >= introMusicLength-0.5){
             bgMusic->Stop(0);
-            bgMusic->Open("audio/first_encounter_loop.mp3");
+            bgMusic->Open("audio/first_encounter_loop.wav");
             bgMusic->Play(0, 0);
             Mix_VolumeMusic(64);
 
@@ -265,8 +265,8 @@ void WorldState::Resume() {
 }
 
 void WorldState::LoadAssets() {
-    Resources::GetSound("audio/first_encounter_loop.mp3");
-    Resources::GetSound("audio/first_encounter_intro.mp3");
+    Resources::GetSound("audio/first_encounter_loop.wav");
+    Resources::GetSound("audio/first_encounter_intro.wav");
     Resources::GetSound("audio/mundo.ogg");
     Resources::GetSound("audio/mundo.ogg");
     Resources::GetImage("map/1/ground.png");
@@ -407,7 +407,7 @@ void WorldState::UpdateMusic(int prevIndex) {
     if(prevIndex != currentMapIndex && currentMapIndex == bossMapIndex){
         bgMusic->Stop(500);
         //musicChangeTimer.Restart();
-        bgMusic->Open("audio/first_encounter_intro.mp3");
+        bgMusic->Open("audio/first_encounter_intro.wav");
         bgMusic->Play(1, 1000);
         
         introMusicTimer.Restart();
