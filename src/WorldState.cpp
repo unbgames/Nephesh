@@ -131,16 +131,16 @@ void WorldState::Update(float dt) {
         }
     }
 
-    if (inputManager.KeyPress(SDLK_t)) {
-        auto mousePos = inputManager.GetMouse();
-
-        auto blockObj = new GameObject();
-        blockObj->angleDeg = 45;
-        blockObj->AddComponent(new Sprite(*blockObj, "img/block.png"));
-        blockObj->AddComponent(new Collidable(*blockObj));
-        blockObj->SetCenter(Camera::pos +  mousePos);
-        AddObject(blockObj);
-    }
+//    if (inputManager.KeyPress(SDLK_t)) {
+//        auto mousePos = inputManager.GetMouse();
+//
+//        auto blockObj = new GameObject();
+//        blockObj->angleDeg = 45;
+//        blockObj->AddComponent(new Sprite(*blockObj, "img/block.png"));
+//        blockObj->AddComponent(new Collidable(*blockObj));
+//        blockObj->SetCenter(Camera::pos +  mousePos);
+//        AddObject(blockObj);
+//    }
     
        
     if (inputManager.KeyPress(SDLK_i)) {
