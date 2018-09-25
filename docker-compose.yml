@@ -1,0 +1,7 @@
+version: '3'
+services:
+  pack-linux:
+    image: unbgames/pack-linux:1
+    volumes:
+       - .:/game/code
+       - ./packs:/game/packs
