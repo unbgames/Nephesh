@@ -47,8 +47,8 @@ void Boss::Update(float dt) {
         associated.RequestDelete();
 
         auto explosionGO = new GameObject();
-        auto explosionSound = new Sound(*explosionGO, ASSETS_PATH("/BOOM.wav") ); // Esse arquivo não existem no repositório
-        explosionGO->AddComponent(new Sprite(*explosionGO, ASSETS_PATH("/EXPLOSION.png"), 4, 0.1, 0.4)); // Esse arquivo não existem no repositório
+        auto explosionSound = new Sound(*explosionGO, ASSETS_PATH("/audio/boss/boss_impacto_chao.wav") ); // Era "/BOOM.wav" mas esse arquivo não existe no repositório
+        explosionGO->AddComponent(new Sprite(*explosionGO, ASSETS_PATH("/img/poeira.png"), 4, 0.1, 0.4)); // Era "/EXPLOSION.png" mas esse arquivo não existe no repositório
         explosionGO->AddComponent(explosionSound);
         explosionSound->Play();
         explosionGO->box.PlaceCenterAt(associated.box.Center());
