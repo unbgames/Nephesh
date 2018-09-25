@@ -1,96 +1,105 @@
-cmake_minimum_required(VERSION 3.9)
-project(Nephesh)
+cmake_minimum_required(VERSION 3.0.2)
 
-set(CMAKE_CXX_STANDARD 11)
+project(nephesh LANGUAGES CXX)
+set(GAME_NAME nephesh)
 
-list(APPEND CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+option(RELEASE_BUILD "Release build" OFF)
 
-if (WIN32)
-    include_directories(C:/SDL2-2.0.8/include)
-    link_directories(C:/SDL2-2.0.8/lib)
-    link_libraries(Mingw32 SDL2main SDL2_image SDL2_ttf SDL2_mixer SDL2)
+if (RELEASE_BUILD)
+    message("== Release BUILD ==")
+    set(GAME_RESOURCES_FOLDER "/usr/games/${GAME_NAME}-resources")
+    set(COMPILE_FLAGS "")
 else()
-    link_libraries(SDL2 SDL2_image SDL2_ttf SDL2_mixer)
-    include_directories(/usr/include/SDL2)
-    include_directories(${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
-endif ()
+    message("== Debug BUILD ==")
+    set(GAME_RESOURCES_FOLDER "game")
+    set(COMPILE_FLAGS "-DDEBUG")
+endif()
 
-include_directories(BEFORE include)
+set(GAME_ASSETS_FOLDER "${GAME_RESOURCES_FOLDER}/assets")
 
-include_directories(BEFORE tests)
+# Set directory folders
+set (PROJECT_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/game/include")
+set (PROJECT_SRC_DIR     "${PROJECT_SOURCE_DIR}/game/src")
+set (PROJECT_ASSETS_DIR  "${PROJECT_SOURCE_DIR}/game/assets")
 
-add_executable(Nephesh src/Main.cpp
-        src/Game.cpp
-        include/Game.h
-        src/Log.cpp
-        include/Log.h
-        src/Music.cpp
-        include/Music.h
-        src/Sprite.cpp
-        include/Sprite.h
-        src/Vec2.cpp
-        include/Vec2.h
-        src/Rect.cpp
-        include/Rect.h
-        src/Component.cpp
-        include/Component.h
-        src/GameObject.cpp
-        include/GameObject.h
-        src/Sound.cpp
-        include/Sound.h
-        src/TileSet.cpp
-        include/TileSet.h
-        src/TileMap.cpp
-        include/TileMap.h
-        src/Resources.cpp
-        include/Resources.h
-        src/InputManager.cpp
-        include/InputManager.h
-        src/Camera.cpp
-        include/Camera.h
-        src/CameraFollower.cpp
-        include/CameraFollower.h
-        src/Collider.cpp
-        include/Collider.h
-        src/Timer.cpp
-        include/Timer.h
-        src/State.cpp
-        include/State.h
-        src/Text.cpp
-        include/Text.h
-        src/IntervalTimer.cpp
-        include/IntervalTimer.h
-        include/WorldState.h
-        src/WorldState.cpp
-        src/CollisionMap.cpp
-        include/CollisionMap.h
-        src/Collidable.cpp
-        include/Collidable.h
-        src/GameData.cpp
-        include/GameData.h
-        tests/StageState.cpp
-        tests/StageState.h
-        tests/PenguinBody.cpp
-        tests/PenguinBody.h
-        tests/PenguinCannon.cpp
-        tests/PenguinCannon.h
-        src/BeamSkill.cpp
-        include/BeamSkill.h
-        src/LineSegment.cpp
-        include/LineSegment.h
-        src/Player.cpp
-        include/Player.h
-        src/Boss.cpp
-        include/Boss.h
-        src/MeleeAttack.cpp
-        include/MeleeAttack.h
-        src/Npc.cpp
-        include/Npc.h
-        src/TextBox.cpp
-        include/TextBox.h
-        src/Map.cpp
-        include/Map.h
-        src/TitleState.cpp
-        include/TitleState.h
-        src/MeleeAttack.cpp include/MeleeAttack.h src/Npc.cpp include/Npc.h src/TextBox.cpp include/TextBox.h src/Map.cpp include/Map.h src/TerrainMap.cpp include/TerrainMap.h src/FadeEffect.cpp include/FadeEffect.h src/RollingStones.cpp include/RollingStones.h
-        src/Charge.cpp include/Charge.h src/Intersection.cpp include/Intersection.h src/Bar.cpp include/Bar.h include/Utils.h src/FallingRock.cpp include/FallingRock.h include/CameraShaker.cpp include/CameraShaker.h src/BossMeleeAttack.cpp include/BossMeleeAttack.h)
+# Gets the list of files inside the src directory
+file(GLOB_RECURSE SOURCES "${PROJECT_SRC_DIR}/*.cpp"
+                          "${PROJECT_SRC_DIR}/*.c")
+
+configure_file("${PROJECT_INCLUDE_DIR}/config.h.in" "${PROJECT_BINARY_DIR}/config.h")
+
+# Include Headers
+include_directories(${PROJECT_INCLUDE_DIR})
+include_directories("${PROJECT_BINARY_DIR}")
+
+
+#### Compilation ####
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Compilation Flags
+set(COMPILE_FLAGS "")
+
+if (${CMAKE_CXX_COMPILER_ID} STREQUAL Clang)
+    set(COMPILE_FLAGS "${COMPILE_FLAGS} -std=c++11 -W -Wall -pedantic -std=c++11 -Wshadow -O2 -g")
+elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL GNU)
+    set(COMPILE_FLAGS "${COMPILE_FLAGS} -std=c++11 -W -Wall -pedantic -std=c++11 -Wshadow -O2 -g")
+elseif (${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC)
+    set(COMPILE_FLAGS "${COMPILE_FLAGS} /Wall")
+endif()
+
+# Cmake compilation flags redefinition
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILE_FLAGS}")
+
+
+
+#### Dependencies ####
+
+# Add engine
+
+#### Executable ####
+
+add_executable(${GAME_NAME} ${SOURCES})
+target_link_libraries(${GAME_NAME}
+                      SDL2 SDL2_image SDL2_ttf SDL2_mixer)
+
+
+#### Custom Commands ####
+
+# Copy assets folder to build
+add_custom_command(TARGET ${GAME_NAME} POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${PROJECT_ASSETS_DIR} "${CMAKE_BINARY_DIR}/${GAME_ASSETS_FOLDER}")
+
+
+#### Instalation ####
+install(TARGETS ${GAME_NAME} DESTINATION /usr/games)
+install(DIRECTORY ${PROJECT_ASSETS_DIR} DESTINATION ${GAME_RESOURCES_FOLDER})
+
+#### Packs ####
+
+# build a CPack driven installer package
+include (InstallRequiredSystemLibraries)
+
+set(CPACK_PACKAGE_NAME                ${GAME_NAME})
+set(CPACK_PACKAGE_VENDOR              "UnB - FGA")
+set(CPACK_RESOURCE_FILE_LICENSE       "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_PACKAGE_VERSION_MAJOR       "1")
+set(CPACK_PACKAGE_VERSION_MINOR       "0")
+set(CPACK_PACKAGE_CONTACT             "Matheus Faria <matheusfaria@unb.br>")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Base game project of IJE")
+set(CPACK_PACKAGE_DESCRIPTION         "Base game project of IJE with all the contents that a game needs to be developed on the course")
+set(CPACK_PACKAGE_URL                 "https://unbgames.github.io")
+
+# .deb related info
+set(CPACK_DEBIAN_FILE_NAME            "DEB-DEFAULT")
+set(CPACK_DEBIAN_PACKAGE_SECTION      "Games")
+set(CPACK_DEBIAN_PACKAGE_HOMEPAGE     ${CPACK_PACKAGE_URL})
+set(CPACK_DEBIAN_PACKAGE_DEPENDS      "libsdl2-2.0-0, libsdl2-image-2.0-0, libsdl2-mixer-2.0-0, libsdl2-ttf-2.0-0")
+
+# .rpm related info
+set(CPACK_RPM_FILE_NAME        "RPM-DEFAULT")
+set(CPACK_RPM_PACKAGE_LICENSE  "MIT")
+set(CPACK_RPM_PACKAGE_URL      ${CPACK_PACKAGE_URL})
+set(CPACK_RPM_PACKAGE_REQUIRES "SDL2, SDL2_image, SDL2_mixer, SDL2_ttf")
+include (CPack)
